@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2-DOF Ankle Torque Analyzer — Orthogonal Sizing Tool</title>
+<meta name="description" content="Interactive torque sizing tool for 2-RSS parallel and orthogonal ankle mechanisms.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080b14;--panel:rgba(12,16,30,0.92);--panel-border:rgba(80,110,180,0.18);
+  --accent:#00d4ff;--accent2:#ff6b35;--danger:#ff3366;--safe:#00e87b;--warn:#ffb830;
+  --text:#c8d0e0;--text-dim:#4a5a78;--text-bright:#eef2fa;
+  --mono:'JetBrains Mono',monospace;--sans:'Inter',system-ui,sans-serif;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--sans)}
+body{display:flex;flex-direction:column}
+
+header{padding:10px 20px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,14,26,0.95);border-bottom:1px solid var(--panel-border);flex-shrink:0}
+header h1{font-size:14px;font-weight:600;color:var(--text-bright);white-space:nowrap}
+header .sub{font-size:10px;color:var(--text-dim);letter-spacing:.5px}
+
+main{flex:1;display:grid;grid-template-columns:1fr 350px;grid-template-rows:1fr;gap:0;overflow:hidden;min-height:0}
+
+.left-col{display:flex;flex-direction:column;border-right:1px solid var(--panel-border);overflow:hidden}
+#view-panel{flex:1;position:relative;min-height:0}
+#view-panel canvas{width:100%;height:100%;cursor:grab;display:block}
+#view-panel canvas:active{cursor:grabbing}
+.view-btns{position:absolute;bottom:8px;left:8px;display:flex;gap:3px}
+.view-btns button{padding:3px 8px;border:1px solid var(--panel-border);background:rgba(0,0,0,.6);
+  color:var(--text-dim);font:500 9px var(--sans);border-radius:4px;cursor:pointer;backdrop-filter:blur(6px)}
+.view-btns button:hover{color:var(--accent);border-color:var(--accent)}
+
+#map-panel{height:220px;flex-shrink:0;border-top:1px solid var(--panel-border);position:relative}
+#map-panel .hdr{padding:5px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--panel-border)}
+#map-panel .hdr h2{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim)}
+#map-panel .hdr .badge{font:500 9px var(--mono);padding:1px 6px;border-radius:3px;background:rgba(0,212,255,.1);color:var(--accent)}
+#map-panel canvas{width:100%;height:calc(100% - 28px);display:block}
+.map-legend{position:absolute;bottom:4px;right:6px;display:flex;align-items:center;gap:3px;
+  background:rgba(0,0,0,.7);padding:2px 6px;border-radius:3px;font:9px var(--sans);color:var(--text-dim)}
+.map-legend .grad{width:50px;height:6px;border-radius:2px;
+  background:linear-gradient(to right,#00e87b,#ffb830,#ff3366,#440011)}
+
+.right-col{overflow-y:auto;padding:12px 14px}
+.section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text-bright);margin:10px 0 6px;display:flex;align-items:center;gap:6px}
+.section-title::before{content:'';display:inline-block;width:3px;height:10px;background:var(--accent);border-radius:2px}
+
+.ctrl-grp{margin-bottom:8px}
+.ctrl-grp label{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text-dim);margin-bottom:3px}
+.ctrl-grp label .v{font:500 12px var(--mono);color:var(--accent)}
+.ctrl-grp input[type=range]{-webkit-appearance:none;width:100%;height:5px;border-radius:3px;background:rgba(255,255,255,.06);outline:none}
+.ctrl-grp input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+  background:var(--accent);cursor:pointer;border:2px solid var(--bg);box-shadow:0 0 6px rgba(0,212,255,.4)}
+.ctrl-grp select{width:100%;padding:4px 6px;background:rgba(255,255,255,.05);border:1px solid var(--panel-border);border-radius:4px;color:var(--text);font:11px var(--sans);outline:none}
+
+.out-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:8px 0}
+.out-card{background:rgba(255,255,255,.03);border:1px solid var(--panel-border);border-radius:6px;padding:7px 9px}
+.out-card .lbl{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);margin-bottom:1px}
+.out-card .val{font:600 15px var(--mono);color:var(--text-bright)}
+.out-card.warn .val{color:var(--warn)}.out-card.danger .val{color:var(--danger)}.out-card.safe .val{color:var(--safe)}
+
+.status{display:flex;align-items:center;gap:5px;padding:5px 9px;border-radius:5px;margin:7px 0;font-size:10px}
+.status.ok{background:rgba(0,232,123,.07);border:1px solid rgba(0,232,123,.2);color:var(--safe)}
+.status.warn{background:rgba(255,184,48,.07);border:1px solid rgba(255,184,48,.2);color:var(--warn)}
+.status.danger{background:rgba(255,51,102,.07);border:1px solid rgba(255,51,102,.2);color:var(--danger)}
+.status .dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.status.ok .dot{background:var(--safe)}.status.warn .dot{background:var(--warn)}.status.danger .dot{background:var(--danger)}
+
+.divider{height:1px;background:var(--panel-border);margin:8px 0}
+.info{font-size:10px;color:var(--text-dim);line-height:1.4;margin:4px 0}
+.info strong{color:var(--text)}
+
+.motor-sel{display:flex;gap:3px;margin:5px 0;flex-wrap:wrap}
+.motor-sel button{padding:4px 10px;border:1px solid var(--panel-border);background:rgba(255,255,255,.02);
+  color:var(--text-dim);font:500 10px var(--sans);border-radius:4px;cursor:pointer;transition:.2s}
+.motor-sel button.active{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.08)}
+.motor-sel button:hover:not(.active){color:var(--text);border-color:rgba(255,255,255,.2)}
+
+.preset-btns{display:flex;gap:3px;margin:5px 0;flex-wrap:wrap}
+.preset-btns button{padding:3px 9px;border:1px solid var(--panel-border);background:rgba(255,255,255,.02);
+  color:var(--text-dim);font:500 10px var(--sans);border-radius:4px;cursor:pointer}
+.preset-btns button:hover{border-color:var(--accent);color:var(--text)}
+
+.jac-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:5px 0}
+.jac-cell{background:rgba(255,255,255,.02);border:1px solid var(--panel-border);border-radius:4px;padding:3px 5px;font:10px var(--mono);color:var(--text-dim)}
+.jac-cell .jl{font-size:7px;text-transform:uppercase;letter-spacing:.4px;color:var(--text-dim);opacity:.6}
+
+details{margin:7px 0}
+details summary{font-size:11px;color:var(--text-dim);cursor:pointer;padding:3px 0;user-select:none}
+details summary:hover{color:var(--text)}
+details[open] summary{color:var(--accent);margin-bottom:6px}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚙️ Ankle Torque Analyzer (Orthogonal Design)</h1>
+  <span class="sub">2-RSS Parallel/Orthogonal · Motor Sizing · Robstride Compatible</span>
+</header>
+
+<main>
+  <div class="left-col">
+    <div id="view-panel">
+      <canvas id="c3d"></canvas>
+      <div class="view-btns">
+        <button onclick="setView('front')">Front</button>
+        <button onclick="setView('side')">Side</button>
+        <button onclick="setView('top')">Top</button>
+        <button onclick="setView('iso')">Iso</button>
+      </div>
+    </div>
+    <div id="map-panel">
+      <div class="hdr"><h2>Joint Transmission Map</h2><span class="badge" id="map-badge">Manipulability Index (3/κ)</span></div>
+      <canvas id="cmap"></canvas>
+      <div class="map-legend"><span>Good</span><div class="grad" style="background:linear-gradient(to right,#00e87b,#ffb830,#ff3366,#440011)"></div><span>Singular</span></div>
+    </div>
+  </div>
+
+  <div class="right-col">
+    <!-- Section 1: Ankle Pose -->
+    <div class="section-title">Ankle Joint Pose</div>
+    <div class="ctrl-grp">
+      <label>Pitch (α) <span class="v" id="pv">0.0°</span></label>
+      <input type="range" id="ps" min="-25" max="25" value="5" step="0.1">
+    </div>
+    <div class="ctrl-grp">
+      <label>Roll (β) <span class="v" id="rv">0.0°</span></label>
+      <input type="range" id="rs" min="-40" max="40" value="0" step="0.1">
+    </div>
+
+    <!-- Section 2: Motor Selection -->
+    <div class="section-title">Motor Selection (Robstride)</div>
+    <div class="motor-sel">
+      <button id="mRS00" onclick="setMotor('RS00')">RS00</button>
+      <button id="mRS02" onclick="setMotor('RS02')">RS02</button>
+      <button id="mRS03" class="active" onclick="setMotor('RS03')">RS03</button>
+      <button id="mRS04" onclick="setMotor('RS04')">RS04</button>
+    </div>
+    <div class="info" id="motor-info">RS03 — Rated: 20 N·m · Peak: 60 N·m</div>
+
+    <!-- Section 3: Motor Input Torques -->
+    <div class="section-title">Motor Input Torques</div>
+    <div class="info" style="margin-bottom:4px">Set by motor selection, or adjust manually:</div>
+    <div class="ctrl-grp">
+      <label>Motor ① τ₁ <span class="v" id="mt1v">20.0 N·m</span></label>
+      <input type="range" id="mt1s" min="0" max="120" value="20" step="0.5">
+    </div>
+    <div class="ctrl-grp">
+      <label>Motor ② τ₂ <span class="v" id="mt2v">20.0 N·m</span></label>
+      <input type="range" id="mt2s" min="0" max="120" value="20" step="0.5">
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Singularity Warning -->
+    <div class="info" id="sing-warn" style="background:rgba(255,184,48,.08);border:1px solid rgba(255,184,48,.2);border-radius:5px;padding:6px 8px;color:#ffb830;font-size:10px;display:none">
+      ⚠ <strong>Near-singular zone!</strong> Crank rods are approaching planar alignment. Avoid inputs in red areas.
+    </div>
+
+    <!-- Section 4: Results —— Max Ankle Torque Capacity -->
+    <div class="section-title">Max Ankle Torque Capacity</div>
+    <div class="info" style="margin-bottom:4px;opacity:.7">Pitch (co-directional motors) / Roll (push-pull motors)</div>
+    <div class="status ok" id="sbar"><div class="dot"></div><span id="stxt">Ready</span></div>
+    <div class="out-grid">
+      <div class="out-card" id="apc"><div class="lbl">Max Pitch Capacity τ_p</div><div class="val" id="apo">—</div></div>
+      <div class="out-card" id="arc"><div class="lbl">Max Roll Capacity τ_r</div><div class="val" id="aro">—</div></div>
+    </div>
+
+    <!-- IK Angles (informational) -->
+    <div class="out-grid">
+      <div class="out-card"><div class="lbl">Motor ① θ₁</div><div class="val" id="t1o">—</div></div>
+      <div class="out-card"><div class="lbl">Motor ② θ₂</div><div class="val" id="t2o">—</div></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Section 5: Jacobian -->
+    <div class="info"><strong>Jacobian Analysis</strong></div>
+    <div class="jac-grid">
+      <div class="jac-cell"><div class="jl">det(J)</div><span id="jdet">—</span></div>
+      <div class="jac-cell"><div class="jl">Condition #</div><span id="jcn">—</span></div>
+      <div class="jac-cell"><div class="jl">J₁₁</div><span id="j00">—</span></div>
+      <div class="jac-cell"><div class="jl">J₁₂</div><span id="j01">—</span></div>
+      <div class="jac-cell"><div class="jl">J₂₁</div><span id="j10">—</span></div>
+      <div class="jac-cell"><div class="jl">J₂₂</div><span id="j11">—</span></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Section 6: Geometry -->
+    <details id="gdet">
+      <summary>▸ Geometry Parameters</summary>
+      <div class="preset-btns">
+        <button onclick="loadPreset('default')">Current Base (E=2.3cm)</button>
+        <button onclick="loadPreset('parallel_base')">Parallel Base (E=5.0cm)</button>
+        <button onclick="loadPreset('ortho')">Current Ortho (E=2.3cm)</button>
+        <button onclick="loadPreset('ortho_parallel')">Ortho Parallel Base (E=5.0cm)</button>
+      </div>
+      <div class="ctrl-grp"><label>Top Motor Layout</label>
+        <select id="orthoYawSel" onchange="readSliders(); needMap=true; reqUp();">
+          <option value="standard">Standard (0° Yaw)</option>
+          <option value="orthogonal">Orthogonal (90° Yaw)</option>
+        </select></div>
+      <div class="ctrl-grp"><label>Motor ① Z (cm) <span class="v" id="m1zv">23.5</span></label>
+        <input type="range" id="m1zs" min="10" max="45" value="23.5" step="0.5"></div>
+      <div class="ctrl-grp"><label>Motor ② Z (cm) <span class="v" id="m2zv">16</span></label>
+        <input type="range" id="m2zs" min="10" max="45" value="16" step="0.5"></div>
+      <div class="ctrl-grp"><label>Crank ① r₁ (cm) <span class="v" id="r1v">2.5</span></label>
+        <input type="range" id="r1s" min="0.5" max="8" value="2.5" step="0.1"></div>
+      <div class="ctrl-grp"><label>Crank ② r₂ (cm) <span class="v" id="r2v">2.5</span></label>
+        <input type="range" id="r2s" min="0.5" max="8" value="2.5" step="0.1"></div>
+      <div class="ctrl-grp"><label>Rod ① L₁ (cm) <span class="v" id="L1v">20.7</span></label>
+        <input type="range" id="L1s" min="5" max="40" value="20.7" step="0.1"></div>
+      <div class="ctrl-grp"><label>Rod ② L₂ (cm) <span class="v" id="L2v">12.7</span></label>
+        <input type="range" id="L2s" min="5" max="40" value="12.7" step="0.1"></div>
+      <div class="ctrl-grp"><label>Ankle Spread E (cm) <span class="v" id="Ev">2.3</span></label>
+        <input type="range" id="Es" min="0.5" max="10" value="2.3" step="0.1"></div>
+      <div class="ctrl-grp"><label>U-Joint Height (cm) <span class="v" id="Fv">3.6</span></label>
+        <input type="range" id="Fs" min="0.5" max="8" value="3.6" step="0.1"></div>
+      <div class="ctrl-grp"><label>Attach offset h (cm) <span class="v" id="hv">0.0</span></label>
+        <input type="range" id="hs" min="-6" max="6" value="0.0" step="0.1"></div>
+      <div class="ctrl-grp"><label>Y-Offset oy (cm) <span class="v" id="oyv">3.8</span></label>
+        <input type="range" id="oys" min="0" max="8" value="3.8" step="0.1"></div>
+    </details>
+
+    <!-- Formula Reference -->
+    <div class="info" style="margin-top:8px;font-size:9px;opacity:.6">
+      <strong>Forward Statics:</strong> τ_ankle = Jᵀ · τ_motor<br>
+      Select motor → Motor torques auto-set → Ankle torques computed via verified Jacobian.
+    </div>
+  </div>
+</main>
+
+<script>
+'use strict';
+const DEG=Math.PI/180, RAD=180/Math.PI;
+const v3=(x,y,z)=>({x,y,z});
+const v3a=(a,b)=>v3(a.x+b.x,a.y+b.y,a.z+b.z);
+const v3s=(a,b)=>v3(a.x-b.x,a.y-b.y,a.z-b.z);
+const v3sc=(v,s)=>v3(v.x*s,v.y*s,v.z*s);
+const v3d=(a,b)=>a.x*b.x+a.y*b.y+a.z*b.z;
+const v3lsq=v=>v3d(v,v);
+const v3l=v=>Math.sqrt(v3lsq(v));
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+
+function Rx(a){const c=Math.cos(a),s=Math.sin(a);return[[1,0,0],[0,c,-s],[0,s,c]];}
+function Ry(a){const c=Math.cos(a),s=Math.sin(a);return[[c,0,s],[0,1,0],[-s,0,c]];}
+function mm(A,B){const R=[[0,0,0],[0,0,0],[0,0,0]];for(let i=0;i<3;i++)for(let j=0;j<3;j++)for(let k=0;k<3;k++)R[i][j]+=A[i][k]*B[k][j];return R;}
+function mv(M,v){return v3(M[0][0]*v.x+M[0][1]*v.y+M[0][2]*v.z,M[1][0]*v.x+M[1][1]*v.y+M[1][2]*v.z,M[2][0]*v.x+M[2][1]*v.y+M[2][2]*v.z);}
+
+class Mech {
+  constructor(p){this.set(p);}
+  set(p){
+    this.m1z=p.m1z; this.m2z=p.m2z;
+    this.r1=p.r1; this.r2=p.r2;
+    this.L1=p.L1; this.L2=p.L2;
+    this.E=p.E; this.ujZ=p.ujZ; this.ah=p.ah;
+    this.oy=p.oy !== undefined ? p.oy : 0.0;
+    this.orthoYaw = p.orthoYaw || false;
+
+    // Derived: body frame attachment positions (with Y-offset)
+    if(this.orthoYaw) {
+      this.a1b=v3(-this.oy, p.E/2, p.ah);  // Rotated 90° in yaw
+    } else {
+      this.a1b=v3(p.E/2, this.oy, p.ah);   // Standard parallel
+    }
+    this.a2b=v3(-p.E/2, this.oy, p.ah);    // Left standard
+    this.ac=v3(0, 0, p.ujZ);               // U-joint center
+    
+    // Motor positions
+    if(this.orthoYaw) {
+      this.m1=v3(-this.oy, 0, p.m1z);
+    } else {
+      this.m1=v3(0, this.oy, p.m1z);
+    }
+    this.m2=v3(0, this.oy, p.m2z);
+  }
+  rot(p,r){return mm(Rx(p),Ry(r));}
+  ankW(bp,p,r){return v3a(mv(this.rot(p,r),bp),this.ac);}
+
+  ct1(th){
+    if(this.orthoYaw) {
+      return v3(-this.oy, this.r1*Math.sin(th), this.m1z+this.r1*Math.cos(th));
+    } else {
+      return v3(this.r1*Math.sin(th), this.oy, this.m1z+this.r1*Math.cos(th));
+    }
+  }
+  ct2(th){return v3(-this.r2*Math.sin(th), this.oy, this.m2z+this.r2*Math.cos(th));}
+
+  _solve(mz, r, L, aw, xDir, branch){
+    const dx=-aw.x, dy=this.oy-aw.y, dz=mz-aw.z;
+    const a = 2*xDir*r*dx;
+    const b = 2*r*dz;
+    const c = L*L - r*r - dx*dx - dy*dy - dz*dz;
+    const R = Math.sqrt(a*a+b*b);
+    if(R<1e-12) return {th:0,ok:false};
+    const ratio=c/R;
+    if(Math.abs(ratio)>1) return {th:0,ok:false};
+    const psi=Math.atan2(a,b);
+    const delta=Math.acos(clamp(ratio,-1,1));
+    return {th:branch===0?psi-delta:psi+delta, ok:true};
+  }
+
+  ik(pitch,roll,b1=1,b2=1){
+    const a1=this.ankW(this.a1b,pitch,roll);
+    const a2=this.ankW(this.a2b,pitch,roll);
+    
+    let t1, ok1;
+    if(this.orthoYaw) {
+      // Solve Motor 1 in YZ plane (sweeps along Y, constant along X)
+      const dx = -this.oy - a1.x;
+      const dy = -a1.y;
+      const dz = this.m1z - a1.z;
+      const a = -2.0 * this.r1 * a1.y;
+      const b = 2.0 * this.r1 * dz;
+      const c = this.L1*this.L1 - this.r1*this.r1 - dy*dy - dz*dz - dx*dx;
+      
+      const R = Math.sqrt(a*a + b*b);
+      if (R < 1e-12) { t1 = 0; ok1 = false; }
+      else {
+        const ratio = c / R;
+        if (Math.abs(ratio) > 1) { t1 = 0; ok1 = false; }
+        else {
+          const psi = Math.atan2(a, b);
+          const delta = Math.acos(clamp(ratio,-1,1));
+          t1 = (b1 === 0) ? (psi - delta) : (psi + delta);
+          ok1 = true;
+        }
+      }
+    } else {
+      const s1 = this._solve(this.m1z, this.r1, this.L1, a1, +1, b1);
+      t1 = s1.th; ok1 = s1.ok;
+    }
+
+    const s2 = this._solve(this.m2z, this.r2, this.L2, a2, -1, b2);
+    return {t1, t2:s2.th, ok:ok1 && s2.ok};
+  }
+
+  jacobian(t1,t2,p,r){
+    const cp=Math.cos(p), sp=Math.sin(p);
+    const cr=Math.cos(r), sr=Math.sin(r);
+    const tip1=this.ct1(t1), tip2=this.ct2(t2);
+    const a1=this.ankW(this.a1b,p,r), a2=this.ankW(this.a2b,p,r);
+
+    // Crank velocities
+    let dc1_dt1;
+    if(this.orthoYaw) {
+      dc1_dt1 = v3(0.0, this.r1 * Math.cos(t1), -this.r1 * Math.sin(t1));
+    } else {
+      dc1_dt1 = v3(this.r1 * Math.cos(t1), 0.0, -this.r1 * Math.sin(t1));
+    }
+    const dc2_dt2 = v3(-this.r2 * Math.cos(t2), 0.0, -this.r2 * Math.sin(t2));
+
+    const den1 = v3d(v3s(tip1, a1), dc1_dt1);
+    const den2 = v3d(v3s(tip2, a2), dc2_dt2);
+
+    const get_da_dp = (bp) => v3(
+      0.0,
+      (cp * sr) * bp.x + (-sp) * bp.y + (-cp * cr) * bp.z,
+      (sp * sr) * bp.x + (cp) * bp.y + (-sp * cr) * bp.z
+    );
+
+    const get_da_dr = (bp) => v3(
+      -sr * bp.x + cr * bp.z,
+      (sp * cr) * bp.x + (sp * sr) * bp.z,
+      (-cp * cr) * bp.x + (-cp * sr) * bp.z
+    );
+
+    const da1_dp = get_da_dp(this.a1b);
+    const da1_dr = get_da_dr(this.a1b);
+    const da2_dp = get_da_dp(this.a2b);
+    const da2_dr = get_da_dr(this.a2b);
+
+    const J = [[0.0, 0.0], [0.0, 0.0]];
+    let det = 0.0, cn = Infinity;
+
+    if (Math.abs(den1) > 1e-12 && Math.abs(den2) > 1e-12) {
+      J[0][0] = v3d(v3s(tip1, a1), da1_dp) / den1;
+      J[0][1] = v3d(v3s(tip1, a1), da1_dr) / den1;
+      J[1][0] = v3d(v3s(tip2, a2), da2_dp) / den2;
+      J[1][1] = v3d(v3s(tip2, a2), da2_dr) / den2;
+
+      det = J[0][0] * J[1][1] - J[0][1] * J[1][0];
+      const nJ = Math.sqrt(J[0][0]**2 + J[0][1]**2 + J[1][0]**2 + J[1][1]**2);
+      if (Math.abs(det) > 1e-12) {
+        const iJ = [
+          [J[1][1] / det, -J[0][1] / det],
+          [-J[1][0] / det, J[0][0] / det]
+        ];
+        cn = nJ * Math.sqrt(iJ[0][0]**2 + iJ[0][1]**2 + iJ[1][0]**2 + iJ[1][1]**2);
+      }
+    }
+    return {J,det,cn};
+  }
+
+  vis(t1,t2,p,r){
+    const a1=this.ankW(this.a1b,p,r), a2=this.ankW(this.a2b,p,r);
+    const ct1=this.ct1(t1), ct2=this.ct2(t2);
+    return {
+      ac:this.ac, a1, a2, ct1, ct2, R:this.rot(p,r),
+      m1:this.m1, m2:this.m2
+    };
+  }
+}
+
+class Rdr {
+  constructor(cv){this.cv=cv;this.cx=cv.getContext('2d');this.cam={az:-.45,el:.35,sc:20};this.drag=null;this._mouse();}
+  resize(){const d=devicePixelRatio||1,r=this.cv.getBoundingClientRect();this.cv.width=r.width*d;this.cv.height=r.height*d;
+    this.cx.setTransform(d,0,0,d,0,0);this.w=r.width;this.h=r.height;}
+  proj(x,y,z){
+    const ca=Math.cos(this.cam.az),sa=Math.sin(this.cam.az),ce=Math.cos(this.cam.el),se=Math.sin(this.cam.el);
+    const x1=ca*x - sa*y, y1=sa*x + ca*y;
+    const y2=ce*y1 - se*z, z2=se*y1 + ce*z;
+    const s=this.cam.sc;
+    return {sx:this.w/2 + x1*s, sy:this.h/2 - z2*s, d:-y2};
+  }
+
+  _drawSphere(p,r,color){
+    const pp=this.proj(p.x,p.y,p.z);const radius=r*this.cam.sc;
+    if(radius<1)return;
+    const g=this.cx.createRadialGradient(pp.sx-radius*0.2,pp.sy-radius*0.2,radius*0.1,pp.sx,pp.sy,radius);
+    g.addColorStop(0,'#ffffff');g.addColorStop(0.2,color);g.addColorStop(1,this._shadeColor(color,0.4));
+    this.cx.fillStyle=g;this.cx.beginPath();this.cx.arc(pp.sx,pp.sy,radius,0,Math.PI*2);this.cx.fill();
+  }
+
+  _drawCylinder(p1,p2,r,color){
+    const pp1=this.proj(p1.x,p1.y,p1.z),pp2=this.proj(p2.x,p2.y,p2.z);
+    const dx=pp2.sx-pp1.sx,dy=pp2.sy-pp1.sy,len=Math.sqrt(dx*dx+dy*dy);
+    if(len<1)return;
+    const w=r*this.cam.sc;const cx=this.cx;
+    cx.save();cx.translate(pp1.sx,pp1.sy);cx.rotate(Math.atan2(dy,dx));
+    const g=cx.createLinearGradient(0,-w,0,w);
+    g.addColorStop(0,this._shadeColor(color,1.2));g.addColorStop(0.3,color);g.addColorStop(1,this._shadeColor(color,0.3));
+    cx.fillStyle=g;cx.fillRect(0,-w,len,w*2);cx.restore();
+  }
+
+  _drawBox(center,size,R,color){
+    const cx=this.cx;const dx=size.x/2,dy=size.y/2,dz=size.z/2;
+    const localVerts=[
+      v3(-dx,-dy,-dz),v3(dx,-dy,-dz),v3(dx,dy,-dz),v3(-dx,dy,-dz),
+      v3(-dx,-dy,dz),v3(dx,-dy,dz),v3(dx,dy,dz),v3(-dx,dy,dz)
+    ];
+    const worldVerts=localVerts.map(v=>{
+      const rotV=R?mv(R,v):v;
+      return v3a(center,rotV);
+    });
+    const projVerts=worldVerts.map(v=>this.proj(v.x,v.y,v.z));
+    const faces=[
+      {idx:[0,1,2,3],normal:v3(0,0,-1)}, // Bottom
+      {idx:[4,5,6,7],normal:v3(0,0,1)},  // Top
+      {idx:[0,1,5,4],normal:v3(0,-1,0)}, // Front
+      {idx:[1,2,6,5],normal:v3(1,0,0)},  // Right
+      {idx:[2,3,7,6],normal:v3(0,1,0)},  // Back
+      {idx:[3,0,4,7],normal:v3(-1,0,0)}  // Left
+    ];
+    faces.forEach(f=>{
+      const avgZ=f.idx.reduce((acc,i)=>acc+projVerts[i].d,0)/4;
+      f.depth=avgZ;
+    });
+    faces.sort((a,b)=>b.depth-a.depth);
+    faces.forEach(face=>{
+      const ca=Math.cos(this.cam.az),sa=Math.sin(this.cam.az),ce=Math.cos(this.cam.el),se=Math.sin(this.cam.el);
+      const camNormal=v3(ca*ce, sa*ce, se);
+      const rotNormal=R?mv(R,face.normal):face.normal;
+      const dotProd=v3d(rotNormal,camNormal);
+      const shadow=clamp((dotProd+1.2)/2.2,0.25,1.0);
+      cx.beginPath();
+      cx.moveTo(projVerts[face.idx[0]].sx, projVerts[face.idx[0]].sy);
+      for(let i=1;i<4;i++){
+        cx.lineTo(projVerts[face.idx[i]].sx, projVerts[face.idx[i]].sy);
+      }
+      cx.closePath();
+      cx.fillStyle=this._shadeColor(color,shadow);cx.fill();
+      cx.strokeStyle=this._shadeColor(color,shadow*0.8);cx.lineWidth=0.5;cx.stroke();
+    });
+  }
+
+  _shadeColor(color,factor){
+    let r,g,b;
+    if(color.startsWith('#')){
+      if(color.length===4){r=parseInt(color[1]+color[1],16);g=parseInt(color[2]+color[2],16);b=parseInt(color[3]+color[3],16);}
+      else{r=parseInt(color.substring(1,3),16);g=parseInt(color.substring(3,5),16);b=parseInt(color.substring(5,7),16);}
+    }else if(color.startsWith('rgb')){
+      const parts=color.match(/\d+/g);r=parseInt(parts[0]);g=parseInt(parts[1]);b=parseInt(parts[2]);
+    }else{return color;}
+    r=clamp(Math.round(r*factor),0,255);g=clamp(Math.round(g*factor),0,255);b=clamp(Math.round(b*factor),0,255);
+    return `rgb(${r},${g},${b})`;
+  }
+
+  _L(p1,p2,c,w){const a=this.proj(p1.x,p1.y,p1.z),b=this.proj(p2.x,p2.y,p2.z);
+    const x=this.cx;x.strokeStyle=c;x.lineWidth=w;x.lineCap='round';x.beginPath();x.moveTo(a.sx,a.sy);x.lineTo(b.sx,b.sy);x.stroke();}
+  _C(p,r,f,s){const pp=this.proj(p.x,p.y,p.z);const x=this.cx;x.fillStyle=f;x.beginPath();
+    x.arc(pp.sx,pp.sy,r,0,Math.PI*2);x.fill();if(s){x.strokeStyle=s;x.lineWidth=1.5;x.stroke();}}
+  _P(pts,f,s){const pp=pts.map(p=>this.proj(p.x,p.y,p.z));const x=this.cx;x.fillStyle=f;x.strokeStyle=s;x.lineWidth=1.5;
+    x.beginPath();x.moveTo(pp[0].sx,pp[0].sy);for(let i=1;i<pp.length;i++)x.lineTo(pp[i].sx,pp[i].sy);x.closePath();x.fill();x.stroke();}
+  _T(p,t,c,ox=10,oy=-8){const pp=this.proj(p.x,p.y,p.z);this.cx.fillStyle=c||'#6a7a9a';this.cx.font='11px Inter,sans-serif';this.cx.textAlign='left';this.cx.fillText(t,pp.sx+ox,pp.sy+oy);}
+  _Arrow(p1,p2,c,w,hs=7){
+    const a=this.proj(p1.x,p1.y,p1.z),b=this.proj(p2.x,p2.y,p2.z);
+    const x=this.cx;x.strokeStyle=c;x.fillStyle=c;x.lineWidth=w;x.lineCap='round';
+    x.beginPath();x.moveTo(a.sx,a.sy);x.lineTo(b.sx,b.sy);x.stroke();
+    const ang=Math.atan2(b.sy-a.sy,b.sx-a.sx);
+    x.beginPath();x.moveTo(b.sx,b.sy);
+    x.lineTo(b.sx-hs*Math.cos(ang-Math.PI/6),b.sy-hs*Math.sin(ang-Math.PI/6));
+    x.lineTo(b.sx-hs*Math.cos(ang+Math.PI/6),b.sy-hs*Math.sin(ang+Math.PI/6));
+    x.closePath();x.fill();
+  }
+
+  render(mech,st,jac,torqueRes,tp,tr){
+    const c=this.cx;
+    const g=c.createLinearGradient(0,0,0,this.h);g.addColorStop(0,'#0c1020');g.addColorStop(1,'#060810');
+    c.fillStyle=g;c.fillRect(0,0,this.w,this.h);
+    // Grid
+    c.globalAlpha=.05;
+    for(let i=-20;i<=20;i+=2){this._L(v3(i,-20,0),v3(i,20,0),'#4466aa',.5);this._L(v3(-20,i,0),v3(20,i,0),'#4466aa',.5);}
+    c.globalAlpha=.1;this._L(v3(-20,0,0),v3(20,0,0),'#ff4466',.8);this._L(v3(0,-20,0),v3(0,20,0),'#44ff66',.8);
+    c.globalAlpha=1;
+
+    // Draw trajectory ghosts
+    const drawCC1=(cp,r)=>{
+      const N=36;c.strokeStyle='rgba(255,204,0,.15)';c.lineWidth=1;c.setLineDash([3,3]);c.beginPath();
+      for(let i=0;i<=N;i++){
+        const a=i/N*Math.PI*2;
+        let pt;
+        if(mech.orthoYaw) {
+          pt = v3a(cp,v3(0,r*Math.sin(a),r*Math.cos(a)));
+        } else {
+          pt = v3a(cp,v3(r*Math.sin(a),0,r*Math.cos(a)));
+        }
+        const pp=this.proj(pt.x,pt.y,pt.z);
+        i===0?c.moveTo(pp.sx,pp.sy):c.lineTo(pp.sx,pp.sy);
+      }
+      c.stroke();c.setLineDash([]);
+    };
+
+    const drawCC2=(cp,r)=>{
+      const N=36;c.strokeStyle='rgba(255,204,0,.15)';c.lineWidth=1;c.setLineDash([3,3]);c.beginPath();
+      for(let i=0;i<=N;i++){
+        const a=i/N*Math.PI*2;
+        const pt=v3a(cp,v3(-r*Math.sin(a),0,r*Math.cos(a)));
+        const pp=this.proj(pt.x,pt.y,pt.z);
+        i===0?c.moveTo(pp.sx,pp.sy):c.lineTo(pp.sx,pp.sy);
+      }
+      c.stroke();c.setLineDash([]);
+    };
+
+    drawCC1(st.m1,mech.r1);
+    drawCC2(st.m2,mech.r2);
+
+    const prims = [];
+
+    // 1. Central Support Column
+    const bottomZ = mech.ujZ + 2.0;
+    const topZ = Math.max(mech.m1z, mech.m2z) + 4.0;
+    const colHeight = topZ - bottomZ;
+    const colCenterZ = bottomZ + colHeight / 2;
+    prims.push({
+      type: 'box',
+      center: v3(0, 0, colCenterZ),
+      size: v3(3.0, 6.5, colHeight),
+      R: null,
+      color: '#1e293b',
+      d: this.proj(0, 0, colCenterZ).d
+    });
+
+    // 1b. Support Shaft
+    prims.push({
+      type: 'cylinder',
+      p1: v3(0, 0, bottomZ),
+      p2: st.ac,
+      r: 0.5,
+      color: '#475569',
+      d: (this.proj(0, 0, bottomZ).d + this.proj(st.ac.x, st.ac.y, st.ac.z).d) / 2
+    });
+
+    // 2. Motor 1 housing (with toggle layout size)
+    const m1size = mech.orthoYaw ? v3(3.8, 6.0, 5.0) : v3(6.0, 3.8, 5.0);
+    prims.push({
+      type: 'box',
+      center: st.m1,
+      size: m1size,
+      R: null,
+      color: '#c2410c',
+      d: this.proj(st.m1.x, st.m1.y, st.m1.z).d
+    });
+
+    // 3. Motor 2 housing
+    prims.push({
+      type: 'box',
+      center: st.m2,
+      size: v3(6.0, 3.8, 5.0),
+      R: null,
+      color: '#c2410c',
+      d: this.proj(st.m2.x, st.m2.y, st.m2.z).d
+    });
+
+    // 4. Foot plate
+    const footLocalCenter = v3(0, -1.0, -2.85);
+    const footWorldCenter = v3a(mv(st.R, footLocalCenter), st.ac);
+    prims.push({
+      type: 'box',
+      center: footWorldCenter,
+      size: v3(8.0, 15.0, 1.5),
+      R: st.R,
+      color: '#334155',
+      d: this.proj(footWorldCenter.x, footWorldCenter.y, footWorldCenter.z).d
+    });
+
+    // 5. Crank arm 1
+    prims.push({
+      type: 'cylinder',
+      p1: st.m1,
+      p2: st.ct1,
+      r: 0.6,
+      color: '#eab308',
+      d: (this.proj(st.m1.x, st.m1.y, st.m1.z).d + this.proj(st.ct1.x, st.ct1.y, st.ct1.z).d) / 2
+    });
+
+    // 6. Crank arm 2
+    prims.push({
+      type: 'cylinder',
+      p1: st.m2,
+      p2: st.ct2,
+      r: 0.6,
+      color: '#eab308',
+      d: (this.proj(st.m2.x, st.m2.y, st.m2.z).d + this.proj(st.ct2.x, st.ct2.y, st.ct2.z).d) / 2
+    });
+
+    // 7. Pushrod 1
+    prims.push({
+      type: 'cylinder',
+      p1: st.ct1,
+      p2: st.a1,
+      r: 0.35,
+      color: '#94a3b8',
+      d: (this.proj(st.ct1.x, st.ct1.y, st.ct1.z).d + this.proj(st.a1.x, st.a1.y, st.a1.z).d) / 2
+    });
+
+    // 8. Pushrod 2
+    prims.push({
+      type: 'cylinder',
+      p1: st.ct2,
+      p2: st.a2,
+      r: 0.35,
+      color: '#94a3b8',
+      d: (this.proj(st.ct2.x, st.ct2.y, st.ct2.z).d + this.proj(st.a2.x, st.a2.y, st.a2.z).d) / 2
+    });
+
+    // 9. Ball joint 1
+    prims.push({
+      type: 'sphere',
+      p: st.ct1,
+      r: 0.7,
+      color: '#06b6d4',
+      d: this.proj(st.ct1.x, st.ct1.y, st.ct1.z).d
+    });
+
+    // 10. Ball joint 2
+    prims.push({
+      type: 'sphere',
+      p: st.ct2,
+      r: 0.7,
+      color: '#06b6d4',
+      d: this.proj(st.ct2.x, st.ct2.y, st.ct2.z).d
+    });
+
+    // 11. Ankle attachment 1
+    prims.push({
+      type: 'sphere',
+      p: st.a1,
+      r: 0.7,
+      color: '#06b6d4',
+      d: this.proj(st.a1.x, st.a1.y, st.a1.z).d
+    });
+
+    // 12. Ankle attachment 2
+    prims.push({
+      type: 'sphere',
+      p: st.a2,
+      r: 0.7,
+      color: '#06b6d4',
+      d: this.proj(st.a2.x, st.a2.y, st.a2.z).d
+    });
+
+    // 13. Universal Joint Center
+    prims.push({
+      type: 'sphere',
+      p: st.ac,
+      r: 0.9,
+      color: '#4f46e5',
+      d: this.proj(st.ac.x, st.ac.y, st.ac.z).d
+    });
+
+    // 13b. Ankle Stem
+    if(st.R) {
+      const stemBottom = v3a(mv(st.R, v3(0, 0, -3.6)), st.ac);
+      prims.push({
+        type: 'cylinder',
+        p1: st.ac,
+        p2: stemBottom,
+        r: 0.6,
+        color: '#475569',
+        d: (this.proj(st.ac.x, st.ac.y, st.ac.z).d + this.proj(stemBottom.x, stemBottom.y, stemBottom.z).d) / 2
+      });
+    }
+
+    // 14 & 15. Universal Joint Cross Axes
+    if(st.R) {
+      const cx1 = v3a(mv(st.R, v3(1.2, 0, 0)), st.ac);
+      const cx2 = v3a(mv(st.R, v3(-1.2, 0, 0)), st.ac);
+      const cy1 = v3a(mv(st.R, v3(0, 1.2, 0)), st.ac);
+      const cy2 = v3a(mv(st.R, v3(0, -1.2, 0)), st.ac);
+
+      prims.push({
+        type: 'cylinder',
+        p1: cx1,
+        p2: cx2,
+        r: 0.25,
+        color: '#6366f1',
+        d: (this.proj(cx1.x, cx1.y, cx1.z).d + this.proj(cx2.x, cx2.y, cx2.z).d) / 2
+      });
+
+      prims.push({
+        type: 'cylinder',
+        p1: cy1,
+        p2: cy2,
+        r: 0.25,
+        color: '#6366f1',
+        d: (this.proj(cy1.x, cy1.y, cy1.z).d + this.proj(cy2.x, cy2.y, cy2.z).d) / 2
+      });
+    }
+
+    prims.sort((a, b) => b.d - a.d);
+
+    prims.forEach(p => {
+      if(p.type === 'box') {
+        this._drawBox(p.center, p.size, p.R, p.color);
+      } else if(p.type === 'cylinder') {
+        this._drawCylinder(p.p1, p.p2, p.r, p.color);
+      } else if(p.type === 'sphere') {
+        this._drawSphere(p.p, p.r, p.color);
+      }
+    });
+
+    this._T(st.m1,'M① (R)','#eef2fa',14,-4);this._T(st.m2,'M② (L)','#eef2fa',14,-4);
+    this._T(st.ac,'U-Joint','#eef2fa',10,14);
+
+    if(tp>0||tr>0){
+      const R2=st.R||[[1,0,0],[0,1,0],[0,0,1]];
+      const ax=v3(1,0,0), ay=mv(R2,v3(0,1,0));
+      const T=v3a(v3sc(ax,tp),v3sc(ay,tr));
+      const Tl=v3l(T);
+      if(Tl>0.1){
+        const sf=0.3;
+        this._Arrow(st.ac,v3a(st.ac,v3sc(T,sf)),'#d946ef',3,9);
+      }
+    }
+
+    if(jac&&jac.cn>20){c.save();c.globalAlpha=clamp((jac.cn-20)/80,0,.3);c.fillStyle='#ff3366';c.fillRect(0,0,this.w,this.h);c.restore();}
+    c.fillStyle='#3a4a68';c.font='10px Inter,sans-serif';c.textAlign='left';
+    c.fillText('Drag to rotate · Scroll to zoom',8,this.h-8);
+  }
+
+  _mouse(){const cv=this.cv;
+    cv.addEventListener('mousedown',e=>{this.drag={x:e.clientX,y:e.clientY,az:this.cam.az,el:this.cam.el};});
+    cv.addEventListener('touchstart',e=>{if(e.touches.length===1){const t=e.touches[0];this.drag={x:t.clientX,y:t.clientY,az:this.cam.az,el:this.cam.el};e.preventDefault();}},{passive:false});
+    const onM=e=>{if(!this.drag)return;const cx=e.clientX||(e.touches&&e.touches[0]&&e.touches[0].clientX),cy=e.clientY||(e.touches&&e.touches[0]&&e.touches[0].clientY);
+      if(cx==null)return;this.cam.az=this.drag.az+(cx-this.drag.x)*.008;this.cam.el=clamp(this.drag.el-(cy-this.drag.y)*.008,-1.4,1.4);reqUp();};
+    window.addEventListener('mousemove',onM);window.addEventListener('touchmove',onM,{passive:false});
+    const up=()=>{this.drag=null;};window.addEventListener('mouseup',up);window.addEventListener('touchend',up);
+    cv.addEventListener('wheel',e=>{e.preventDefault();this.cam.sc*=e.deltaY>0?.93:1.07;this.cam.sc=clamp(this.cam.sc,3,35);reqUp();},{passive:false});}
+}
+
+class TMap{
+  constructor(cv){this.cv=cv;this.cx=cv.getContext('2d');this.img=null;this.pR=[-25,25];this.rR=[-40,40];this.res=100;this.dirty=true;}
+  resize(){const d=devicePixelRatio||1,r=this.cv.getBoundingClientRect();this.cv.width=r.width*d;this.cv.height=r.height*d;
+    this.cx.setTransform(d,0,0,d,0,0);this.w=r.width;this.h=r.height;this.dirty=true;}
+  compute(mech,mt1,mt2,peakTorque){
+    const W=this.res,H=this.res;this.img=this.cx.createImageData(W,H);
+    const pMn=this.pR[0]*DEG,pMx=this.pR[1]*DEG,rMn=this.rR[0]*DEG,rMx=this.rR[1]*DEG;
+    const d=this.img.data;
+    for(let iy=0;iy<H;iy++){const pi=pMn+(pMx-pMn)*iy/(H-1);
+      for(let ix=0;ix<W;ix++){const ri=rMn+(rMx-rMn)*ix/(W-1);const px=(iy*W+ix)*4;
+        const ik=mech.ik(pi,ri);
+        if(!ik.ok){d[px]=25;d[px+1]=25;d[px+2]=35;d[px+3]=255;continue;}
+        const jac=mech.jacobian(ik.t1,ik.t2,pi,ri);
+        if(Math.abs(jac.det)<1e-12){d[px]=60;d[px+1]=0;d[px+2]=15;d[px+3]=255;continue;}
+        const t = clamp(3.0 / jac.cn, 0, 1);
+        let r2,g,b;
+        if(t>0.66){const s=(t-0.66)/0.34;r2=Math.floor((1-s)*100);g=Math.floor(150+s*80);b=Math.floor((1-s)*30+s*60);}
+        else if(t>0.33){const s=(t-0.33)/0.33;r2=100+Math.floor((1-s)*155);g=Math.floor(100+s*50);b=0;}
+        else{const s=t/0.33;r2=255-Math.floor(s*100);g=Math.floor(40+s*60);b=Math.floor((1-s)*30);}
+        d[px]=r2;d[px+1]=g;d[px+2]=b;d[px+3]=255;}}
+    this.dirty=false;
+  }
+  render(cP,cR){
+    const c=this.cx;c.fillStyle='#080b14';c.fillRect(0,0,this.w,this.h);
+    if(!this.img)return;
+    const m={l:36,r:6,t:4,b:24};const mw=this.w-m.l-m.r,mh=this.h-m.t-m.b;
+    const tmp=document.createElement('canvas');tmp.width=this.res;tmp.height=this.res;
+    tmp.getContext('2d').putImageData(this.img,0,0);c.imageSmoothingEnabled=true;c.drawImage(tmp,m.l,m.t,mw,mh);
+    // Axes
+    c.fillStyle='#4a5a78';c.font='8px Inter,sans-serif';c.textAlign='center';
+    for(let r=this.rR[0];r<=this.rR[1];r+=10){const x=m.l+(r-this.rR[0])/(this.rR[1]-this.rR[0])*mw;c.fillText(r+'°',x,this.h-m.b+10);}
+    c.fillText('Roll (β)',m.l+mw/2,this.h-2);
+    c.textAlign='right';
+    for(let p=this.pR[0];p<=this.pR[1];p+=10){const y=m.t+(p-this.pR[0])/(this.pR[1]-this.pR[0])*mh;c.fillText(p+'°',m.l-3,y+3);}
+    c.save();c.translate(6,m.t+mh/2);c.rotate(-Math.PI/2);c.textAlign='center';c.fillText('Pitch (α)',0,0);c.restore();
+    // Current point
+    const cpx=m.l+(cR/DEG-this.rR[0])/(this.rR[1]-this.rR[0])*mw;
+    const cpy=m.t+(cP/DEG-this.pR[0])/(this.pR[1]-this.pR[0])*mh;
+    c.strokeStyle='rgba(255,255,255,.2)';c.lineWidth=.5;c.beginPath();c.moveTo(cpx,m.t);c.lineTo(cpx,m.t+mh);c.moveTo(m.l,cpy);c.lineTo(m.l+mw,cpy);c.stroke();
+    c.fillStyle='#fff';c.strokeStyle='#000';c.lineWidth=2;c.beginPath();c.arc(cpx,cpy,5,0,Math.PI*2);c.fill();c.stroke();
+  }
+}
+
+const MOTORS = {
+  RS00: {name:'RS00', rated:5,  peak:14,  desc:'RS00 — Rated: 5 N·m · Peak: 14 N·m'},
+  RS02: {name:'RS02', rated:6,  peak:17,  desc:'RS02 — Rated: 6 N·m · Peak: 17 N·m'},
+  RS03: {name:'RS03', rated:20, peak:60,  desc:'RS03 — Rated: 20 N·m · Peak: 60 N·m'},
+  RS04: {name:'RS04', rated:40, peak:120, desc:'RS04 — Rated: 40 N·m · Peak: 120 N·m'}
+};
+
+let selMotor=MOTORS.RS03;
+let needMap=true;
+
+const defP=()=>({m1z:23.5, m2z:16, r1:2.5, r2:2.5, L1:20.7, L2:12.7, E:2.3, ujZ:3.6, ah:0.0, oy:3.8, orthoYaw:false});
+let par=defP();
+let mech=new Mech(par);
+
+const c3d=document.getElementById('c3d'), cmap=document.getElementById('cmap');
+const rdr=new Rdr(c3d), tmap=new TMap(cmap);
+
+const $=id=>document.getElementById(id);
+const sv=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
+
+function setMotor(name){
+  selMotor=MOTORS[name];
+  ['RS00','RS02','RS03','RS04'].forEach(n=>$('m'+n).classList.toggle('active',n===name));
+  sv('motor-info',selMotor.desc);
+  $('mt1s').value=selMotor.rated; $('mt2s').value=selMotor.rated;
+  motorTau1=selMotor.rated; motorTau2=selMotor.rated;
+  sv('mt1v',selMotor.rated.toFixed(1)+' N·m'); sv('mt2v',selMotor.rated.toFixed(1)+' N·m');
+  needMap=true;reqUp();
+}
+
+function setView(n){const v={front:{az:0,el:0},side:{az:-Math.PI/2,el:0},top:{az:0,el:Math.PI/2-.01},iso:{az:-.45,el:.35}};
+  if(v[n]){rdr.cam.az=v[n].az;rdr.cam.el=v[n].el;reqUp();}}
+
+function loadPreset(n){
+  if(n==='default') par=defP();
+  else if(n==='parallel_base') par={m1z:23.5,m2z:16,r1:2.5,r2:2.5,L1:20.7,L2:12.7,E:5.0,ujZ:3.6,ah:0.0,oy:3.8,orthoYaw:false};
+  else if(n==='ortho') par={m1z:23.5,m2z:16,r1:2.5,r2:2.5,L1:20.7,L2:12.7,E:2.3,ujZ:3.6,ah:0.0,oy:3.8,orthoYaw:true};
+  else if(n==='ortho_parallel') par={m1z:23.5,m2z:16,r1:2.5,r2:2.5,L1:20.7,L2:12.7,E:5.0,ujZ:3.6,ah:0.0,oy:3.8,orthoYaw:true};
+  else if(n==='sym') par={m1z:23.5,m2z:23.5,r1:2.5,r2:2.5,L1:20.7,L2:20.7,E:2.3,ujZ:3.6,ah:0.0,oy:0.0,orthoYaw:false};
+  else if(n==='wide') par={m1z:23.5,m2z:16,r1:2.5,r2:2.5,L1:20.7,L2:12.7,E:6,ujZ:3.6,ah:0.0,oy:0.0,orthoYaw:false};
+  mech.set(par);syncSliders();needMap=true;reqUp();
+}
+
+let curPitch=0, curRoll=0, curT1=0, curT2=0;
+let motorTau1=20, motorTau2=20;
+
+function syncSliders(){
+  $('m1zs').value=par.m1z;sv('m1zv',par.m1z);
+  $('m2zs').value=par.m2z;sv('m2zv',par.m2z);
+  $('r1s').value=par.r1;sv('r1v',par.r1);
+  $('r2s').value=par.r2;sv('r2v',par.r2);
+  $('L1s').value=par.L1;sv('L1v',par.L1);
+  $('L2s').value=par.L2;sv('L2v',par.L2);
+  $('Es').value=par.E;sv('Ev',par.E);
+  $('Fs').value=par.ujZ;sv('Fv',par.ujZ);
+  $('hs').value=par.ah;sv('hv',par.ah);
+  $('oys').value=par.oy;sv('oyv',par.oy);
+  $('orthoYawSel').value=par.orthoYaw ? 'orthogonal' : 'standard';
+}
+
+function readSliders(){
+  const orthoYaw = $('orthoYawSel').value === 'orthogonal';
+  par={m1z:+$('m1zs').value, m2z:+$('m2zs').value, r1:+$('r1s').value, r2:+$('r2s').value,
+    L1:+$('L1s').value, L2:+$('L2s').value, E:+$('Es').value, ujZ:+$('Fs').value, ah:+$('hs').value,
+    oy:+$('oys').value, orthoYaw:orthoYaw};
+  mech.set(par);
+  sv('m1zv',par.m1z);sv('m2zv',par.m2z);sv('r1v',par.r1);sv('r2v',par.r2);
+  sv('L1v',par.L1);sv('L2v',par.L2);sv('Ev',par.E);sv('Fv',par.ujZ);sv('hv',par.ah);
+  sv('oyv',par.oy);
+  needMap=true;
+}
+
+let upPend=false;
+function reqUp(){if(!upPend){upPend=true;requestAnimationFrame(doUp);}}
+
+function doUp(){
+  upPend=false;
+
+  curPitch=+$('ps').value*DEG; curRoll=+$('rs').value*DEG;
+  sv('pv',$('ps').value+'°'); sv('rv',$('rs').value+'°');
+
+  motorTau1=+$('mt1s').value; motorTau2=+$('mt2s').value;
+  sv('mt1v',motorTau1.toFixed(1)+' N·m'); sv('mt2v',motorTau2.toFixed(1)+' N·m');
+
+  const ik=mech.ik(curPitch,curRoll);
+  let jac=null;
+  let anklePitch=0, ankleRoll=0;
+
+  if(ik.ok){
+    curT1=ik.t1; curT2=ik.t2;
+    sv('t1o',(curT1*RAD).toFixed(1)+'°'); sv('t2o',(curT2*RAD).toFixed(1)+'°');
+
+    jac=mech.jacobian(curT1,curT2,curPitch,curRoll);
+    sv('jdet',jac.det.toFixed(4));
+    sv('jcn',jac.cn<1e5?jac.cn.toFixed(1):'∞');
+    sv('j00',jac.J[0][0].toFixed(4)); sv('j01',jac.J[0][1].toFixed(4));
+    sv('j10',jac.J[1][0].toFixed(4)); sv('j11',jac.J[1][1].toFixed(4));
+
+    const J=jac.J;
+    anklePitch = Math.abs(J[0][0])*motorTau1 + Math.abs(J[1][0])*motorTau2;
+    ankleRoll  = Math.abs(J[0][1])*motorTau1 + Math.abs(J[1][1])*motorTau2;
+
+    const unit=' N·m';
+    sv('apo',anklePitch.toFixed(2)+unit);
+    sv('aro',ankleRoll.toFixed(2)+unit);
+
+    const sb=$('sbar'),st=$('stxt');
+
+    const sw=$('sing-warn');
+    if(jac.cn>100){
+      sw.style.display='block';
+    } else {
+      sw.style.display='none';
+    }
+
+    const maxInput=Math.max(motorTau1,motorTau2);
+    if(jac.cn>100){
+      sb.className='status danger';st.textContent='⚠ Near-singular — results unreliable!';
+      $('apc').className='out-card danger';$('arc').className='out-card danger';
+    } else if(maxInput<=selMotor.rated){
+      sb.className='status ok';st.textContent=`${selMotor.name} within rated — Ankle gets ${Math.abs(anklePitch).toFixed(1)}/${Math.abs(ankleRoll).toFixed(1)} N·m (Pitch/Roll)`;
+      $('apc').className='out-card safe';$('arc').className='out-card safe';
+    } else if(maxInput<=selMotor.peak){
+      sb.className='status warn';st.textContent=`${selMotor.name} at peak — Ankle gets ${Math.abs(anklePitch).toFixed(1)}/${Math.abs(ankleRoll).toFixed(1)} N·m (Pitch/Roll)`;
+      $('apc').className='out-card warn';$('arc').className='out-card warn';
+    } else {
+      sb.className='status danger';st.textContent=`Motor input ${maxInput.toFixed(0)} N·m exceeds peak!`;
+      $('apc').className='out-card danger';$('arc').className='out-card danger';
+    }
+  } else {
+    sv('t1o','N/A');sv('t2o','N/A');
+    sv('apo','N/A');sv('aro','N/A');
+    sv('jdet','—');sv('jcn','—');
+    sv('j00','—');sv('j01','—');sv('j10','—');sv('j11','—');
+    $('sbar').className='status danger';$('stxt').textContent='Pose unreachable!';
+    $('apc').className='out-card danger';$('arc').className='out-card danger';
+  }
+
+  rdr.resize();
+  const st=mech.vis(curT1,curT2,curPitch,curRoll);
+  rdr.render(mech,st,jac,null,Math.abs(anklePitch),Math.abs(ankleRoll));
+
+  tmap.resize();
+  if(needMap){tmap.compute(mech,motorTau1,motorTau2,selMotor.peak);needMap=false;}
+  tmap.render(curPitch,curRoll);
+}
+
+$('ps').addEventListener('input',reqUp);
+$('rs').addEventListener('input',reqUp);
+$('mt1s').addEventListener('input',()=>{needMap=true;reqUp();});
+$('mt2s').addEventListener('input',()=>{needMap=true;reqUp();});
+['m1z','m2z','r1','r2','L1','L2','E','F','h','oy'].forEach(id=>
+  $(id+'s').addEventListener('input',()=>{readSliders();reqUp();}));
+window.addEventListener('resize',()=>{needMap=true;reqUp();});
+
+syncSliders();
+const initIK=mech.ik(0,0);
+if(initIK.ok){curT1=initIK.t1;curT2=initIK.t2;}
+reqUp();
+console.log('Orthogonal Ankle Torque Analyzer initialized');
+</script>
+</body>
+</html>

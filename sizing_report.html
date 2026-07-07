@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ankle Joint Actuator Sizing & Performance Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#070a13;--panel:rgba(13,18,34,0.95);--panel-border:rgba(80,110,180,0.18);
+  --accent:#00d4ff;--accent2:#ff6b35;--danger:#ff3366;--safe:#00e87b;--warn:#ffb830;
+  --text:#c8d0e0;--text-dim:#5a6d90;--text-bright:#eef2fa;
+  --sans:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;padding:24px}
+header{margin-bottom:24px;border-bottom:1px solid var(--panel-border);padding-bottom:16px;display:flex;justify-content:space-between;align-items:flex-end}
+h1{font-size:22px;font-weight:700;color:var(--text-bright)}
+header p{font-size:12px;color:var(--text-dim);margin-top:4px}
+.nav-link{font-size:12px;color:var(--accent);text-decoration:none;border:1px solid var(--accent);padding:6px 12px;border-radius:4px;transition:0.2s}
+.nav-link:hover{background:rgba(0,212,255,0.1)}
+
+.dashboard-grid{display:grid;grid-template-columns:300px 1fr;gap:24px;align-items:start}
+
+/* Sidebar panel */
+.sidebar{background:var(--panel);border:1px solid var(--panel-border);border-radius:12px;padding:20px;backdrop-filter:blur(10px)}
+.sidebar h2{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--text-bright);margin-bottom:16px}
+.control-group{margin-bottom:16px}
+.control-group label{display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim);margin-bottom:6px}
+.control-group label .val{color:var(--accent);font-family:var(--mono);font-weight:600}
+.control-group select, .control-group input[type=number]{
+  width:100%;padding:8px 10px;background:rgba(0,0,0,0.3);border:1px solid var(--panel-border);border-radius:6px;color:var(--text);font-size:12px;outline:none
+}
+.control-group select:focus, .control-group input[type=number]:focus{border-color:var(--accent)}
+.btn-preset{display:block;width:100%;padding:8px;margin-bottom:8px;border:1px solid var(--panel-border);background:rgba(255,255,255,0.02);color:var(--text);border-radius:6px;font-size:11px;cursor:pointer;font-weight:500;transition:0.2s}
+.btn-preset:hover{border-color:var(--accent);background:rgba(0,212,255,0.05)}
+
+/* Main panel */
+.main-content{display:flex;flex-direction:column;gap:24px}
+
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--panel-border);padding-bottom:1px}
+.tab{padding:10px 20px;border:1px solid transparent;border-bottom:none;background:transparent;color:var(--text-dim);font-size:13px;font-weight:600;cursor:pointer;border-top-left-radius:6px;border-top-right-radius:6px;transition:0.2s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);border-color:var(--panel-border);background:var(--panel);margin-bottom:-1px}
+
+/* Cards */
+.card{background:var(--panel);border:1px solid var(--panel-border);border-radius:12px;padding:24px;box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+.card h3{font-size:14px;font-weight:600;color:var(--text-bright);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'';display:inline-block;width:3px;height:12px;background:var(--accent);border-radius:2px}
+
+.chart-container{position:relative;height:320px;margin-bottom:16px}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.06)}
+th{background:rgba(0,0,0,0.2);color:var(--text-bright);font-weight:600}
+tr:hover td{background:rgba(255,255,255,0.01)}
+td.bold{font-weight:600;color:var(--text-bright)}
+td.mono{font-family:var(--mono)}
+.limit-badge{font-size:9px;font-weight:600;padding:2px 6px;border-radius:3px;text-transform:uppercase}
+.limit-badge.rated{background:rgba(0,232,123,0.1);color:var(--safe)}
+.limit-badge.peak{background:rgba(255,184,48,0.1);color:var(--warn)}
+
+.sing-warning{background:rgba(255,51,102,0.08);border:1px solid rgba(255,51,102,0.2);border-radius:8px;padding:12px 16px;color:var(--danger);font-size:11px;margin-bottom:16px;display:none}
+
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;margin-bottom:24px}
+.summary-card{background:rgba(255,255,255,0.02);border:1px solid var(--panel-border);border-radius:8px;padding:16px}
+.summary-card .title{font-size:10px;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px;letter-spacing:0.5px}
+.summary-card .val{font-size:22px;font-weight:700;font-family:var(--mono);color:var(--text-bright)}
+.summary-card .desc{font-size:10px;color:var(--text-dim);margin-top:2px}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>⚙️ Ankle Joint Actuator Sizing & Sizing Report Dashboard</h1>
+    <p>Interactive torque capacity sweeps for Robstride RS02, RS03, and RS04 servos under parallel/orthogonal configurations</p>
+  </div>
+  <a href="index_orthogonal.html" class="nav-link">← Open Interactive 3D Visualizer</a>
+</header>
+
+<main class="dashboard-grid">
+  <!-- Left Column: Controls -->
+  <aside class="sidebar">
+    <h2>Configuration Settings</h2>
+    
+    <div class="control-group">
+      <label>Actuator Base Presets</label>
+      <button class="btn-preset" onclick="applyPreset(2.3)">Current Base (E = 2.3 cm)</button>
+      <button class="btn-preset" onclick="applyPreset(5.0)">Parallel Base (E = 5.0 cm)</button>
+    </div>
+
+    <div class="control-group">
+      <label>Ankle Spread E (cm) <span class="val" id="valE">2.3</span></label>
+      <input type="number" id="paramE" value="2.3" step="0.1" onchange="updateParams()">
+    </div>
+
+    <div class="control-group">
+      <label>Top Motor Layout</label>
+      <select id="paramOrtho" onchange="updateParams()">
+        <option value="standard">Standard (0° Yaw)</option>
+        <option value="orthogonal">Orthogonal (90° Yaw)</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label>Motor Limit Level</label>
+      <select id="paramLimit" onchange="updateParams()">
+        <option value="peak">Peak Limits (Maximum)</option>
+        <option value="rated">Rated Limits (Continuous)</option>
+      </select>
+    </div>
+
+    <div class="divider" style="height:1px;background:var(--panel-border);margin:16px 0"></div>
+
+    <h2>Geometry Tuning</h2>
+    <div class="control-group">
+      <label>Motor 1 Z (cm)</label>
+      <input type="number" id="paramM1z" value="23.5" step="0.5" onchange="updateParams()">
+    </div>
+    <div class="control-group">
+      <label>Motor 2 Z (cm)</label>
+      <input type="number" id="paramM2z" value="16.0" step="0.5" onchange="updateParams()">
+    </div>
+    <div class="control-group">
+      <label>Rod 1 L₁ (cm)</label>
+      <input type="number" id="paramL1" value="20.7" step="0.1" onchange="updateParams()">
+    </div>
+    <div class="control-group">
+      <label>Rod 2 L₂ (cm)</label>
+      <input type="number" id="paramL2" value="12.7" step="0.1" onchange="updateParams()">
+    </div>
+  </aside>
+
+  <!-- Right Column: Graphs & Dashboard -->
+  <section class="main-content">
+    <!-- Quick Statistics Summary -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="title">Minimum Pitch Torque</div>
+        <div class="val" id="statMinPitch">—</div>
+        <div class="desc" id="statPitchDesc">For RS03 Motor</div>
+      </div>
+      <div class="summary-card">
+        <div class="title">Minimum Roll Torque</div>
+        <div class="val" id="statMinRoll">—</div>
+        <div class="desc" id="statRollDesc">For RS03 Motor</div>
+      </div>
+      <div class="summary-card">
+        <div class="title">Manipulability Index</div>
+        <div class="val" id="statCondition">—</div>
+        <div class="desc">Worst-case condition # (lower is better)</div>
+      </div>
+    </div>
+
+    <div class="sing-warning" id="singWarn">
+      <strong>Near-Singular Warning:</strong> The condition number exceeds 100 near Pitch = 0° in the Standard layout. Pitch capacity is severely restricted in this region because both linkage rods are nearly coplanar.
+    </div>
+
+    <!-- Charts Card -->
+    <div class="card">
+      <h3>Live Torque Capacity Curves</h3>
+      <p style="font-size:11px;color:var(--text-dim);margin:-10px 0 16px">Solid lines display ankle pitch output capacity (at Roll = 0°) and roll output capacity (at Pitch = 0°) across the complete sweep range.</p>
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div>
+          <div class="chart-container">
+            <canvas id="pitchChart"></canvas>
+          </div>
+        </div>
+        <div>
+          <div class="chart-container">
+            <canvas id="rollChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sizing Report Table Card -->
+    <div class="card">
+      <h3>Guaranteed Actuator Performance Matrix</h3>
+      <p style="font-size:11px;color:var(--text-dim);margin:-10px 0 16px">Guaranteed minimum output torques across the complete Pitch [-25°, +25°] and Roll [-40°, +40°] workspace limits.</p>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>Motor Model</th>
+            <th>Evaluation Limit</th>
+            <th>Motor Torque (N·m)</th>
+            <th>Min Ankle Pitch (N·m)</th>
+            <th>Critical Pitch Pose</th>
+            <th>Min Ankle Roll (N·m)</th>
+            <th>Critical Roll Pose</th>
+          </tr>
+        </thead>
+        <tbody id="matrixBody">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Discrete Pose Capacity Explorer -->
+    <div class="card">
+      <h3>Discrete Pose Explorer</h3>
+      <p style="font-size:11px;color:var(--text-dim);margin:-10px 0 16px">Displays exact torque outputs for RS02, RS03, and RS04 at discrete angles.</p>
+      
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="tab active" id="btnTabPitch" onclick="switchExplorerTab('pitch')">Pitch Sweep (at Roll = 0°)</button>
+        <button class="tab" id="btnTabRoll" onclick="switchExplorerTab('roll')">Roll Sweep (at Pitch = 0°)</button>
+      </div>
+
+      <table id="explorerTable">
+        <!-- Populated by JS -->
+      </table>
+    </div>
+  </section>
+</main>
+
+<script>
+'use strict';
+const DEG=Math.PI/180, RAD=180/Math.PI;
+const v3=(x,y,z)=>({x,y,z});
+const v3a=(a,b)=>v3(a.x+b.x,a.y+b.y,a.z+b.z);
+const v3s=(a,b)=>v3(a.x-b.x,a.y-b.y,a.z-b.z);
+const v3sc=(v,s)=>v3(v.x*s,v.y*s,v.z*s);
+const v3d=(a,b)=>a.x*b.x+a.y*b.y+a.z*b.z;
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+
+function Rx(a){const c=Math.cos(a),s=Math.sin(a);return[[1,0,0],[0,c,-s],[0,s,c]];}
+function Ry(a){const c=Math.cos(a),s=Math.sin(a);return[[c,0,s],[0,1,0],[-s,0,c]];}
+function mm(A,B){const R=[[0,0,0],[0,0,0],[0,0,0]];for(let i=0;i<3;i++)for(let j=0;j<3;j++)for(let k=0;k<3;k++)R[i][j]+=A[i][k]*B[k][j];return R;}
+function mv(M,v){return v3(M[0][0]*v.x+M[0][1]*v.y+M[0][2]*v.z,M[1][0]*v.x+M[1][1]*v.y+M[1][2]*v.z,M[2][0]*v.x+M[2][1]*v.y+M[2][2]*v.z);}
+
+class Mech {
+  constructor(p){this.set(p);}
+  set(p){
+    this.m1z=p.m1z; this.m2z=p.m2z;
+    this.r1=p.r1; this.r2=p.r2;
+    this.L1=p.L1; this.L2=p.L2;
+    this.E=p.E; this.ujZ=p.ujZ; this.ah=p.ah;
+    this.oy=p.oy !== undefined ? p.oy : 3.8;
+    this.orthoYaw = p.orthoYaw || false;
+
+    if(this.orthoYaw) {
+      this.a1b=v3(-this.oy, p.E/2, p.ah);
+    } else {
+      this.a1b=v3(p.E/2, this.oy, p.ah);
+    }
+    this.a2b=v3(-p.E/2, this.oy, p.ah);
+    this.ac=v3(0, 0, p.ujZ);
+  }
+  rot(p,r){return mm(Rx(p),Ry(r));}
+  ankW(bp,p,r){return v3a(mv(this.rot(p,r),bp),this.ac);}
+
+  ik(pitch,roll,b1=1,b2=1){
+    const a1=this.ankW(this.a1b,pitch,roll);
+    const a2=this.ankW(this.a2b,pitch,roll);
+    
+    let t1, ok1;
+    if(this.orthoYaw) {
+      const dx = -this.oy - a1.x;
+      const dy = -a1.y;
+      const dz = this.m1z - a1.z;
+      const a = -2.0 * this.r1 * a1.y;
+      const b = 2.0 * this.r1 * dz;
+      const c = this.L1*this.L1 - this.r1*this.r1 - dy*dy - dz*dz - dx*dx;
+      
+      const R = Math.sqrt(a*a + b*b);
+      if (R < 1e-12) { t1 = 0; ok1 = false; }
+      else {
+        const ratio = c / R;
+        if (Math.abs(ratio) > 1) { t1 = 0; ok1 = false; }
+        else {
+          const psi = Math.atan2(a, b);
+          const delta = Math.acos(clamp(ratio,-1,1));
+          t1 = (b1 === 0) ? (psi - delta) : (psi + delta);
+          ok1 = true;
+        }
+      }
+    } else {
+      const dx=-a1.x, dy=this.oy-a1.y, dz=this.m1z-a1.z;
+      const a = 2*this.r1*dx;
+      const b = 2*this.r1*dz;
+      const c = this.L1*this.L1 - this.r1*this.r1 - dx*dx - dy*dy - dz*dz;
+      const R = Math.sqrt(a*a+b*b);
+      if(R<1e-12) { t1 = 0; ok1 = false; }
+      else {
+        const ratio = c/R;
+        if(Math.abs(ratio)>1) { t1 = 0; ok1 = false; }
+        else {
+          const psi=Math.atan2(a,b);
+          const delta=Math.acos(clamp(ratio,-1,1));
+          t1 = b1===0?psi-delta:psi+delta; ok1 = true;
+        }
+      }
+    }
+
+    // Motor 2
+    const dx2=-a2.x, dy2=this.oy-a2.y, dz2=this.m2z-a2.z;
+    const a_ = 2*-1*this.r2*dx2;
+    const b_ = 2*this.r2*dz2;
+    const c_ = this.L2*this.L2 - this.r2*this.r2 - dx2*dx2 - dy2*dy2 - dz2*dz2;
+    const R_ = Math.sqrt(a_*a_+b_*b_);
+    let t2, ok2;
+    if(R_<1e-12) { t2 = 0; ok2 = false; }
+    else {
+      const ratio = c_/R_;
+      if(Math.abs(ratio)>1) { t2 = 0; ok2 = false; }
+      else {
+        const psi=Math.atan2(a_,b_);
+        const delta=Math.acos(clamp(ratio,-1,1));
+        t2 = b2===0?psi-delta:psi+delta; ok2 = true;
+      }
+    }
+
+    return {t1, t2, ok:ok1 && ok2};
+  }
+
+  jacobian(t1,t2,p,r){
+    const cp=Math.cos(p), sp=Math.sin(p);
+    const cr=Math.cos(r), sr=Math.sin(r);
+    const tip1=v3(this.orthoYaw?-this.oy:this.r1*Math.sin(t1), this.orthoYaw?this.r1*Math.sin(t1):this.oy, this.m1z+this.r1*Math.cos(t1));
+    const tip2=v3(-this.r2*Math.sin(t2), this.oy, this.m2z+this.r2*Math.cos(t2));
+    const a1=this.ankW(this.a1b,p,r), a2=this.ankW(this.a2b,p,r);
+
+    let dc1_dt1;
+    if(this.orthoYaw) {
+      dc1_dt1 = v3(0.0, this.r1 * Math.cos(t1), -this.r1 * Math.sin(t1));
+    } else {
+      dc1_dt1 = v3(this.r1 * Math.cos(t1), 0.0, -this.r1 * Math.sin(t1));
+    }
+    const dc2_dt2 = v3(-this.r2 * Math.cos(t2), 0.0, -this.r2 * Math.sin(t2));
+
+    const den1 = v3d(v3s(tip1, a1), dc1_dt1);
+    const den2 = v3d(v3s(tip2, a2), dc2_dt2);
+
+    const get_da_dp = (bp) => v3(
+      0.0,
+      (cp * sr) * bp.x + (-sp) * bp.y + (-cp * cr) * bp.z,
+      (sp * sr) * bp.x + (cp) * bp.y + (-sp * cr) * bp.z
+    );
+
+    const get_da_dr = (bp) => v3(
+      -sr * bp.x + cr * bp.z,
+      (sp * cr) * bp.x + (sp * sr) * bp.z,
+      (-cp * cr) * bp.x + (-cp * sr) * bp.z
+    );
+
+    const J = [[0.0, 0.0], [0.0, 0.0]];
+    let det = 0.0, cn = Infinity;
+
+    if (Math.abs(den1) > 1e-12 && Math.abs(den2) > 1e-12) {
+      J[0][0] = v3d(v3s(tip1, a1), get_da_dp(this.a1b)) / den1;
+      J[0][1] = v3d(v3s(tip1, a1), get_da_dr(this.a1b)) / den1;
+      J[1][0] = v3d(v3s(tip2, a2), get_da_dp(this.a2b)) / den2;
+      J[1][1] = v3d(v3s(tip2, a2), get_da_dr(this.a2b)) / den2;
+
+      det = J[0][0] * J[1][1] - J[0][1] * J[1][0];
+      const nJ = Math.sqrt(J[0][0]**2 + J[0][1]**2 + J[1][0]**2 + J[1][1]**2);
+      if (Math.abs(det) > 1e-12) {
+        const iJ = [
+          [J[1][1] / det, -J[0][1] / det],
+          [-J[1][0] / det, J[0][0] / det]
+        ];
+        cn = nJ * Math.sqrt(iJ[0][0]**2 + iJ[0][1]**2 + iJ[1][0]**2 + iJ[1][1]**2);
+      }
+    }
+    return {J,det,cn};
+  }
+}
+
+// Global state
+const MOTORS_DB = {
+  RS02: { rated: 6.0, peak: 17.0 },
+  RS03: { rated: 20.0, peak: 60.0 },
+  RS04: { rated: 40.0, peak: 120.0 }
+};
+
+let currentMech = new Mech({
+  m1z: 23.5, m2z: 16.0,
+  r1: 2.5, r2: 2.5,
+  L1: 20.7, L2: 12.7,
+  E: 2.3, ujZ: 3.6, ah: 0.0, oy: 3.8,
+  orthoYaw: false
+});
+
+let pChart = null;
+let rChart = null;
+let explorerTab = 'pitch';
+
+function initCharts() {
+  const ctxP = document.getElementById('pitchChart').getContext('2d');
+  const ctxR = document.getElementById('rollChart').getContext('2d');
+
+  pChart = new Chart(ctxP, {
+    type: 'line',
+    data: { labels: [], datasets: [] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: { display: true, text: 'Pitch Torque Capacity vs Pitch Angle (Roll = 0°)', color: '#eef2fa' },
+        legend: { labels: { color: '#c8d0e0' } }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#5a6d90' } },
+        y: { title: { display: true, text: 'Torque Capacity (N·m)', color: '#c8d0e0' }, grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#5a6d90' } }
+      }
+    }
+  });
+
+  rChart = new Chart(ctxR, {
+    type: 'line',
+    data: { labels: [], datasets: [] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: { display: true, text: 'Roll Torque Capacity vs Roll Angle (Pitch = 0°)', color: '#eef2fa' },
+        legend: { labels: { color: '#c8d0e0' } }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#5a6d90' } },
+        y: { title: { display: true, text: 'Torque Capacity (N·m)', color: '#c8d0e0' }, grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#5a6d90' } }
+      }
+    }
+  });
+}
+
+function updateParams() {
+  const E = parseFloat(document.getElementById('paramE').value);
+  const ortho = document.getElementById('paramOrtho').value === 'orthogonal';
+  const m1z = parseFloat(document.getElementById('paramM1z').value);
+  const m2z = parseFloat(document.getElementById('paramM2z').value);
+  const L1 = parseFloat(document.getElementById('paramL1').value);
+  const L2 = parseFloat(document.getElementById('paramL2').value);
+
+  document.getElementById('valE').textContent = E.toFixed(1);
+
+  currentMech.set({
+    m1z, m2z, r1: 2.5, r2: 2.5, L1, L2, E, ujZ: 3.6, ah: 0.0, oy: 3.8, orthoYaw: ortho
+  });
+
+  recalculateAll();
+}
+
+function applyPreset(E_val) {
+  document.getElementById('paramE').value = E_val;
+  updateParams();
+}
+
+function switchExplorerTab(tab) {
+  explorerTab = tab;
+  document.getElementById('btnTabPitch').classList.toggle('active', tab === 'pitch');
+  document.getElementById('btnTabRoll').classList.toggle('active', tab === 'roll');
+  renderExplorerTable();
+}
+
+function recalculateAll() {
+  const limitMode = document.getElementById('paramLimit').value; // 'rated' or 'peak'
+  const pitches = [];
+  const rolls = [];
+
+  // Generate labels
+  for (let p = -25; p <= 25; p += 1) pitches.push(p);
+  for (let r = -40; r <= 40; r += 2) rolls.push(r);
+
+  const colors = {
+    RS02: '#00e87b',
+    RS03: '#ffb830',
+    RS04: '#00d4ff'
+  };
+
+  const pDatasets = [];
+  const rDatasets = [];
+
+  // Recalculate summary metrics for RS03
+  let minPitchRS03 = Infinity, minRollRS03 = Infinity, worstCond = 0;
+
+  for (const [motorName, specs] of Object.entries(MOTORS_DB)) {
+    const limitVal = specs[limitMode];
+    const pitchData = [];
+    const rollData = [];
+
+    // Pitch sweep
+    pitches.forEach(p => {
+      const ik = currentMech.ik(p * DEG, 0.0);
+      let cap = 0;
+      if (ik.ok) {
+        const jac = currentMech.jacobian(ik.t1, ik.t2, p * DEG, 0.0);
+        if (jac.det !== 0 && jac.cn < 300) {
+          cap = (Math.abs(jac.J[0][0]) + Math.abs(jac.J[1][0])) * limitVal;
+          if (motorName === 'RS03' && cap < minPitchRS03) minPitchRS03 = cap;
+          if (jac.cn > worstCond && p !== 0) worstCond = jac.cn; // ignore singularity at exactly 0 for Standard
+        }
+      }
+      pitchData.push(cap > 0 ? parseFloat(cap.toFixed(2)) : null);
+    });
+
+    // Roll sweep
+    rolls.forEach(r => {
+      const ik = currentMech.ik(0.0, r * DEG);
+      let cap = 0;
+      if (ik.ok) {
+        const jac = currentMech.jacobian(ik.t1, ik.t2, 0.0, r * DEG);
+        if (jac.det !== 0 && jac.cn < 300) {
+          cap = (Math.abs(jac.J[0][1]) + Math.abs(jac.J[1][1])) * limitVal;
+          if (motorName === 'RS03' && cap < minRollRS03) minRollRS03 = cap;
+        }
+      }
+      rollData.push(cap > 0 ? parseFloat(cap.toFixed(2)) : null);
+    });
+
+    pDatasets.push({
+      label: `${motorName} (${limitMode.toUpperCase()})`,
+      data: pitchData,
+      borderColor: colors[motorName],
+      backgroundColor: colors[motorName] + '22',
+      tension: 0.1,
+      spanGaps: false
+    });
+
+    rDatasets.push({
+      label: `${motorName} (${limitMode.toUpperCase()})`,
+      data: rollData,
+      borderColor: colors[motorName],
+      backgroundColor: colors[motorName] + '22',
+      tension: 0.1,
+      spanGaps: false
+    });
+  }
+
+  // Update Charts
+  pChart.data.labels = pitches.map(p => p + '°');
+  pChart.data.datasets = pDatasets;
+  pChart.update();
+
+  rChart.data.labels = rolls.map(r => r + '°');
+  rChart.data.datasets = rDatasets;
+  rChart.update();
+
+  // Update Summary cards
+  document.getElementById('statMinPitch').textContent = minPitchRS03 !== Infinity ? minPitchRS03.toFixed(1) + ' N·m' : 'Singular';
+  document.getElementById('statMinRoll').textContent = minRollRS03 !== Infinity ? minRollRS03.toFixed(1) + ' N·m' : 'Singular';
+  document.getElementById('statCondition').textContent = worstCond.toFixed(1);
+  
+  // Show singularity warning if layout is standard and E is narrow
+  const isOrtho = document.getElementById('paramOrtho').value === 'orthogonal';
+  document.getElementById('singWarn').style.display = (!isOrtho && worstCond > 100) ? 'block' : 'none';
+
+  renderPerformanceMatrix();
+  renderExplorerTable();
+}
+
+function renderPerformanceMatrix() {
+  const tbody = document.getElementById('matrixBody');
+  tbody.innerHTML = '';
+
+  for (const [motorName, specs] of Object.entries(MOTORS_DB)) {
+    ['rated', 'peak'].forEach(mode => {
+      const limitVal = specs[mode];
+      
+      // Compute worst cases over Pitch
+      let minP = Infinity, critP = 0;
+      for (let p = -25; p <= 25; p += 0.5) {
+        const ik = currentMech.ik(p * DEG, 0.0);
+        if (ik.ok) {
+          const jac = currentMech.jacobian(ik.t1, ik.t2, p * DEG, 0.0);
+          if (jac.det !== 0 && jac.cn < 250) {
+            const cap = (Math.abs(jac.J[0][0]) + Math.abs(jac.J[1][0])) * limitVal;
+            if (cap < minP) { minP = cap; critP = p; }
+          }
+        }
+      }
+
+      // Compute worst cases over Roll
+      let minR = Infinity, critR = 0;
+      for (let r = -40; r <= 40; r += 0.5) {
+        const ik = currentMech.ik(0.0, r * DEG);
+        if (ik.ok) {
+          const jac = currentMech.jacobian(ik.t1, ik.t2, 0.0, r * DEG);
+          if (jac.det !== 0 && jac.cn < 250) {
+            const cap = (Math.abs(jac.J[0][1]) + Math.abs(jac.J[1][1])) * limitVal;
+            if (cap < minR) { minR = cap; critR = r; }
+          }
+        }
+      }
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="bold">${motorName}</td>
+        <td><span class="limit-badge ${mode}">${mode}</span></td>
+        <td class="mono">${limitVal.toFixed(1)}</td>
+        <td class="bold mono">${minP !== Infinity ? minP.toFixed(2) + ' N·m' : '— (Singular)'}</td>
+        <td class="mono">${minP !== Infinity ? (critP >= 0 ? '+' : '') + critP.toFixed(1) + '°' : '—'}</td>
+        <td class="bold mono">${minR !== Infinity ? minR.toFixed(2) + ' N·m' : '—'}</td>
+        <td class="mono">${minR !== Infinity ? (critR >= 0 ? '+' : '') + critR.toFixed(1) + '°' : '—'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+}
+
+function renderExplorerTable() {
+  const table = document.getElementById('explorerTable');
+  table.innerHTML = '';
+
+  const isPitch = explorerTab === 'pitch';
+  const angles = isPitch ? [-25, -20, -15, -10, -5, 0, 5, 10, 15, 20, 25] : [-40, -30, -20, -10, 0, 10, 20, 30, 40];
+
+  const header = document.createElement('thead');
+  header.innerHTML = `
+    <tr>
+      <th>Angle</th>
+      <th>RS02 Rated</th>
+      <th>RS02 Peak</th>
+      <th>RS03 Rated</th>
+      <th>RS03 Peak</th>
+      <th>RS04 Rated</th>
+      <th>RS04 Peak</th>
+    </tr>
+  `;
+  table.appendChild(header);
+
+  const tbody = document.createElement('tbody');
+  
+  angles.forEach(ang => {
+    const tr = document.createElement('tr');
+    
+    const rowCells = [];
+    rowCells.push(`<td class="bold">${(ang >= 0 ? '+' : '') + ang.toFixed(1)}°</td>`);
+
+    ['RS02', 'RS03', 'RS04'].forEach(motorName => {
+      ['rated', 'peak'].forEach(mode => {
+        const limitVal = MOTORS_DB[motorName][mode];
+        let cap = 0;
+
+        if (isPitch) {
+          const ik = currentMech.ik(ang * DEG, 0.0);
+          if (ik.ok) {
+            const jac = currentMech.jacobian(ik.t1, ik.t2, ang * DEG, 0.0);
+            if (jac.det !== 0 && jac.cn < 250) {
+              cap = (Math.abs(jac.J[0][0]) + Math.abs(jac.J[1][0])) * limitVal;
+            }
+          }
+        } else {
+          const ik = currentMech.ik(0.0, ang * DEG);
+          if (ik.ok) {
+            const jac = currentMech.jacobian(ik.t1, ik.t2, 0.0, ang * DEG);
+            if (jac.det !== 0 && jac.cn < 250) {
+              cap = (Math.abs(jac.J[0][1]) + Math.abs(jac.J[1][1])) * limitVal;
+            }
+          }
+        }
+
+        const capText = cap > 0 ? cap.toFixed(2) + ' N·m' : '— (Singular)';
+        rowCells.push(`<td class="mono">${capText}</td>`);
+      });
+    });
+
+    tr.innerHTML = rowCells.join('');
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(tbody);
+}
+
+// Initialize on load
+window.onload = () => {
+  initCharts();
+  updateParams();
+};
+</script>
+</body>
+</html>

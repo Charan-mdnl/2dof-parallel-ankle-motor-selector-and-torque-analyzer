@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Robotic Ankle Joint Actuator Comprehensive Evaluation & Sweep Report</title>
+<title>Robotic Ankle Joint Actuator Comprehensive Sizing & Sweep Report</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   @page {
     size: A4;
-    margin: 1.5cm;
+    margin: 1.2cm;
   }
   @media print {
-    body { background: #fff; color: #000; padding: 0; margin: 0; font-size: 8.5pt; }
+    body { background: #fff; color: #000; padding: 0; margin: 0; font-size: 8pt; }
     .page { page-break-after: always; padding: 0; margin: 0; border: none; box-shadow: none; background: transparent; }
     .no-print { display: none; }
     tr { page-break-inside: avoid; }
@@ -25,7 +25,7 @@
   h1, h2, h3, h4 { color: #f3f4f6; margin-top: 0; font-weight: 700; }
   
   /* Cover Page */
-  .cover { display: flex; flex-direction: column; justify-content: space-between; min-height: 220mm; }
+  .cover { display: flex; flex-direction: column; justify-content: space-between; min-height: 240mm; }
   .cover-header { margin-top: 100px; }
   .cover-title { font-size: 26px; line-height: 1.2; margin-bottom: 20px; color: #00d4ff; }
   @media print { .cover-title { color: #005577 !important; } }
@@ -34,18 +34,25 @@
   @media print { .cover-metadata { border-color: #ccc; } }
 
   /* Headings & Text */
-  h2 { font-size: 16px; border-bottom: 2px solid #00d4ff; padding-bottom: 4px; margin-top: 18px; margin-bottom: 12px; }
+  h2 { font-size: 15px; border-bottom: 2px solid #00d4ff; padding-bottom: 4px; margin-top: 18px; margin-bottom: 12px; }
   @media print { h2 { border-color: #005577 !important; } }
-  h3 { font-size: 12px; margin-top: 15px; color: #e5e7eb; margin-bottom: 8px; }
-  p { margin-bottom: 10px; text-align: justify; font-size: 11px; color: #9ca3af; }
+  h3 { font-size: 11px; margin-top: 15px; color: #e5e7eb; margin-bottom: 6px; }
+  p { margin-bottom: 8px; text-align: justify; font-size: 10.5px; color: #9ca3af; }
   
+  /* Image Grid */
+  .image-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px 0; }
+  .image-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; overflow: hidden; text-align: center; }
+  @media print { .image-card { border-color: #ddd; background: #fff; } }
+  .image-card img { width: 100%; height: auto; display: block; }
+  .image-card span { font-size: 8px; color: #6b7280; display: block; padding: 3px 0; text-transform: uppercase; font-weight: 600; }
+
   /* Tables */
-  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 8.5px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 8px; }
   th, td { padding: 4px 6px; border-bottom: 1px solid rgba(255,255,255,0.06); text-align: left; }
   @media print { th, td { border-bottom-color: #ddd; } }
   th { background: rgba(255,255,255,0.02); color: #f3f4f6; font-weight: 600; }
   @media print { th { background: #f3f4f6; color: #000 !important; } }
-  td.mono { font-family: 'JetBrains Mono', monospace; font-size: 8px; }
+  td.mono { font-family: 'JetBrains Mono', monospace; font-size: 7.5px; }
   tr.highlight td { font-weight: 600; color: #00d4ff; }
   @media print { tr.highlight td { color: #005577 !important; } }
   
@@ -54,6 +61,9 @@
   
   .flex-row { display: flex; gap: 20px; }
   .flex-col { flex: 1; }
+  
+  .formula-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 9px; line-height: 1.5; color: #00d4ff; margin: 10px 0; }
+  @media print { .formula-box { background: #f9f9f9; border-color: #ddd; color: #004466; } }
 </style>
 </head>
 <body>
@@ -67,7 +77,7 @@
     <div class="cover">
       <div class="cover-header">
         <h1 class="cover-title">Robotic Ankle Joint Actuator Sizing & Comprehensive Parameter Sweep Report</h1>
-        <p class="cover-subtitle">Complete autonomous analysis of standard vs orthogonal mounting layouts sweeping ankle spread (E = 2.3 cm vs 5.0 cm), motor depth offset (L), and attachment offset (h) for Robstride RS02, RS03, and RS04 actuators.</p>
+        <p class="cover-subtitle">Complete autonomous analysis of standard vs orthogonal mounting layouts sweeping ankle spread, motor depth offset, and attachment offset for Robstride RS02, RS03, and RS04 actuators.</p>
       </div>
       <div class="cover-metadata">
         <strong>Prepared For:</strong> Robotic Design Review & Ankle Actuator Selection<br>
@@ -82,40 +92,71 @@
   <div class="page">
     <h2>1. Executive Summary & Sizing Methodology</h2>
     <p>
-      To size the ankle joint actuators for roll and pitch stability, we sweep the joint workspace under two main scenarios: the current robot design (narrow base, E = 2.3 cm) and a parallel mechanism (widened base, E = 5.0 cm). The sizing maps motor rated and peak limits to ankle output torque capacity using the analytical Jacobian.
+      To size the ankle joint actuators for roll and pitch stability, we sweep the joint workspace under two main scenarios: the current robot design (narrow base) and a parallel mechanism (widened base). The sizing maps motor rated and peak limits to ankle output torque capacity using the analytical Jacobian.
     </p>
     <p>
-      For each design, we evaluate standard parallel mounting against decoupled orthogonal mounting. To guarantee safety and performance, the analysis sweeps variations in motor placement depth (L) and attach offset (h). 
+      For each design, we evaluate standard parallel mounting against decoupled orthogonal mounting. To guarantee safety and performance, the analysis sweeps variations in motor placement depth and linkage attachment offset.
     </p>
-    <h3>1.1 Sizing Procedure</h3>
-    <ul>
-      <li><strong>Pitch Sizing Sweep:</strong> Fix Roll to 0° and sweep Pitch from -25° to +25°. Find the minimum Pitch torque output and the critical angle where it occurs.</li>
-      <li><strong>Roll Sizing Sweep:</strong> Fix Pitch to 0° and sweep Roll from -40° to +40°. Find the minimum Roll torque output and the critical angle where it occurs.</li>
-      <li><strong>Parametric Sweep:</strong> Sweep Y-Offset (L) and Attach Offset (h) to check their sensitivity on mechanical leverage.</li>
-    </ul>
-    <h3>1.2 Kinematics Dimensions Reference</h3>
-    <ul>
-      <li><strong>RS02 (Current Base):</strong> Crank A=B=2.5 cm, Rod C=24.3 cm, UJ height relative to M2 D=16.0 cm, UJ height relative to M1 H=23.5 cm, Rod I=16.3 cm.</li>
-      <li><strong>RS03 & RS04 (New Base):</strong> Crank A=B=2.5 cm, Rod C=22.2 cm, UJ height relative to M2 D=11.2 cm, UJ height relative to M1 H=22.2 cm, Rod I=11.2 cm.</li>
-    </ul>
+    
+    <h3>1.1 Kinematics Calculation Method & Formulas</h3>
+    <p>
+      The linkage is modeled as a closed-loop parallel kinematic system. The position of each servo motor's crank tip c_i is constrained by the length of the pushrod L_i to the footplate attachment joint a_i:
+    </p>
+    <div class="formula-box">
+      Linkage Length Constraint:<br>
+      ||c_i(θ_i) - a_i(p, r)||^2 = L_i^2   (for i = 1, 2)
+    </div>
+    <p>
+      Where:
+      <ul>
+        <li><strong>θ_i:</strong> Angular position of Motor i.</li>
+        <li><strong>p, r:</strong> Pitch and Roll orientation of the footplate.</li>
+        <li><strong>c_i(θ_i):</strong> Position of the crank tip in the global chassis frame.</li>
+        <li><strong>a_i(p, r):</strong> Position of the pushrod attachment joint on the footplate in the global chassis frame:
+          <div style="margin: 5px 0; color: #ff6b35;">a_i = a_c + R_x(p) · R_y(r) · a_ib</div>
+          where a_c is the central Universal Joint coordinate and a_ib is the attachment joint position in the foot's local frame.
+        </li>
+      </ul>
+    </p>
+    
+    <h3>1.2 Jacobian and Torque Mapping</h3>
+    <p>
+      Differentiating the constraint equations with respect to time yields the system Jacobian J, which maps footplate velocities [ṗ, ṙ]ᵀ to motor velocities [θ̇_1, θ̇_2]ᵀ:
+    </p>
+    <div class="formula-box">
+      Velocity Mapping:  θ̇ = J · ẋ<br>
+      Jacobian Element (Row i, Col j):<br>
+      J_ij = ((c_i - a_i) · (∂a_i / ∂x_j)) / ((c_i - a_i) · (∂c_i / ∂θ_i))
+    </div>
+    <p>
+      By the Principle of Virtual Work, the torque transmission is mapped as:
+    </p>
+    <div class="formula-box">
+      Torque Mapping:  τ_ankle = Jᵀ · τ_motor
+    </div>
+    <p>
+      For a given motor torque limit (Rated/Peak), the ankle output torque is determined as the sum of contributions under motor limits, finding the worst-case minimum capacity across the Pitch (from -25° to +25°) and Roll (from -40° to +40°) sweeps.
+    </p>
   </div>
 
   <!-- Page 3: RS02 Rated -->
   <div class="page">
     <h2>2. Robstride RS02: Rated Sizing Sweep (Limit: 6.0 N·m)</h2>
-    <p>Using base dimensions: C = 24.3 cm, D = 16.0 cm, H = 23.5 cm, I = 16.3 cm.</p>
+    <p>
+      <strong>RS02 Sizing Dimensions:</strong> Crank 1/2 Radius = 2.5 cm, Pushrod 1 Length = 24.3 cm, Universal Joint to Motor 2 Height = 16.0 cm, Foot to Universal Joint Height = 3.6 cm, Universal Joint to Motor 1 Height = 23.5 cm, Pushrod 2 Length = 16.3 cm.
+    </p>
     
     <h3>2.1 Standard Parallel Layout (0° Yaw) Sweep</h3>
     <table>
       <thead>
         <tr>
-          <th>Spread E (cm)</th>
-          <th>Y-Offset L (cm)</th>
-          <th>Attach h (cm)</th>
-          <th>Min Pitch (N·m)</th>
-          <th>Crit Pitch</th>
-          <th>Min Roll (N·m)</th>
-          <th>Crit Roll</th>
+          <th>Ankle Spread (E) (cm)</th>
+          <th>Motor Depth Y-Offset (L) (cm)</th>
+          <th>Attachment Offset (h) (cm)</th>
+          <th>Min Pitch Torque (N·m)</th>
+          <th>Critical Pitch Angle</th>
+          <th>Min Roll Torque (N·m)</th>
+          <th>Critical Roll Angle</th>
         </tr>
       </thead>
       <tbody>
@@ -144,13 +185,13 @@
     <table>
       <thead>
         <tr>
-          <th>Spread E (cm)</th>
-          <th>Y-Offset L (cm)</th>
-          <th>Attach h (cm)</th>
-          <th>Min Pitch (N·m)</th>
-          <th>Crit Pitch</th>
-          <th>Min Roll (N·m)</th>
-          <th>Crit Roll</th>
+          <th>Ankle Spread (E) (cm)</th>
+          <th>Motor Depth Y-Offset (L) (cm)</th>
+          <th>Attachment Offset (h) (cm)</th>
+          <th>Min Pitch Torque (N·m)</th>
+          <th>Critical Pitch Angle</th>
+          <th>Min Roll Torque (N·m)</th>
+          <th>Critical Roll Angle</th>
         </tr>
       </thead>
       <tbody>
@@ -165,7 +206,7 @@
         <tr><td>2.3</td><td>4.4</td><td>1.0</td><td>14.78</td><td>-21.5°</td><td>14.19</td><td>-28.5°</td></tr>
         <tr><td>5.0</td><td>3.2</td><td>-1.0</td><td>14.00</td><td>-4.5°</td><td>13.56</td><td>-20.0°</td></tr>
         <tr><td>5.0</td><td>3.2</td><td>0.0</td><td>13.28</td><td>-24.5°</td><td>12.48</td><td>-40.0°</td></tr>
-        <tr><td>5.0</td><td>3.2</td><td>1.0</td><td>14.64</td><td>-25.0</td><td>13.87</td><td>-40.0°</td></tr>
+        <tr><td>5.0</td><td>3.2</td><td>1.0</td><td>14.64</td><td>-25.0°</td><td>13.87</td><td>-40.0°</td></tr>
         <tr class="highlight"><td>5.0</td><td>3.8</td><td>-1.0</td><td>15.53</td><td>+1.5°</td><td>15.28</td><td>-7.0°</td></tr>
         <tr class="highlight"><td>5.0</td><td>3.8</td><td>0.0</td><td>15.01</td><td>-14.5°</td><td>14.52</td><td>-25.0°</td></tr>
         <tr class="highlight"><td>5.0</td><td>3.8</td><td>1.0</td><td>16.05</td><td>-25.0°</td><td>15.43</td><td>-36.5°</td></tr>
@@ -186,11 +227,11 @@
         <table>
           <thead>
             <tr>
-              <th>E (cm)</th>
-              <th>L (cm)</th>
-              <th>h (cm)</th>
-              <th>Min Pitch (N·m)</th>
-              <th>Min Roll (N·m)</th>
+              <th>Spread (E) (cm)</th>
+              <th>Y-Offset (L) (cm)</th>
+              <th>Attach (h) (cm)</th>
+              <th>Min Pitch Torque (N·m)</th>
+              <th>Min Roll Torque (N·m)</th>
             </tr>
           </thead>
           <tbody>
@@ -208,11 +249,11 @@
         <table>
           <thead>
             <tr>
-              <th>E (cm)</th>
-              <th>L (cm)</th>
-              <th>h (cm)</th>
-              <th>Min Pitch (N·m)</th>
-              <th>Min Roll (N·m)</th>
+              <th>Spread (E) (cm)</th>
+              <th>Y-Offset (L) (cm)</th>
+              <th>Attach (h) (cm)</th>
+              <th>Min Pitch Torque (N·m)</th>
+              <th>Min Roll Torque (N·m)</th>
             </tr>
           </thead>
           <tbody>
@@ -276,24 +317,43 @@
         </table>
       </div>
     </div>
+
+    <h3>2.5 Annotated RS02 Kinematics Renders (with Dimension Callouts)</h3>
+    <h4>Configuration 1: Standard Layout (Ankle Spread E = 2.3 cm)</h4>
+    <div class="image-grid">
+      <div class="image-card"><img src="report_images/conf1_front.png"><span>Front View</span></div>
+      <div class="image-card"><img src="report_images/conf1_side.png"><span>Side View</span></div>
+      <div class="image-card"><img src="report_images/conf1_top.png"><span>Top View</span></div>
+      <div class="image-card"><img src="report_images/conf1_iso.png"><span>Isometric View</span></div>
+    </div>
+    
+    <h4>Configuration 2: Orthogonal Layout (Ankle Spread E = 2.3 cm)</h4>
+    <div class="image-grid">
+      <div class="image-card"><img src="report_images/conf2_front.png"><span>Front View</span></div>
+      <div class="image-card"><img src="report_images/conf2_side.png"><span>Side View</span></div>
+      <div class="image-card"><img src="report_images/conf2_top.png"><span>Top View</span></div>
+      <div class="image-card"><img src="report_images/conf2_iso.png"><span>Isometric View</span></div>
+    </div>
   </div>
 
   <!-- Page 5: RS03 Rated -->
   <div class="page">
     <h2>3. Robstride RS03: Rated Sizing Sweep (Limit: 20.0 N·m)</h2>
-    <p>Using screenshot dimensions: C = 22.2 cm, D = 11.2 cm, H = 22.2 cm, I = 11.2 cm.</p>
+    <p>
+      <strong>RS03 Sizing Dimensions:</strong> Crank 1/2 Radius = 2.5 cm, Pushrod 1 Length = 22.2 cm, Universal Joint to Motor 2 Height = 11.2 cm, Foot to Universal Joint Height = 3.6 cm, Universal Joint to Motor 1 Height = 22.2 cm, Pushrod 2 Length = 11.2 cm.
+    </p>
     
     <h3>3.1 Standard Parallel Layout (0° Yaw) Sweep</h3>
     <table>
       <thead>
         <tr>
-          <th>Spread E (cm)</th>
-          <th>Y-Offset L (cm)</th>
-          <th>Attach h (cm)</th>
-          <th>Min Pitch (N·m)</th>
-          <th>Crit Pitch</th>
-          <th>Min Roll (N·m)</th>
-          <th>Crit Roll</th>
+          <th>Ankle Spread (E) (cm)</th>
+          <th>Motor Depth Y-Offset (L) (cm)</th>
+          <th>Attachment Offset (h) (cm)</th>
+          <th>Min Pitch Torque (N·m)</th>
+          <th>Critical Pitch Angle</th>
+          <th>Min Roll Torque (N·m)</th>
+          <th>Critical Roll Angle</th>
         </tr>
       </thead>
       <tbody>
@@ -322,13 +382,13 @@
     <table>
       <thead>
         <tr>
-          <th>Spread E (cm)</th>
-          <th>Y-Offset L (cm)</th>
-          <th>Attach h (cm)</th>
-          <th>Min Pitch (N·m)</th>
-          <th>Crit Pitch</th>
-          <th>Min Roll (N·m)</th>
-          <th>Crit Roll</th>
+          <th>Ankle Spread (E) (cm)</th>
+          <th>Motor Depth Y-Offset (L) (cm)</th>
+          <th>Attachment Offset (h) (cm)</th>
+          <th>Min Pitch Torque (N·m)</th>
+          <th>Critical Pitch Angle</th>
+          <th>Min Roll Torque (N·m)</th>
+          <th>Critical Roll Angle</th>
         </tr>
       </thead>
       <tbody>
@@ -364,11 +424,11 @@
         <table>
           <thead>
             <tr>
-              <th>E (cm)</th>
-              <th>L (cm)</th>
-              <th>h (cm)</th>
-              <th>Min Pitch (N·m)</th>
-              <th>Min Roll (N·m)</th>
+              <th>Spread (E) (cm)</th>
+              <th>Y-Offset (L) (cm)</th>
+              <th>Attach (h) (cm)</th>
+              <th>Min Pitch Torque (N·m)</th>
+              <th>Min Roll Torque (N·m)</th>
             </tr>
           </thead>
           <tbody>
@@ -386,11 +446,11 @@
         <table>
           <thead>
             <tr>
-              <th>E (cm)</th>
-              <th>L (cm)</th>
-              <th>h (cm)</th>
-              <th>Min Pitch (N·m)</th>
-              <th>Min Roll (N·m)</th>
+              <th>Spread (E) (cm)</th>
+              <th>Y-Offset (L) (cm)</th>
+              <th>Attach (h) (cm)</th>
+              <th>Min Pitch Torque (N·m)</th>
+              <th>Min Roll Torque (N·m)</th>
             </tr>
           </thead>
           <tbody>
@@ -454,24 +514,43 @@
         </table>
       </div>
     </div>
+
+    <h3>3.5 Annotated RS03 Kinematics Renders (with Dimension Callouts)</h3>
+    <h4>Configuration 3: Standard Layout (Ankle Spread E = 5.0 cm)</h4>
+    <div class="image-grid">
+      <div class="image-card"><img src="report_images/conf3_front.png"><span>Front View</span></div>
+      <div class="image-card"><img src="report_images/conf3_side.png"><span>Side View</span></div>
+      <div class="image-card"><img src="report_images/conf3_top.png"><span>Top View</span></div>
+      <div class="image-card"><img src="report_images/conf3_iso.png"><span>Isometric View</span></div>
+    </div>
+    
+    <h4>Configuration 4: Orthogonal Layout (Ankle Spread E = 5.0 cm)</h4>
+    <div class="image-grid">
+      <div class="image-card"><img src="report_images/conf4_front.png"><span>Front View</span></div>
+      <div class="image-card"><img src="report_images/conf4_side.png"><span>Side View</span></div>
+      <div class="image-card"><img src="report_images/conf4_top.png"><span>Top View</span></div>
+      <div class="image-card"><img src="report_images/conf4_iso.png"><span>Isometric View</span></div>
+    </div>
   </div>
 
   <!-- Page 7: RS04 Rated -->
   <div class="page">
     <h2>4. Robstride RS04: Rated Sizing Sweep (Limit: 40.0 N·m)</h2>
-    <p>Using screenshot dimensions: C = 22.2 cm, D = 11.2 cm, H = 22.2 cm, I = 11.2 cm.</p>
+    <p>
+      <strong>RS04 Sizing Dimensions:</strong> Crank 1/2 Radius = 2.5 cm, Pushrod 1 Length = 22.2 cm, Universal Joint to Motor 2 Height = 11.2 cm, Foot to Universal Joint Height = 3.6 cm, Universal Joint to Motor 1 Height = 22.2 cm, Pushrod 2 Length = 11.2 cm.
+    </p>
     
     <h3>4.1 Standard Parallel Layout (0° Yaw) Sweep</h3>
     <table>
       <thead>
         <tr>
-          <th>Spread E (cm)</th>
-          <th>Y-Offset L (cm)</th>
-          <th>Attach h (cm)</th>
-          <th>Min Pitch (N·m)</th>
-          <th>Crit Pitch</th>
-          <th>Min Roll (N·m)</th>
-          <th>Crit Roll</th>
+          <th>Ankle Spread (E) (cm)</th>
+          <th>Motor Depth Y-Offset (L) (cm)</th>
+          <th>Attachment Offset (h) (cm)</th>
+          <th>Min Pitch Torque (N·m)</th>
+          <th>Critical Pitch Angle</th>
+          <th>Min Roll Torque (N·m)</th>
+          <th>Critical Roll Angle</th>
         </tr>
       </thead>
       <tbody>
@@ -500,13 +579,13 @@
     <table>
       <thead>
         <tr>
-          <th>Spread E (cm)</th>
-          <th>Y-Offset L (cm)</th>
-          <th>Attach h (cm)</th>
-          <th>Min Pitch (N·m)</th>
-          <th>Crit Pitch</th>
-          <th>Min Roll (N·m)</th>
-          <th>Crit Roll</th>
+          <th>Ankle Spread (E) (cm)</th>
+          <th>Motor Depth Y-Offset (L) (cm)</th>
+          <th>Attachment Offset (h) (cm)</th>
+          <th>Min Pitch Torque (N·m)</th>
+          <th>Critical Pitch Angle</th>
+          <th>Min Roll Torque (N·m)</th>
+          <th>Critical Roll Angle</th>
         </tr>
       </thead>
       <tbody>
@@ -542,11 +621,11 @@
         <table>
           <thead>
             <tr>
-              <th>E (cm)</th>
-              <th>L (cm)</th>
-              <th>h (cm)</th>
-              <th>Min Pitch (N·m)</th>
-              <th>Min Roll (N·m)</th>
+              <th>Spread (E) (cm)</th>
+              <th>Y-Offset (L) (cm)</th>
+              <th>Attach (h) (cm)</th>
+              <th>Min Pitch Torque (N·m)</th>
+              <th>Min Roll Torque (N·m)</th>
             </tr>
           </thead>
           <tbody>
@@ -564,11 +643,11 @@
         <table>
           <thead>
             <tr>
-              <th>E (cm)</th>
-              <th>L (cm)</th>
-              <th>h (cm)</th>
-              <th>Min Pitch (N·m)</th>
-              <th>Min Roll (N·m)</th>
+              <th>Spread (E) (cm)</th>
+              <th>Y-Offset (L) (cm)</th>
+              <th>Attach (h) (cm)</th>
+              <th>Min Pitch Torque (N·m)</th>
+              <th>Min Roll Torque (N·m)</th>
             </tr>
           </thead>
           <tbody>
@@ -642,17 +721,17 @@
     </p>
     <ul>
       <li>
-        <strong>Effect of Spread (E):</strong> Widening the ankle spread from E = 2.3 cm to E = 5.0 cm increases minimum Roll torque by <strong>over 2.6x</strong> in the Standard Parallel layout (from 44.4 N·m to 119.0 N·m peak on RS03) and increases it by <strong>over 1.25x</strong> in the Orthogonal layout.
+        <strong>Effect of Spread (E):</strong> Widening the ankle spread from Ankle Spread (E) = 2.3 cm to Ankle Spread (E) = 5.0 cm increases minimum Roll torque by <strong>over 2.6x</strong> in the Standard Parallel layout (from 44.4 N·m to 119.0 N·m peak on RS03) and increases it by <strong>over 1.25x</strong> in the Orthogonal layout.
       </li>
       <li>
-        <strong>Sensitivity of Depth (L):</strong> Shifting the motor depth L (Y-offset) outwards (e.g. from 3.6 cm to 4.8 cm for RS03/RS04) significantly improves the Pitch torque capability (minimum Pitch torque increases from 113 N·m to 141 N·m peak on Orthogonal RS03). <em>Recommendation: Keep depth L as large as allowable by the robot ankle chassis envelope (4.2 cm to 4.8 cm is ideal).</em>
+        <strong>Sensitivity of Depth (L):</strong> Shifting the motor depth Y-offset (L) outwards (e.g. from 3.6 cm to 4.8 cm for RS03/RS04) significantly improves the Pitch torque capability (minimum Pitch torque increases from 113 N·m to 141 N·m peak on Orthogonal RS03). <em>Recommendation: Keep depth Y-offset (L) as large as allowable by the robot ankle chassis envelope (4.2 cm to 4.8 cm is ideal).</em>
       </li>
       <li>
-        <strong>Sensitivity of Attach Offset (h):</strong> Changing attach offset h to +1.0 cm shifts the peak of kinematic transmission efficiency, leading to higher minimum Pitch torques but lower minimum Roll torques. A <strong>nominal h = 0.0 cm</strong> is recommended to maintain balanced, symmetric workspace capacities.
+        <strong>Sensitivity of Attach Offset (h):</strong> Changing attachment offset (h) to +1.0 cm shifts the peak of kinematic transmission efficiency, leading to higher minimum Pitch torques but lower minimum Roll torques. A <strong>nominal h = 0.0 cm</strong> is recommended to maintain balanced, symmetric workspace capacities.
       </li>
       <li>
         <strong>Final Verdict:</strong> 
-        The <strong>Robstride RS03</strong> is the optimal motor. If a narrow E = 2.3 cm must be used, you <strong>MUST</strong> use the <strong>Orthogonal layout</strong> to guarantee roll torque above 100 N·m (gives 112.6 N·m peak). If E = 5.0 cm is feasible, either layout with RS03 is robust, but Orthogonal E = 5.0 cm yields the absolute highest minimum roll capacity (145 N·m peak).
+        The <strong>Robstride RS03</strong> is the optimal motor. If a narrow spread E = 2.3 cm must be used, you <strong>MUST</strong> use the <strong>Orthogonal layout</strong> to guarantee roll torque above 100 N·m (gives 112.6 N·m peak). If E = 5.0 cm is feasible, either layout with RS03 is robust, but Orthogonal E = 5.0 cm yields the absolute highest minimum roll capacity (145 N·m peak).
       </li>
     </ul>
   </div>

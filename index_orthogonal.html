@@ -201,6 +201,11 @@ details[open] summary{color:var(--accent);margin-bottom:6px}
         <button onclick="loadPreset('ortho')">Current Ortho (E=2.3cm)</button>
         <button onclick="loadPreset('ortho_parallel')">Ortho Parallel Base (E=5.0cm)</button>
       </div>
+      <div class="ctrl-grp" style="margin-top:6px;margin-bottom:8px">
+        <label style="color:var(--text);font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none">
+          <input type="checkbox" id="showDimsCheckbox" checked onchange="reqUp();"> Show Dimension Annotations
+        </label>
+      </div>
       <div class="ctrl-grp"><label>Top Motor Layout</label>
         <select id="orthoYawSel" onchange="readSliders(); needMap=true; reqUp();">
           <option value="standard">Standard (0° Yaw)</option>
@@ -748,6 +753,46 @@ class Rdr {
       }
     });
 
+    const showDims = document.getElementById('showDimsCheckbox') ? document.getElementById('showDimsCheckbox').checked : true;
+    if(showDims) {
+      // 1. Foot to U-Joint Center Height (G)
+      const foot_base = v3(0, 0, 0.0);
+      this._L(st.ac, foot_base, '#ff3366', 1.2);
+      this._T(v3(0, 0, mech.ujZ / 2), 'Foot to U-Joint Height (G) = ' + mech.ujZ.toFixed(1) + ' cm', '#ff3366', 8, 4);
+
+      // 2. Ankle Spread (E)
+      this._L(st.a1, st.a2, '#ff6b35', 1.2);
+      this._T(v3a(st.a1, v3sc(v3s(st.a2, st.a1), 0.5)), 'Ankle Spread (E) = ' + mech.E.toFixed(1) + ' cm', '#ff6b35', 10, 12);
+
+      // 3. Crank 1/2 Radii (r1/r2)
+      this._Arrow(st.m1, st.ct1, '#00e87b', 1.5, 6);
+      this._T(v3a(st.m1, v3sc(v3s(st.ct1, st.m1), 0.5)), 'Crank 1 Radius (A) = ' + mech.r1.toFixed(1) + ' cm', '#00e87b', 10, -4);
+      
+      this._Arrow(st.m2, st.ct2, '#00e87b', 1.5, 6);
+      this._T(v3a(st.m2, v3sc(v3s(st.ct2, st.m2), 0.5)), 'Crank 2 Radius (B) = ' + mech.r2.toFixed(1) + ' cm', '#00e87b', -150, -4);
+
+      // 4. Pushrods (L1/L2)
+      this._T(v3a(st.ct1, v3sc(v3s(st.a1, st.ct1), 0.5)), 'Pushrod 1 Length (C) = ' + mech.L1.toFixed(1) + ' cm', '#94a3b8', 12, 0);
+      this._T(v3a(st.ct2, v3sc(v3s(st.a2, st.ct2), 0.5)), 'Pushrod 2 Length (I) = ' + mech.L2.toFixed(1) + ' cm', '#94a3b8', -165, 0);
+
+      // 5. U-Joint to Motors (H/D)
+      const m1_shaft = v3(mech.orthoYaw ? -mech.oy : 0.0, mech.orthoYaw ? 0.0 : mech.oy, mech.m1z);
+      this._L(v3(0, 0, mech.ujZ), v3(0, 0, mech.m1z), '#00d4ff', 1.0);
+      this._L(v3(0, 0, mech.m1z), m1_shaft, '#00d4ff', 1.0);
+      this._T(v3(0, 0, (mech.ujZ + mech.m1z)/2), 'UJ to M1 Height (H) = ' + mech.m1z.toFixed(1) + ' cm', '#00d4ff', 10, 4);
+
+      const m2_shaft = v3(0.0, mech.oy, mech.m2z);
+      this._L(v3(0, 0, mech.ujZ), v3(0, 0, mech.m2z), '#00d4ff', 1.0);
+      this._L(v3(0, 0, mech.m2z), m2_shaft, '#00d4ff', 1.0);
+      this._T(v3(0, 0, (mech.ujZ + mech.m2z)/2), 'UJ to M2 Height (D) = ' + mech.m2z.toFixed(1) + ' cm', '#00d4ff', -165, -4);
+
+      // 6. Motor Depth Y-Offset (L)
+      const y_start = v3(0, 0, mech.ujZ);
+      const y_end = v3(0, mech.oy, mech.ujZ);
+      this._L(y_start, y_end, '#ffb830', 1.2);
+      this._T(v3a(y_start, v3sc(v3s(y_end, y_start), 0.5)), 'Motor Depth Y-Offset (L) = ' + mech.oy.toFixed(1) + ' cm', '#ffb830', 10, -4);
+    }
+
     this._T(st.m1,'M① (R)','#eef2fa',14,-4);this._T(st.m2,'M② (L)','#eef2fa',14,-4);
     this._T(st.ac,'U-Joint','#eef2fa',10,14);
 
@@ -990,6 +1035,53 @@ const initIK=mech.ik(0,0);
 if(initIK.ok){curT1=initIK.t1;curT2=initIK.t2;}
 reqUp();
 console.log('Orthogonal Ankle Torque Analyzer initialized');
+
+// Auto-screenshot automation
+if (window.location.search.includes('autoscreenshot=true')) {
+  (async function() {
+    console.log("Starting automated screenshot capture...");
+    const configs = [
+      { name: 'conf1', preset: 'default' },
+      { name: 'conf2', preset: 'ortho' },
+      { name: 'conf3', preset: 'parallel_base' },
+      { name: 'conf4', preset: 'ortho_parallel' }
+    ];
+    const views = ['front', 'side', 'top', 'iso'];
+    const canvas = document.getElementById('c3d');
+    
+    for (const config of configs) {
+      loadPreset(config.preset);
+      for (const view of views) {
+        setView(view);
+        doUp();
+        await new Promise(r => setTimeout(r, 250));
+        
+        const dataURL = canvas.toDataURL('image/png');
+        const filename = `${config.name}_${view}.png`;
+        
+        console.log(`Uploading ${filename}...`);
+        await fetch('/upload_screenshot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename, image: dataURL })
+        });
+      }
+    }
+    console.log("All screenshots captured and saved!");
+    const indicator = document.createElement('div');
+    indicator.id = 'screenshot-done-indicator';
+    indicator.style.position = 'fixed';
+    indicator.style.top = '10px';
+    indicator.style.left = '10px';
+    indicator.style.background = '#00e87b';
+    indicator.style.color = '#000';
+    indicator.style.padding = '10px';
+    indicator.style.zIndex = '99999';
+    indicator.style.fontWeight = 'bold';
+    indicator.textContent = 'SCREENSHOTS DONE';
+    document.body.appendChild(indicator);
+  })();
+}
 </script>
 </body>
 </html>

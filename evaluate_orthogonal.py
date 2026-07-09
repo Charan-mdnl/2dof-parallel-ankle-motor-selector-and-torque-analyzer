@@ -23,9 +23,9 @@ def run_evaluation():
     # Base parameters
     # Default: {m1z:23.5, m2z:16, r1:2.5, r2:2.5, L1:20.7, L2:12.7, E:2.3, ujZ:3.6, ah:0.0, oy:3.8}
     base_params = {
-        'm1z': 23.5, 'm2z': 16.0,
+        'm1z': 27.1, 'm2z': 19.6,
         'r1': 2.5,   'r2': 2.5,
-        'L1': 20.7,  'L2': 12.7,
+        'L1': 24.3,  'L2': 16.3,
         'ujZ': 3.6,  'ah': 0.0,
         'oy': 3.8
     }
@@ -58,7 +58,7 @@ def run_evaluation():
     # Generate tables for each spread and layout combination
     for spread_name, spread_val in spreads:
         report_lines.append(f"## {spread_name} (Ankle Spread $E = {spread_val}\\text{{ cm}}$)")
-        report_lines.append(f"All other dimensions: $m_{{1z}} = 23.5\\text{{ cm}}$, $m_{{2z}} = 16.0\\text{{ cm}}$, $r_1 = r_2 = 2.5\\text{{ cm}}$, $L_1 = 20.7\\text{{ cm}}$, $L_2 = 12.7\\text{{ cm}}$, $oy = 3.8\\text{{ cm}}$.\n")
+        report_lines.append(f"All other dimensions: $H = 23.5\\text{{ cm}}$, $D = 16.0\\text{{ cm}}$, $A = B = 2.5\\text{{ cm}}$, $C = 24.3\\text{{ cm}}$, $I = 16.3\\text{{ cm}}$, $L = 3.8\\text{{ cm}}$, $G = 3.6\\text{{ cm}}$.\n")
 
         for layout_name, layout_val in layouts:
             report_lines.append(f"### {layout_name}")

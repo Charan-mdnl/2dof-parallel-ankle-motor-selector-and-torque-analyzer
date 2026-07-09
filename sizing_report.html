@@ -93,11 +93,6 @@ td.mono{font-family:var(--mono)}
     </div>
 
     <div class="control-group">
-      <label>Ankle Spread E (cm) <span class="val" id="valE">2.3</span></label>
-      <input type="number" id="paramE" value="2.3" step="0.1" onchange="updateParams()">
-    </div>
-
-    <div class="control-group">
       <label>Top Motor Layout</label>
       <select id="paramOrtho" onchange="updateParams()">
         <option value="standard">Standard (0° Yaw)</option>
@@ -115,22 +110,56 @@ td.mono{font-family:var(--mono)}
 
     <div class="divider" style="height:1px;background:var(--panel-border);margin:16px 0"></div>
 
-    <h2>Geometry Tuning</h2>
+    <h2>Geometry Parameters</h2>
+    
     <div class="control-group">
-      <label>Motor 1 Z (cm)</label>
-      <input type="number" id="paramM1z" value="23.5" step="0.5" onchange="updateParams()">
+      <label>A - Crank radius r₁ (cm)</label>
+      <input type="number" id="paramR1" value="2.5" step="0.1" onchange="updateParams()">
     </div>
+    
     <div class="control-group">
-      <label>Motor 2 Z (cm)</label>
-      <input type="number" id="paramM2z" value="16.0" step="0.5" onchange="updateParams()">
+      <label>B - Crank radius r₂ (cm)</label>
+      <input type="number" id="paramR2" value="2.5" step="0.1" onchange="updateParams()">
     </div>
+
     <div class="control-group">
-      <label>Rod 1 L₁ (cm)</label>
-      <input type="number" id="paramL1" value="20.7" step="0.1" onchange="updateParams()">
+      <label>C - Rod 1 length (L₁) (cm)</label>
+      <input type="number" id="paramL1" value="24.3" step="0.1" onchange="updateParams()">
     </div>
+
     <div class="control-group">
-      <label>Rod 2 L₂ (cm)</label>
-      <input type="number" id="paramL2" value="12.7" step="0.1" onchange="updateParams()">
+      <label>D - U-Joint center to M2 center height (cm)</label>
+      <input type="number" id="paramM2z" value="16.0" step="0.1" onchange="updateParams()">
+    </div>
+
+    <div class="control-group">
+      <label>E - Ankle spread (cm) <span class="val" id="valE">2.3</span></label>
+      <input type="number" id="paramE" value="2.3" step="0.1" onchange="updateParams()">
+    </div>
+
+    <div class="control-group">
+      <label>F - Foot plate width (cm)</label>
+      <input type="number" id="paramF" value="8.0" step="0.1" onchange="updateParams()">
+    </div>
+
+    <div class="control-group">
+      <label>G - Height from foot surface to U-Joint center (cm)</label>
+      <input type="number" id="paramUjZ" value="3.6" step="0.1" onchange="updateParams()">
+    </div>
+
+    <div class="control-group">
+      <label>H - U-Joint center to M1 center height (cm)</label>
+      <input type="number" id="paramM1z" value="23.5" step="0.1" onchange="updateParams()">
+    </div>
+
+    <div class="control-group">
+      <label>I - Rod 2 length (L₂) (cm)</label>
+      <input type="number" id="paramL2" value="16.3" step="0.1" onchange="updateParams()">
+    </div>
+
+    <div class="control-group">
+      <label>L - Y-Offset (motor depth) (cm)</label>
+      <input type="number" id="paramOy" value="3.8" step="0.1" onchange="updateParams()">
     </div>
   </aside>
 
@@ -379,9 +408,9 @@ const MOTORS_DB = {
 };
 
 let currentMech = new Mech({
-  m1z: 23.5, m2z: 16.0,
+  m1z: 27.1, m2z: 19.6,
   r1: 2.5, r2: 2.5,
-  L1: 20.7, L2: 12.7,
+  L1: 24.3, L2: 16.3,
   E: 2.3, ujZ: 3.6, ah: 0.0, oy: 3.8,
   orthoYaw: false
 });
@@ -430,17 +459,32 @@ function initCharts() {
 }
 
 function updateParams() {
-  const E = parseFloat(document.getElementById('paramE').value);
-  const ortho = document.getElementById('paramOrtho').value === 'orthogonal';
-  const m1z = parseFloat(document.getElementById('paramM1z').value);
-  const m2z = parseFloat(document.getElementById('paramM2z').value);
+  const r1 = parseFloat(document.getElementById('paramR1').value);
+  const r2 = parseFloat(document.getElementById('paramR2').value);
   const L1 = parseFloat(document.getElementById('paramL1').value);
+  const D = parseFloat(document.getElementById('paramM2z').value);
+  const E = parseFloat(document.getElementById('paramE').value);
+  const F = parseFloat(document.getElementById('paramF').value);
+  const G = parseFloat(document.getElementById('paramUjZ').value);
+  const H = parseFloat(document.getElementById('paramM1z').value);
   const L2 = parseFloat(document.getElementById('paramL2').value);
+  const oy = parseFloat(document.getElementById('paramOy').value);
+  const ortho = document.getElementById('paramOrtho').value === 'orthogonal';
 
   document.getElementById('valE').textContent = E.toFixed(1);
 
   currentMech.set({
-    m1z, m2z, r1: 2.5, r2: 2.5, L1, L2, E, ujZ: 3.6, ah: 0.0, oy: 3.8, orthoYaw: ortho
+    m1z: G + H,
+    m2z: G + D,
+    r1,
+    r2,
+    L1,
+    L2,
+    E,
+    ujZ: G,
+    ah: 0.0,
+    oy,
+    orthoYaw: ortho
   });
 
   recalculateAll();

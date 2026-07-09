@@ -206,26 +206,28 @@ details[open] summary{color:var(--accent);margin-bottom:6px}
           <option value="standard">Standard (0° Yaw)</option>
           <option value="orthogonal">Orthogonal (90° Yaw)</option>
         </select></div>
-      <div class="ctrl-grp"><label>Motor ① Z (cm) <span class="v" id="m1zv">23.5</span></label>
-        <input type="range" id="m1zs" min="10" max="45" value="23.5" step="0.5"></div>
-      <div class="ctrl-grp"><label>Motor ② Z (cm) <span class="v" id="m2zv">16</span></label>
-        <input type="range" id="m2zs" min="10" max="45" value="16" step="0.5"></div>
-      <div class="ctrl-grp"><label>Crank ① r₁ (cm) <span class="v" id="r1v">2.5</span></label>
+      <div class="ctrl-grp"><label>A - Crank radius r₁ (cm) <span class="v" id="r1v">2.5</span></label>
         <input type="range" id="r1s" min="0.5" max="8" value="2.5" step="0.1"></div>
-      <div class="ctrl-grp"><label>Crank ② r₂ (cm) <span class="v" id="r2v">2.5</span></label>
+      <div class="ctrl-grp"><label>B - Crank radius r₂ (cm) <span class="v" id="r2v">2.5</span></label>
         <input type="range" id="r2s" min="0.5" max="8" value="2.5" step="0.1"></div>
-      <div class="ctrl-grp"><label>Rod ① L₁ (cm) <span class="v" id="L1v">20.7</span></label>
-        <input type="range" id="L1s" min="5" max="40" value="20.7" step="0.1"></div>
-      <div class="ctrl-grp"><label>Rod ② L₂ (cm) <span class="v" id="L2v">12.7</span></label>
-        <input type="range" id="L2s" min="5" max="40" value="12.7" step="0.1"></div>
-      <div class="ctrl-grp"><label>Ankle Spread E (cm) <span class="v" id="Ev">2.3</span></label>
+      <div class="ctrl-grp"><label>C - Rod 1 length (L₁) (cm) <span class="v" id="L1v">24.3</span></label>
+        <input type="range" id="L1s" min="5" max="40" value="24.3" step="0.1"></div>
+      <div class="ctrl-grp"><label>D - U-Joint center to M2 center height (cm) <span class="v" id="m2zv">16.0</span></label>
+        <input type="range" id="m2zs" min="5" max="40" value="16.0" step="0.1"></div>
+      <div class="ctrl-grp"><label>E - Ankle spread (cm) <span class="v" id="Ev">2.3</span></label>
         <input type="range" id="Es" min="0.5" max="10" value="2.3" step="0.1"></div>
-      <div class="ctrl-grp"><label>U-Joint Height (cm) <span class="v" id="Fv">3.6</span></label>
-        <input type="range" id="Fs" min="0.5" max="8" value="3.6" step="0.1"></div>
+      <div class="ctrl-grp"><label>F - Foot plate width (cm) <span class="v" id="Fpv">8.0</span></label>
+        <input type="range" id="Fps" min="2.0" max="20" value="8.0" step="0.1"></div>
+      <div class="ctrl-grp"><label>G - Height from foot surface to U-Joint center (cm) <span class="v" id="Fv">3.6</span></label>
+        <input type="range" id="Fs" min="0.5" max="12" value="3.6" step="0.1"></div>
+      <div class="ctrl-grp"><label>H - U-Joint center to M1 center height (cm) <span class="v" id="m1zv">23.5</span></label>
+        <input type="range" id="m1zs" min="5" max="45" value="23.5" step="0.1"></div>
+      <div class="ctrl-grp"><label>I - Rod 2 length (L₂) (cm) <span class="v" id="L2v">16.3</span></label>
+        <input type="range" id="L2s" min="5" max="40" value="16.3" step="0.1"></div>
+      <div class="ctrl-grp"><label>L - Y-Offset (motor depth) (cm) <span class="v" id="oyv">3.8</span></label>
+        <input type="range" id="oys" min="0" max="8" value="3.8" step="0.1"></div>
       <div class="ctrl-grp"><label>Attach offset h (cm) <span class="v" id="hv">0.0</span></label>
         <input type="range" id="hs" min="-6" max="6" value="0.0" step="0.1"></div>
-      <div class="ctrl-grp"><label>Y-Offset oy (cm) <span class="v" id="oyv">3.8</span></label>
-        <input type="range" id="oys" min="0" max="8" value="3.8" step="0.1"></div>
     </details>
 
     <!-- Formula Reference -->
@@ -409,7 +411,7 @@ class Mech {
 }
 
 class Rdr {
-  constructor(cv){this.cv=cv;this.cx=cv.getContext('2d');this.cam={az:-.45,el:.35,sc:20};this.drag=null;this._mouse();}
+  constructor(cv){this.cv=cv;this.cx=cv.getContext('2d');this.cam={az:-.45,el:.35,sc:14};this.drag=null;this._mouse();}
   resize(){const d=devicePixelRatio||1,r=this.cv.getBoundingClientRect();this.cv.width=r.width*d;this.cv.height=r.height*d;
     this.cx.setTransform(d,0,0,d,0,0);this.w=r.width;this.h=r.height;}
   proj(x,y,z){
@@ -604,86 +606,86 @@ class Rdr {
     prims.push({
       type: 'box',
       center: footWorldCenter,
-      size: v3(8.0, 15.0, 1.5),
+      size: v3(mech.F !== undefined ? mech.F : 8.0, 15.0, 1.5),
       R: st.R,
       color: '#334155',
       d: this.proj(footWorldCenter.x, footWorldCenter.y, footWorldCenter.z).d
     });
 
-    // 5. Crank arm 1
+    // 5. Crank arm 1 — bias depth forward so it renders in front of motor box
     prims.push({
       type: 'cylinder',
       p1: st.m1,
       p2: st.ct1,
       r: 0.6,
       color: '#eab308',
-      d: (this.proj(st.m1.x, st.m1.y, st.m1.z).d + this.proj(st.ct1.x, st.ct1.y, st.ct1.z).d) / 2
+      d: Math.min(this.proj(st.m1.x, st.m1.y, st.m1.z).d, this.proj(st.ct1.x, st.ct1.y, st.ct1.z).d) - 2.0
     });
 
-    // 6. Crank arm 2
+    // 6. Crank arm 2 — bias depth forward so it renders in front of motor box
     prims.push({
       type: 'cylinder',
       p1: st.m2,
       p2: st.ct2,
       r: 0.6,
       color: '#eab308',
-      d: (this.proj(st.m2.x, st.m2.y, st.m2.z).d + this.proj(st.ct2.x, st.ct2.y, st.ct2.z).d) / 2
+      d: Math.min(this.proj(st.m2.x, st.m2.y, st.m2.z).d, this.proj(st.ct2.x, st.ct2.y, st.ct2.z).d) - 2.0
     });
 
-    // 7. Pushrod 1
+    // 7. Pushrod 1 — bias forward so rod is visible over motor housing
     prims.push({
       type: 'cylinder',
       p1: st.ct1,
       p2: st.a1,
       r: 0.35,
       color: '#94a3b8',
-      d: (this.proj(st.ct1.x, st.ct1.y, st.ct1.z).d + this.proj(st.a1.x, st.a1.y, st.a1.z).d) / 2
+      d: Math.min(this.proj(st.ct1.x, st.ct1.y, st.ct1.z).d, this.proj(st.a1.x, st.a1.y, st.a1.z).d) - 1.5
     });
 
-    // 8. Pushrod 2
+    // 8. Pushrod 2 — bias forward so rod is visible over motor housing
     prims.push({
       type: 'cylinder',
       p1: st.ct2,
       p2: st.a2,
       r: 0.35,
       color: '#94a3b8',
-      d: (this.proj(st.ct2.x, st.ct2.y, st.ct2.z).d + this.proj(st.a2.x, st.a2.y, st.a2.z).d) / 2
+      d: Math.min(this.proj(st.ct2.x, st.ct2.y, st.ct2.z).d, this.proj(st.a2.x, st.a2.y, st.a2.z).d) - 1.5
     });
 
-    // 9. Ball joint 1
+    // 9. Ball joint 1 (crank tip) — always render in front of motor
     prims.push({
       type: 'sphere',
       p: st.ct1,
       r: 0.7,
       color: '#06b6d4',
-      d: this.proj(st.ct1.x, st.ct1.y, st.ct1.z).d
+      d: this.proj(st.ct1.x, st.ct1.y, st.ct1.z).d - 3.0
     });
 
-    // 10. Ball joint 2
+    // 10. Ball joint 2 (crank tip) — always render in front of motor
     prims.push({
       type: 'sphere',
       p: st.ct2,
       r: 0.7,
       color: '#06b6d4',
-      d: this.proj(st.ct2.x, st.ct2.y, st.ct2.z).d
+      d: this.proj(st.ct2.x, st.ct2.y, st.ct2.z).d - 3.0
     });
 
-    // 11. Ankle attachment 1
+    // 11. Ankle attachment 1 — bias forward
     prims.push({
       type: 'sphere',
       p: st.a1,
       r: 0.7,
       color: '#06b6d4',
-      d: this.proj(st.a1.x, st.a1.y, st.a1.z).d
+      d: this.proj(st.a1.x, st.a1.y, st.a1.z).d - 2.0
     });
 
-    // 12. Ankle attachment 2
+    // 12. Ankle attachment 2 — bias forward
     prims.push({
       type: 'sphere',
       p: st.a2,
       r: 0.7,
       color: '#06b6d4',
-      d: this.proj(st.a2.x, st.a2.y, st.a2.z).d
+      d: this.proj(st.a2.x, st.a2.y, st.a2.z).d - 2.0
     });
 
     // 13. Universal Joint Center
@@ -828,7 +830,7 @@ const MOTORS = {
 let selMotor=MOTORS.RS03;
 let needMap=true;
 
-const defP=()=>({m1z:23.5, m2z:16, r1:2.5, r2:2.5, L1:20.7, L2:12.7, E:2.3, ujZ:3.6, ah:0.0, oy:3.8, orthoYaw:false});
+const defP=()=>({m1z:27.1, m2z:19.6, r1:2.5, r2:2.5, L1:24.3, L2:16.3, E:2.3, ujZ:3.6, ah:0.0, oy:3.8, F:8.0, orthoYaw:false});
 let par=defP();
 let mech=new Mech(par);
 
@@ -853,11 +855,11 @@ function setView(n){const v={front:{az:0,el:0},side:{az:-Math.PI/2,el:0},top:{az
 
 function loadPreset(n){
   if(n==='default') par=defP();
-  else if(n==='parallel_base') par={m1z:23.5,m2z:16,r1:2.5,r2:2.5,L1:20.7,L2:12.7,E:5.0,ujZ:3.6,ah:0.0,oy:3.8,orthoYaw:false};
-  else if(n==='ortho') par={m1z:23.5,m2z:16,r1:2.5,r2:2.5,L1:20.7,L2:12.7,E:2.3,ujZ:3.6,ah:0.0,oy:3.8,orthoYaw:true};
-  else if(n==='ortho_parallel') par={m1z:23.5,m2z:16,r1:2.5,r2:2.5,L1:20.7,L2:12.7,E:5.0,ujZ:3.6,ah:0.0,oy:3.8,orthoYaw:true};
-  else if(n==='sym') par={m1z:23.5,m2z:23.5,r1:2.5,r2:2.5,L1:20.7,L2:20.7,E:2.3,ujZ:3.6,ah:0.0,oy:0.0,orthoYaw:false};
-  else if(n==='wide') par={m1z:23.5,m2z:16,r1:2.5,r2:2.5,L1:20.7,L2:12.7,E:6,ujZ:3.6,ah:0.0,oy:0.0,orthoYaw:false};
+  else if(n==='parallel_base') par={m1z:27.1,m2z:19.6,r1:2.5,r2:2.5,L1:24.3,L2:16.3,E:5.0,ujZ:3.6,ah:0.0,oy:3.8,F:8.0,orthoYaw:false};
+  else if(n==='ortho') par={m1z:27.1,m2z:19.6,r1:2.5,r2:2.5,L1:24.3,L2:16.3,E:2.3,ujZ:3.6,ah:0.0,oy:3.8,F:8.0,orthoYaw:true};
+  else if(n==='ortho_parallel') par={m1z:27.1,m2z:19.6,r1:2.5,r2:2.5,L1:24.3,L2:16.3,E:5.0,ujZ:3.6,ah:0.0,oy:3.8,F:8.0,orthoYaw:true};
+  else if(n==='sym') par={m1z:27.1,m2z:27.1,r1:2.5,r2:2.5,L1:24.3,L2:24.3,E:2.3,ujZ:3.6,ah:0.0,oy:0.0,F:8.0,orthoYaw:false};
+  else if(n==='wide') par={m1z:27.1,m2z:19.6,r1:2.5,r2:2.5,L1:24.3,L2:16.3,E:6,ujZ:3.6,ah:0.0,oy:0.0,F:8.0,orthoYaw:false};
   mech.set(par);syncSliders();needMap=true;reqUp();
 }
 
@@ -865,14 +867,19 @@ let curPitch=0, curRoll=0, curT1=0, curT2=0;
 let motorTau1=20, motorTau2=20;
 
 function syncSliders(){
-  $('m1zs').value=par.m1z;sv('m1zv',par.m1z);
-  $('m2zs').value=par.m2z;sv('m2zv',par.m2z);
+  // Show H and D as relative distances (drawing convention)
+  const H_val = (par.m1z - par.ujZ).toFixed(1);
+  const D_val = (par.m2z - par.ujZ).toFixed(1);
+  const Fp_val = (par.F !== undefined ? par.F : 8.0).toFixed(1);
+  $('m1zs').value=H_val;sv('m1zv',H_val);
+  $('m2zs').value=D_val;sv('m2zv',D_val);
   $('r1s').value=par.r1;sv('r1v',par.r1);
   $('r2s').value=par.r2;sv('r2v',par.r2);
   $('L1s').value=par.L1;sv('L1v',par.L1);
   $('L2s').value=par.L2;sv('L2v',par.L2);
   $('Es').value=par.E;sv('Ev',par.E);
   $('Fs').value=par.ujZ;sv('Fv',par.ujZ);
+  $('Fps').value=Fp_val;sv('Fpv',Fp_val);
   $('hs').value=par.ah;sv('hv',par.ah);
   $('oys').value=par.oy;sv('oyv',par.oy);
   $('orthoYawSel').value=par.orthoYaw ? 'orthogonal' : 'standard';
@@ -880,13 +887,18 @@ function syncSliders(){
 
 function readSliders(){
   const orthoYaw = $('orthoYawSel').value === 'orthogonal';
-  par={m1z:+$('m1zs').value, m2z:+$('m2zs').value, r1:+$('r1s').value, r2:+$('r2s').value,
-    L1:+$('L1s').value, L2:+$('L2s').value, E:+$('Es').value, ujZ:+$('Fs').value, ah:+$('hs').value,
-    oy:+$('oys').value, orthoYaw:orthoYaw};
+  // Sliders show H and D (relative to UJ), compute absolute Z = G + H, G + D
+  const G_val = +$('Fs').value;
+  const H_val = +$('m1zs').value;
+  const D_val = +$('m2zs').value;
+  const Fp_val = +$('Fps').value;
+  par={m1z: G_val + H_val, m2z: G_val + D_val, r1:+$('r1s').value, r2:+$('r2s').value,
+    L1:+$('L1s').value, L2:+$('L2s').value, E:+$('Es').value, ujZ: G_val, ah:+$('hs').value,
+    oy:+$('oys').value, F: Fp_val, orthoYaw:orthoYaw};
   mech.set(par);
-  sv('m1zv',par.m1z);sv('m2zv',par.m2z);sv('r1v',par.r1);sv('r2v',par.r2);
-  sv('L1v',par.L1);sv('L2v',par.L2);sv('Ev',par.E);sv('Fv',par.ujZ);sv('hv',par.ah);
-  sv('oyv',par.oy);
+  sv('m1zv',H_val);sv('m2zv',D_val);sv('r1v',par.r1);sv('r2v',par.r2);
+  sv('L1v',par.L1);sv('L2v',par.L2);sv('Ev',par.E);sv('Fv',G_val);sv('hv',par.ah);
+  sv('oyv',par.oy);sv('Fpv',Fp_val);
   needMap=true;
 }
 
@@ -969,7 +981,7 @@ $('ps').addEventListener('input',reqUp);
 $('rs').addEventListener('input',reqUp);
 $('mt1s').addEventListener('input',()=>{needMap=true;reqUp();});
 $('mt2s').addEventListener('input',()=>{needMap=true;reqUp();});
-['m1z','m2z','r1','r2','L1','L2','E','F','h','oy'].forEach(id=>
+['m1z','m2z','r1','r2','L1','L2','E','Fp','F','h','oy'].forEach(id=>
   $(id+'s').addEventListener('input',()=>{readSliders();reqUp();}));
 window.addEventListener('resize',()=>{needMap=true;reqUp();});
 

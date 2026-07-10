@@ -115,8 +115,8 @@
     <div class="toc-item"><span>2. The Four Configurations Explained</span></div>
     <div class="toc-item"><span>3. Motor Specifications</span></div>
     <div class="toc-item"><span>4. Overall Sizing Verdict — All Motors × All Configurations</span></div>
-    <div class="toc-item"><span>5. Config 1: Standard Layout, E = 2.3 cm (Current Design)</span></div>
-    <div class="toc-item"><span>6. Config 2: Standard Layout, E = 5.0 cm (Wide Spread)</span></div>
+    <div class="toc-item"><span>5. Config 1: Standard Layout, E = 2.3 cm (Current V-shape mechanism)</span></div>
+    <div class="toc-item"><span>6. Config 2: Standard Layout, E = 5.0 cm (Parallel mechanism)</span></div>
     <div class="toc-item"><span>7. Config 3: Orthogonal Layout, E = 2.3 cm</span></div>
     <div class="toc-item"><span>8. Config 4: Orthogonal Layout, E = 5.0 cm</span></div>
     <div class="toc-item"><span>9. Cross-Configuration Comparison Charts</span></div>
@@ -189,11 +189,11 @@
 
 <div class="flex-2col" style="margin-top:6px">
   <div>
-    <h4>Ankle Spread E = 2.3 cm (Current Design)</h4>
+    <h4>Ankle Spread E = 2.3 cm (Current V-shape mechanism)</h4>
     <p>Narrow gap between pushrod attachment points. Gives the motors very little lateral leverage for roll. This is the existing robot design.</p>
   </div>
   <div>
-    <h4>Ankle Spread E = 5.0 cm (Parallel Design)</h4>
+    <h4>Ankle Spread E = 5.0 cm (Parallel mechanism)</h4>
     <p>Wider gap between attachment points. Directly increases roll torque by providing a wider base for the push-pull action.</p>
   </div>
 </div>
@@ -251,7 +251,7 @@
 <!-- ==================== CONFIG 1 ==================== -->
 <div class="page-break"></div>
 <div class="config-header">
-  <h2>5. Configuration 1: Standard Layout, E = 2.3 cm (Current Design)</h2>
+  <h2>5. Configuration 1: Standard Layout, E = 2.3 cm (Current V-shape mechanism)</h2>
   <p>Both motors face forward (0° yaw). Ankle spread = 2.3 cm. This is the existing robot design. Strong pitch but extremely weak roll.</p>
 </div>
 
@@ -283,7 +283,7 @@
 <!-- ==================== CONFIG 2 ==================== -->
 <div class="page-break"></div>
 <div class="config-header">
-  <h2>6. Configuration 2: Standard Layout, E = 5.0 cm (Wide Spread)</h2>
+  <h2>6. Configuration 2: Standard Layout, E = 5.0 cm (Parallel mechanism)</h2>
   <p>Both motors face forward (0° yaw). Ankle spread widened to 5.0 cm. Provides much better roll leverage than Config 1 while maintaining similar pitch.</p>
 </div>
 
@@ -412,8 +412,8 @@
 <table style="font-size:8.5px">
   <thead><tr><th style="text-align:left">Configuration</th><th>RS03 Continuous<br>Pitch / Roll (N·m)</th><th>Balance<br>Ratio</th><th>Assessment</th></tr></thead>
   <tbody>
-    <tr><td style="text-align:left;font-family:Inter">Config 1: Standard, E=2.3 cm</td><td id="final_c1"></td><td id="final_b1"></td><td style="text-align:left;font-family:Inter;color:#ff3366">Roll too low. Not recommended.</td></tr>
-    <tr><td style="text-align:left;font-family:Inter">Config 2: Standard, E=5.0 cm</td><td id="final_c2"></td><td id="final_b2"></td><td style="text-align:left;font-family:Inter;color:#ffb830">Acceptable if wider base is feasible.</td></tr>
+    <tr><td style="text-align:left;font-family:Inter">Config 1: Standard, E=2.3 cm (Current V-shape mechanism)</td><td id="final_c1"></td><td id="final_b1"></td><td style="text-align:left;font-family:Inter;color:#ff3366">Roll too low. Not recommended.</td></tr>
+    <tr><td style="text-align:left;font-family:Inter">Config 2: Standard, E=5.0 cm (Parallel mechanism)</td><td id="final_c2"></td><td id="final_b2"></td><td style="text-align:left;font-family:Inter;color:#ffb830">Acceptable if wider base is feasible.</td></tr>
     <tr class="highlight"><td style="text-align:left;font-family:Inter">Config 3: Orthogonal, E=2.3 cm</td><td id="final_c3"></td><td id="final_b3"></td><td style="text-align:left;font-family:Inter">Best compact design. Balanced torque.</td></tr>
     <tr class="highlight"><td style="text-align:left;font-family:Inter">Config 4: Orthogonal, E=5.0 cm</td><td id="final_c4"></td><td id="final_b4"></td><td style="text-align:left;font-family:Inter">Best overall. Perfectly balanced.</td></tr>
   </tbody>
@@ -493,8 +493,8 @@ const motors=[
 
 // 4 configurations
 const configs=[
-  {name:'Config 1',label:'Standard, E=2.3cm',mech:new Mech({m1z:27.1,m2z:19.6,r1:2.5,r2:2.5,L1:24.3,L2:16.3,E:2.3,ujZ:3.6,ah:0,oy:3.8,orthoYaw:false})},
-  {name:'Config 2',label:'Standard, E=5.0cm',mech:new Mech({m1z:27.1,m2z:19.6,r1:2.5,r2:2.5,L1:24.3,L2:16.3,E:5.0,ujZ:3.6,ah:0,oy:3.8,orthoYaw:false})},
+  {name:'Config 1',label:'Standard, E=2.3cm (Current V-shape mechanism)',mech:new Mech({m1z:27.1,m2z:19.6,r1:2.5,r2:2.5,L1:24.3,L2:16.3,E:2.3,ujZ:3.6,ah:0,oy:3.8,orthoYaw:false})},
+  {name:'Config 2',label:'Standard, E=5.0cm (Parallel mechanism)',mech:new Mech({m1z:27.1,m2z:19.6,r1:2.5,r2:2.5,L1:24.3,L2:16.3,E:5.0,ujZ:3.6,ah:0,oy:3.8,orthoYaw:false})},
   {name:'Config 3',label:'Orthogonal, E=2.3cm',mech:new Mech({m1z:27.1,m2z:19.6,r1:2.5,r2:2.5,L1:24.3,L2:16.3,E:2.3,ujZ:3.6,ah:0,oy:3.8,orthoYaw:true})},
   {name:'Config 4',label:'Orthogonal, E=5.0cm',mech:new Mech({m1z:27.1,m2z:19.6,r1:2.5,r2:2.5,L1:24.3,L2:16.3,E:5.0,ujZ:3.6,ah:0,oy:3.8,orthoYaw:true})}
 ];

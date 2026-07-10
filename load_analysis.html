@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ankle Joint Load & Pitch Torque Analyzer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#070a13;--panel:rgba(13,18,34,0.95);--panel-border:rgba(80,110,180,0.18);
+  --accent:#00d4ff;--accent2:#ff6b35;--danger:#ff3366;--safe:#00e87b;--warn:#ffb830;
+  --text:#c8d0e0;--text-dim:#5a6d90;--text-bright:#eef2fa;
+  --sans:'Outfit',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;padding:24px}
+header{margin-bottom:24px;border-bottom:1px solid var(--panel-border);padding-bottom:16px;display:flex;justify-content:space-between;align-items:flex-end}
+h1{font-size:22px;font-weight:700;color:var(--text-bright)}
+header p{font-size:12px;color:var(--text-dim);margin-top:4px}
+.nav-link{font-size:12px;color:var(--accent);text-decoration:none;border:1px solid var(--accent);padding:6px 12px;border-radius:4px;transition:0.2s}
+.nav-link:hover{background:rgba(0,212,255,0.1)}
+
+.dashboard-grid{display:grid;grid-template-columns:320px 1fr;gap:24px;align-items:start}
+
+/* Sidebar panel */
+.sidebar{background:var(--panel);border:1px solid var(--panel-border);border-radius:12px;padding:20px;backdrop-filter:blur(10px)}
+.sidebar h2{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--text-bright);margin-bottom:16px}
+.control-group{margin-bottom:16px}
+.control-group label{display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim);margin-bottom:6px}
+.control-group label .val{color:var(--accent);font-family:var(--mono);font-weight:600}
+.control-group input[type=range]{
+  -webkit-appearance:none;width:100%;height:5px;border-radius:3px;background:rgba(255,255,255,0.06);outline:none
+}
+.control-group input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;
+  border:2px solid var(--bg);box-shadow:0 0 6px rgba(0,212,255,0.4)
+}
+
+.main-content{display:flex;flex-direction:column;gap:24px}
+
+/* Cards */
+.card{background:var(--panel);border:1px solid var(--panel-border);border-radius:12px;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+.card h3{font-size:14px;font-weight:600;color:var(--text-bright);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'';display:inline-block;width:3px;height:12px;background:var(--accent);border-radius:2px}
+
+.flex-row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+
+/* Canvas/SVG Drawing panel */
+#visualizer-container{position:relative;height:240px;background:rgba(0,0,0,0.2);border-radius:8px;border:1px solid rgba(255,255,255,0.03);overflow:hidden}
+#physics-canvas{width:100%;height:100%;display:block}
+
+/* Output values cards */
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.summary-card{background:rgba(255,255,255,0.02);border:1px solid var(--panel-border);border-radius:8px;padding:12px}
+.summary-card .title{font-size:10px;text-transform:uppercase;color:var(--text-dim);margin-bottom:2px}
+.summary-card .val{font-size:22px;font-weight:700;font-family:var(--mono);color:var(--text-bright)}
+.summary-card .desc{font-size:10px;color:var(--text-dim);margin-top:2px}
+
+.chart-container{position:relative;height:240px}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;margin-top:8px;font-size:11px}
+th,td{padding:8px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06)}
+th{background:rgba(0,0,0,0.2);color:var(--text-bright);font-weight:600}
+td:first-child{text-align:left;font-weight:600;color:var(--text-bright)}
+td.bold{font-weight:700;color:var(--accent2)}
+td.mono{font-family:var(--mono)}
+tr.highlight td{background:rgba(0,212,255,0.04);color:var(--accent)}
+tr:hover td{background:rgba(255,255,255,0.01)}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>⚖️ Ankle Pitch Torque & Load Analyzer</h1>
+    <p>Simulates universal joint torque requirements under a vertical load for varying ankle offset locations along the foot length</p>
+  </div>
+  <a href="sizing_report.html" class="nav-link">← Back to Actuator Sizing Report</a>
+</header>
+
+<main class="dashboard-grid">
+  <!-- Left Column: Controls -->
+  <aside class="sidebar">
+    <h2>Simulation Settings</h2>
+    
+    <div class="control-group">
+      <label>Vertical Load <span class="val" id="lblLoad">42 kg</span></label>
+      <input type="range" id="paramLoad" min="10" max="100" value="42" step="1">
+    </div>
+    
+    <div class="control-group">
+      <label>Ankle Joint Offset (x) <span class="val" id="lblOffset">0.0 cm</span></label>
+      <input type="range" id="paramOffset" min="-6" max="6" value="0" step="0.5">
+    </div>
+
+    <div class="control-group">
+      <label>Foot Length <span class="val" id="lblLength">15 cm</span></label>
+      <input type="range" id="paramLength" min="10" max="30" value="15" step="1">
+    </div>
+
+    <div class="control-group">
+      <label>Ankle Height (z_uj) <span class="val" id="lblHeight">3.6 cm</span></label>
+      <input type="range" id="paramHeight" min="1.0" max="10.0" value="3.6" step="0.2">
+    </div>
+
+    <div class="control-group" style="border-top:1px solid var(--panel-border);padding-top:16px;margin-top:16px;">
+      <label>Foot Pitch Angle <span class="val" id="lblPitch">0.0°</span></label>
+      <input type="range" id="paramPitch" min="-25" max="25" value="10" step="1">
+    </div>
+  </aside>
+
+  <!-- Right Column: Results & Graphs -->
+  <section class="main-content">
+    <div class="flex-row">
+      <!-- 2D Physics Visualizer -->
+      <div class="card">
+        <h3>2D Physics Visualizer</h3>
+        <div id="visualizer-container">
+          <canvas id="physics-canvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Real-time Output Values -->
+      <div class="card" style="display:flex;flex-direction:column;justify-content:space-between">
+        <h3>Instantaneous Joint Efforts</h3>
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="title">Active Contact Point</div>
+            <div class="val" id="valContact" style="font-size:18px">—</div>
+            <div class="desc" id="valContactDist">Moment Arm: —</div>
+          </div>
+          <div class="summary-card">
+            <div class="title">Required Ankle Torque</div>
+            <div class="val" id="valTorque" style="color:var(--accent2)">—</div>
+            <div class="desc">To maintain 90° vertical pose</div>
+          </div>
+        </div>
+        <div class="summary-grid" style="margin-top:12px">
+          <div class="summary-card" style="grid-column: span 2">
+            <div class="title">Ankle Leverage Analysis</div>
+            <div class="desc" id="valLeverageDesc" style="font-size:11px;color:var(--text);line-height:1.4">
+              Moving the ankle offset along the foot length shifts the balance moment. Closer to heel reduces heel torque, closer to toe reduces toe torque.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Curves -->
+    <div class="card">
+      <h3>Load Torque vs. Pitch Angle Curves (Overlaid Offsets)</h3>
+      <div class="chart-container">
+        <canvas id="torqueChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="card">
+      <h3>Required Torque Matrix (Discrete Angles)</h3>
+      <table>
+        <thead>
+          <tr id="tableHeader">
+            <th>Pitch Angle</th>
+            <!-- Dynamic offsets headers -->
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script>
+'use strict';
+const DEG = Math.PI / 180;
+let chart = null;
+
+function calcTorque(mass, pitchDeg, ankleOffsetCm, footLengthCm, heightCm) {
+  const W = mass * 9.81;
+  const pRad = pitchDeg * DEG;
+  const x_heel = -footLengthCm / 200.0; // convert cm to m
+  const x_toe = footLengthCm / 200.0;
+  const z_uj = heightCm / 100.0;
+  const off = ankleOffsetCm / 100.0;
+
+  let x_contact = 0.0;
+  if (pitchDeg > 0) {
+    x_contact = x_heel;
+  } else if (pitchDeg < 0) {
+    x_contact = x_toe;
+  } else {
+    x_contact = off; // neutral, no tilt
+  }
+
+  // tau = W * (z_uj * sin(p) - (x_contact - off) * cos(p))
+  const tau = W * (z_uj * Math.sin(pRad) - (x_contact - off) * Math.cos(pRad));
+  return Math.abs(tau);
+}
+
+function updateSimulation() {
+  const mass = parseFloat(document.getElementById('paramLoad').value);
+  const offset = parseFloat(document.getElementById('paramOffset').value);
+  const footLen = parseFloat(document.getElementById('paramLength').value);
+  const height = parseFloat(document.getElementById('paramHeight').value);
+  const pitch = parseFloat(document.getElementById('paramPitch').value);
+
+  // Update labels
+  document.getElementById('lblLoad').textContent = mass + ' kg';
+  document.getElementById('lblOffset').textContent = (offset >= 0 ? '+' : '') + offset.toFixed(1) + ' cm';
+  document.getElementById('lblLength').textContent = footLen + ' cm';
+  document.getElementById('lblHeight').textContent = height.toFixed(1) + ' cm';
+  document.getElementById('lblPitch').textContent = (pitch >= 0 ? '+' : '') + pitch.toFixed(1) + '°';
+
+  // Compute instantaneous values
+  const W = mass * 9.81;
+  const torque = calcTorque(mass, pitch, offset, footLen, height);
+  const contactText = pitch > 0 ? 'Heel' : (pitch < 0 ? 'Toe' : 'Full Sole');
+  const x_contact = pitch > 0 ? -footLen/2 : (pitch < 0 ? footLen/2 : offset);
+  const arm = Math.abs((height/100)*Math.sin(pitch*DEG) - ((x_contact - offset)/100)*Math.cos(pitch*DEG)) * 100; // in cm
+
+  document.getElementById('valContact').textContent = contactText;
+  document.getElementById('valContactDist').textContent = `Moment Arm: ${arm.toFixed(2)} cm`;
+  document.getElementById('valTorque').textContent = torque.toFixed(1) + ' N·m';
+
+  let descText = '';
+  if (offset < 0) {
+    descText = `Ankle shifted <strong>${Math.abs(offset).toFixed(1)} cm backward</strong> (closer to Heel). This reduces required torque during backward tilt (heel strike) to <strong>${calcTorque(mass, 20, offset, footLen, height).toFixed(1)} N·m</strong>, but increases required forward torque to <strong>${calcTorque(mass, -20, offset, footLen, height).toFixed(1)} N·m</strong>.`;
+  } else if (offset > 0) {
+    descText = `Ankle shifted <strong>${offset.toFixed(1)} cm forward</strong> (closer to Toe). This reduces required torque during forward tilt (toe push) to <strong>${calcTorque(mass, -20, offset, footLen, height).toFixed(1)} N·m</strong>, but increases required backward torque to <strong>${calcTorque(mass, 20, offset, footLen, height).toFixed(1)} N·m</strong>.`;
+  } else {
+    descText = `Ankle centered. Symmetric required torque of <strong>${calcTorque(mass, 20, 0, footLen, height).toFixed(1)} N·m</strong> for both backward (+20°) and forward (-20°) tilts.`;
+  }
+  document.getElementById('valLeverageDesc').innerHTML = descText;
+
+  // Render 2D Canvas Drawing
+  drawPhysics(pitch, offset, footLen, height, mass);
+
+  // Update table & chart
+  updateChartAndTable(mass, footLen, height, offset);
+}
+
+function drawPhysics(pitch, offset, footLen, height, mass) {
+  const canvas = document.getElementById('physics-canvas');
+  const ctx = canvas.getContext('2d');
+  
+  // Set dimensions
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+
+  const W = rect.width;
+  const H = rect.height;
+  ctx.clearRect(0, 0, W, H);
+
+  // Origins & scale
+  const scale = 8.0; // pixels per cm
+  const cx = W / 2;
+  const cy = H - 50; // ground level
+
+  // Draw Ground Line
+  ctx.strokeStyle = '#334155';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(20, cy);
+  ctx.lineTo(W - 20, cy);
+  ctx.stroke();
+
+  // Draw Ground contact texture (stripes)
+  ctx.strokeStyle = '#1e293b';
+  ctx.lineWidth = 1;
+  for (let x = 20; x < W - 20; x += 12) {
+    ctx.beginPath();
+    ctx.moveTo(x, cy);
+    ctx.lineTo(x - 5, cy + 8);
+    ctx.stroke();
+  }
+
+  // Draw Ankle stem (Leg above Universal Joint, always vertical 90 degrees)
+  // Height is vertical. Let's place universal joint at cy - height_in_pixels (if flat).
+  // But if tilted, the universal joint position changes in height.
+  const pRad = pitch * DEG;
+  const x_heel = -footLen / 2;
+  const x_toe = footLen / 2;
+  
+  // Find current contact point location
+  let contact_x = 0;
+  if (pitch > 0) contact_x = x_heel;
+  else if (pitch < 0) contact_x = x_toe;
+  else contact_x = offset;
+
+  // Position of contact point in world frame is exactly cx.
+  // The universal joint coordinates in foot frame are (offset, height).
+  // Rotation matrix from foot frame to world frame:
+  // x_world = (x_foot - contact_x)*cos(p) - (z_foot - z_contact)*sin(p)
+  // z_world = (x_foot - contact_x)*sin(p) + (z_foot - z_contact)*cos(p)
+  // For Universal Joint, x_foot = offset, z_foot = height.
+  // Ground contact height z_contact = 0.
+  const uj_world_x = cx + ((offset - contact_x) * Math.cos(pRad) - height * Math.sin(pRad)) * scale;
+  const uj_world_y = cy - ((offset - contact_x) * Math.sin(pRad) + height * Math.cos(pRad)) * scale;
+
+  // Draw tilted foot plate
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 4;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  // Heel coordinate (foot frame: x = -footLen/2, z = 0)
+  const heel_x = cx + ((-footLen/2 - contact_x) * Math.cos(pRad)) * scale;
+  const heel_y = cy - ((-footLen/2 - contact_x) * Math.sin(pRad)) * scale;
+  // Toe coordinate (foot frame: x = +footLen/2, z = 0)
+  const toe_x = cx + ((footLen/2 - contact_x) * Math.cos(pRad)) * scale;
+  const toe_y = cy - ((footLen/2 - contact_x) * Math.sin(pRad)) * scale;
+  ctx.moveTo(heel_x, heel_y);
+  ctx.lineTo(toe_x, toe_y);
+  ctx.stroke();
+
+  // Draw active contact highlight (toe or heel)
+  ctx.fillStyle = '#ff3366';
+  ctx.beginPath();
+  if (pitch > 0) {
+    ctx.arc(heel_x, heel_y, 6, 0, 2*Math.PI);
+  } else if (pitch < 0) {
+    ctx.arc(toe_x, toe_y, 6, 0, 2*Math.PI);
+  } else {
+    ctx.fillStyle = '#00e87b';
+    ctx.fillRect(heel_x, heel_y - 2, (toe_x - heel_x), 4);
+  }
+  ctx.fill();
+
+  // Draw ankle height column on foot frame
+  ctx.strokeStyle = 'rgba(0, 212, 255, 0.4)';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  // Bottom of universal joint column (on foot plate, at offset position)
+  const col_bottom_x = cx + ((offset - contact_x) * Math.cos(pRad)) * scale;
+  const col_bottom_y = cy - ((offset - contact_x) * Math.sin(pRad)) * scale;
+  ctx.moveTo(col_bottom_x, col_bottom_y);
+  ctx.lineTo(uj_world_x, uj_world_y);
+  ctx.stroke();
+
+  // Draw Universal Joint Pivot (Center)
+  ctx.fillStyle = '#00d4ff';
+  ctx.beginPath();
+  ctx.arc(uj_world_x, uj_world_y, 6, 0, 2 * Math.PI);
+  ctx.fill();
+
+  // Draw Vertical Leg Stem (always straight up, 90 degrees)
+  ctx.strokeStyle = '#eef2fa';
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.moveTo(uj_world_x, uj_world_y);
+  ctx.lineTo(uj_world_x, uj_world_y - 60);
+  ctx.stroke();
+
+  // Draw Vertical Load Vector (42 kg Force Arrow acting down on UJ)
+  ctx.strokeStyle = '#ffb830';
+  ctx.fillStyle = '#ffb830';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(uj_world_x, uj_world_y - 50);
+  ctx.lineTo(uj_world_x, uj_world_y);
+  ctx.stroke();
+  // Arrow head
+  ctx.beginPath();
+  ctx.moveTo(uj_world_x, uj_world_y);
+  ctx.lineTo(uj_world_x - 5, uj_world_y - 8);
+  ctx.lineTo(uj_world_x + 5, uj_world_y - 8);
+  ctx.fill();
+
+  // Text label for weight
+  ctx.fillStyle = '#ffb830';
+  ctx.font = '500 10px sans-serif';
+  ctx.fillText(`Load: ${mass} kg`, uj_world_x + 10, uj_world_y - 35);
+}
+
+function updateChartAndTable(mass, footLen, height, activeOffset) {
+  const pAngles = [];
+  for (let p = -25; p <= 25; p += 1) pAngles.push(p);
+
+  const displayOffsets = [-4, -2, 0, 2, 4];
+  // Ensure the active user-selected offset is included in display
+  if (!displayOffsets.includes(activeOffset)) {
+    displayOffsets.push(activeOffset);
+    displayOffsets.sort((a,b)=>a-b);
+  }
+
+  const colors = {
+    '-4': '#ff3366',
+    '-2': '#ffb830',
+    '0': '#00e87b',
+    '2': '#00d4ff',
+    '4': '#af40ff'
+  };
+
+  const datasets = displayOffsets.map(off => {
+    const data = pAngles.map(p => calcTorque(mass, p, off, footLen, height));
+    const isUserActive = off === activeOffset;
+    return {
+      label: `Offset ${off >= 0 ? '+' : ''}${off.toFixed(1)} cm`,
+      data: data,
+      borderColor: isUserActive ? '#ffffff' : (colors[off] || '#9ca3af'),
+      borderWidth: isUserActive ? 3.0 : 1.5,
+      tension: 0.1,
+      pointRadius: 0
+    };
+  });
+
+  chart.data.labels = pAngles.map(p => p + '°');
+  chart.data.datasets = datasets;
+  chart.update();
+
+  // Generate Table
+  const tableHeader = document.getElementById('tableHeader');
+  tableHeader.innerHTML = '<th>Pitch Angle</th>' + displayOffsets.map(off => `<th>Offset ${off >= 0 ? '+' : ''}${off.toFixed(1)} cm</th>`).join('');
+
+  const tableBody = document.getElementById('tableBody');
+  tableBody.innerHTML = '';
+  const angles = [-25, -20, -15, -10, -5, 0, 5, 10, 15, 20, 25];
+
+  angles.forEach(ang => {
+    const tr = document.createElement('tr');
+    if (ang === parseFloat(document.getElementById('paramPitch').value)) tr.className = 'highlight';
+    
+    let html = `<td>${ang >= 0 ? '+' : ''}${ang}°</td>`;
+    displayOffsets.forEach(off => {
+      const val = calcTorque(mass, ang, off, footLen, height);
+      const isBold = off === activeOffset;
+      html += `<td class="mono ${isBold ? 'bold' : ''}">${val.toFixed(1)} N·m</td>`;
+    });
+    tr.innerHTML = html;
+    tableBody.appendChild(tr);
+  });
+}
+
+function initChart() {
+  const ctx = document.getElementById('torqueChart').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: []
+    },
+    options: {
+      animation: false,
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: '#c8d0e0',
+            font: { size: 9, family: 'Outfit' }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255, 255, 255, 0.05)' },
+          ticks: { color: '#5a6d90', font: { size: 8, family: 'JetBrains Mono' } }
+        },
+        y: {
+          title: { display: true, text: 'Required Torque (N·m)', color: '#c8d0e0', font: { size: 10, family: 'Outfit' } },
+          grid: { color: 'rgba(255, 255, 255, 0.05)' },
+          ticks: { color: '#5a6d90', font: { size: 8, family: 'JetBrains Mono' } }
+        }
+      }
+    }
+  });
+}
+
+window.onload = () => {
+  initChart();
+  updateSimulation();
+  
+  // Add listeners
+  ['Load', 'Offset', 'Length', 'Height', 'Pitch'].forEach(id => {
+    document.getElementById('param' + id).addEventListener('input', updateSimulation);
+  });
+};
+</script>
+</body>
+</html>

@@ -78,7 +78,7 @@ Static torque propagation uses the transpose of the Jacobian ($\boldsymbol{\tau}
 
 ## 🛠️ How to Run
 
-### 1. Web UI (Interactive Visualizers & Sizing Dashboard)
+### 1. Web UI (Interactive Visualizers & Sizing Dashboards)
 To start the local server and open the tools directly from a fresh terminal, run the following commands:
 ```bash
 # 1. Start the HTTP server in the background
@@ -91,6 +91,10 @@ xdg-open http://localhost:8000/index_orthogonal.html
 # 3. Open the Actuator Sizing & Sweep Dashboard (All Torque Tables & Graphs)
 xdg-open http://localhost:8000/sizing_report.html
 # (Alternative: google-chrome http://localhost:8000/sizing_report.html)
+
+# 4. Open the 42 kg Standing Load & Ankle Offset Pitch Torque Analyzer
+xdg-open http://localhost:8000/load_analysis.html
+# (Alternative: google-chrome http://localhost:8000/load_analysis.html)
 ```
 
 *(Note: The legacy standard parallel visualizer is also accessible at `http://localhost:8000/index.html`)*
@@ -126,6 +130,10 @@ python3 ankle_torque_solver.py
 
 # Orthogonal 90° yaw layout solver
 python3 ankle_orthogonal_solver.py
+
+# 42 kg Standing Load & Ankle Offset Pitch Torque Analyzer
+# (Runs on system Python3 to avoid conda package conflicts)
+/usr/bin/python3 ankle_load_offset_analysis.py
 ```
 
 #### C++ Kinematic Solver

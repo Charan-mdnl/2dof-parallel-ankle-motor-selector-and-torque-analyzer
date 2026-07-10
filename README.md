@@ -79,14 +79,21 @@ Static torque propagation uses the transpose of the Jacobian ($\boldsymbol{\tau}
 ## 🛠️ How to Run
 
 ### 1. Web UI (Interactive Visualizers & Sizing Dashboard)
-Start a local HTTP server in this directory:
+To start the local server and open the tools directly from a fresh terminal, run the following commands:
 ```bash
-python3 -m http.server 8000
+# 1. Start the HTTP server in the background
+python3 -m http.server 8000 &
+
+# 2. Open the 3D Mechanism Kinematic Visualizer (Mechanism Analysis Tool)
+xdg-open http://localhost:8000/index_orthogonal.html
+# (Alternative: google-chrome http://localhost:8000/index_orthogonal.html)
+
+# 3. Open the Actuator Sizing & Sweep Dashboard (All Torque Tables & Graphs)
+xdg-open http://localhost:8000/sizing_report.html
+# (Alternative: google-chrome http://localhost:8000/sizing_report.html)
 ```
-Then, open your web browser and navigate to:
-* **Interactive 3D Visualizer (Standard 2-RSS)**: `http://localhost:8000/index.html`
-* **Interactive 3D Visualizer (Orthogonal 90° Yaw)**: `http://localhost:8000/index_orthogonal.html`
-* **Actuator Sizing & Sweep Dashboard**: `http://localhost:8000/sizing_report.html`
+
+*(Note: The legacy standard parallel visualizer is also accessible at `http://localhost:8000/index.html`)*
 
 ---
 

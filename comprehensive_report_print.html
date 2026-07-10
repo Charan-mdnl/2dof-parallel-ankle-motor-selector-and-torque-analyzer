@@ -2,709 +2,677 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Robotic Ankle Joint Actuator Sizing & Comprehensive Sweep Report</title>
+<title>Ankle Joint Actuator Sizing Report</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-  @page {
-    size: A4;
-    margin: 1.2cm;
-  }
+  @page { size: A4; margin: 1.0cm 1.2cm; }
   @media print {
-    body { background: #fff; color: #000; padding: 0; margin: 0; font-size: 8pt; }
-    .page { page-break-after: always; padding: 0; margin: 0; border: none; box-shadow: none; background: transparent; }
+    body { background: #fff; color: #222; padding: 0; margin: 0; }
+    .page-break { page-break-before: always; }
     .no-print { display: none; }
     tr { page-break-inside: avoid; }
-    h1, h2, h3, h4 { color: #000 !important; }
-    p, li, td, th { color: #333 !important; }
+    h1, h2, h3, h4 { color: #111 !important; }
+    p, li, td, th, .note, .callout { color: #333 !important; }
+    .formula-box { background: #f5f7fa; border-color: #ccc; color: #004466; }
+    .image-card { border-color: #ddd; background: #fff; }
+    th { background: #f0f2f5 !important; color: #111 !important; }
+    th, td { border-color: #ddd !important; }
+    tr.highlight td { color: #005577 !important; font-weight: 700; }
+    .callout { background: #f0f7ff; border-color: #b0d0ff; }
+    .callout strong { color: #005577 !important; }
+    .section-head { border-color: #005577 !important; }
+    .chart-box { border-color: #ddd; background: #fff; }
+    .config-header { background: #f0f2f5 !important; border-color: #ccc !important; }
+    .config-header h2 { color: #111 !important; }
+    .geom-box { background: #f9fafb; border-color: #ddd; }
+    .verdict-pass { background: #e8f5e9; border-color: #a5d6a7; color: #1b5e20; }
+    .verdict-warn { background: #fff3e0; border-color: #ffcc80; color: #e65100; }
+    .verdict-fail { background: #ffebee; border-color: #ef9a9a; color: #b71c1c; }
   }
   @media screen {
-    body { background: #0b0f19; color: #d1d5db; padding: 40px; }
-    .page { background: #111827; max-width: 850px; margin: 0 auto 30px; padding: 40px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+    body { background: #0b0f19; color: #d1d5db; padding: 30px; }
+    .page-break { margin-top: 40px; padding-top: 20px; border-top: 2px dashed rgba(255,255,255,0.08); }
   }
-  body { font-family: 'Inter', sans-serif; line-height: 1.4; }
+  body { font-family: 'Inter', sans-serif; line-height: 1.45; max-width: 850px; margin: 0 auto; }
   h1, h2, h3, h4 { color: #f3f4f6; margin-top: 0; font-weight: 700; }
-  
-  /* Cover Page */
-  .cover { display: flex; flex-direction: column; justify-content: space-between; min-height: 240mm; }
-  .cover-header { margin-top: 100px; }
-  .cover-title { font-size: 26px; line-height: 1.2; margin-bottom: 20px; color: #00d4ff; }
-  @media print { .cover-title { color: #005577 !important; } }
-  .cover-subtitle { font-size: 13px; color: #9ca3af; font-weight: 400; margin-bottom: 40px; }
-  .cover-metadata { font-size: 10px; color: #6b7280; line-height: 1.8; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; }
-  @media print { .cover-metadata { border-color: #ccc; } }
+  h2 { font-size: 14px; border-bottom: 2px solid #00d4ff; padding-bottom: 3px; margin-top: 16px; margin-bottom: 8px; }
+  h3 { font-size: 10.5px; margin-top: 12px; color: #e5e7eb; margin-bottom: 4px; }
+  h4 { font-size: 9.5px; margin-top: 10px; color: #d1d5db; margin-bottom: 3px; }
+  p, li { margin-bottom: 5px; text-align: justify; font-size: 9.5px; color: #9ca3af; line-height: 1.45; }
+  ul { padding-left: 16px; margin: 4px 0; }
 
-  /* Headings & Text */
-  h2 { font-size: 15px; border-bottom: 2px solid #00d4ff; padding-bottom: 4px; margin-top: 18px; margin-bottom: 12px; }
-  @media print { h2 { border-color: #005577 !important; } }
-  h3 { font-size: 11px; margin-top: 15px; color: #e5e7eb; margin-bottom: 6px; }
-  p { margin-bottom: 8px; text-align: justify; font-size: 10.5px; color: #9ca3af; }
-  
-  /* Image Grid */
-  .image-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
-  .image-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; overflow: hidden; text-align: center; }
-  @media print { .image-card { border-color: #ddd; background: #fff; } }
+  /* Cover */
+  .cover { padding-top: 60px; padding-bottom: 30px; }
+  .cover-title { font-size: 24px; line-height: 1.2; margin-bottom: 12px; color: #00d4ff; }
+  @media print { .cover-title { color: #005577 !important; } }
+  .cover-subtitle { font-size: 11px; color: #9ca3af; font-weight: 400; margin-bottom: 20px; line-height: 1.5; }
+  .cover-metadata { font-size: 9.5px; color: #6b7280; line-height: 1.7; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; margin-top: 20px; }
+  @media print { .cover-metadata { border-color: #ccc; } }
+  .toc { margin-top: 20px; }
+  .toc-item { font-size: 10px; color: #9ca3af; padding: 2px 0; display: flex; justify-content: space-between; border-bottom: 1px dotted rgba(255,255,255,0.05); }
+  @media print { .toc-item { border-color: #eee; } }
+
+  /* Images */
+  .image-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 6px 0; }
+  .image-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; text-align: center; }
   .image-card img { width: 100%; height: auto; display: block; }
-  .image-card span { font-size: 8px; color: #6b7280; display: block; padding: 3px 0; text-transform: uppercase; font-weight: 600; }
+  .image-card span { font-size: 7px; color: #6b7280; display: block; padding: 2px 0; text-transform: uppercase; font-weight: 600; }
 
   /* Charts */
-  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 10px 0; }
-  .chart-box { position: relative; height: 160px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 10px; }
-  @media print { .chart-box { border-color: #ddd; background: #fff; } }
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 6px 0; }
+  .chart-box { position: relative; height: 125px; background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; padding: 6px; }
 
   /* Tables */
-  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 8px; }
-  th, td { padding: 4px 6px; border-bottom: 1px solid rgba(255,255,255,0.06); text-align: left; }
-  @media print { th, td { border-bottom-color: #ddd; } }
-  th { background: rgba(255,255,255,0.02); color: #f3f4f6; font-weight: 600; }
-  @media print { th { background: #f3f4f6; color: #000 !important; } }
-  td.mono { font-family: 'JetBrains Mono', monospace; font-size: 7.5px; }
-  tr.highlight td { font-weight: 600; color: #00d4ff; }
-  @media print { tr.highlight td { color: #005577 !important; } }
-  
-  .print-btn { display: inline-block; background: #00d4ff; color: #000; border: none; padding: 10px 20px; border-radius: 4px; font-weight: 600; cursor: pointer; text-decoration: none; margin-bottom: 20px; }
-  .print-btn:hover { background: #00bada; }
-  
-  .flex-row { display: flex; gap: 20px; }
-  .flex-col { flex: 1; }
-  
-  .formula-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 9px; line-height: 1.5; color: #00d4ff; margin: 10px 0; }
-  @media print { .formula-box { background: #f9f9f9; border-color: #ddd; color: #004466; } }
+  table { width: 100%; border-collapse: collapse; margin: 5px 0; font-size: 7px; }
+  th, td { padding: 2.5px 4px; border: 1px solid rgba(255,255,255,0.06); text-align: center; }
+  th { background: rgba(255,255,255,0.03); color: #f3f4f6; font-weight: 600; font-size: 6.5px; text-transform: uppercase; letter-spacing: 0.3px; }
+  td { font-family: 'JetBrains Mono', monospace; font-size: 7px; }
+  td:first-child { font-family: 'Inter', sans-serif; text-align: left; font-weight: 600; }
+  tr.highlight td { font-weight: 700; color: #00d4ff; }
+  tr.sub-header td { background: rgba(255,255,255,0.02); font-family: 'Inter', sans-serif; font-weight: 600; font-size: 7px; color: #9ca3af; text-align: left; }
+  @media print { tr.sub-header td { background: #f8f9fa; } }
+
+  .print-btn { display: inline-block; background: #00d4ff; color: #000; border: none; padding: 8px 16px; border-radius: 4px; font-weight: 600; cursor: pointer; margin-bottom: 16px; font-size: 12px; }
+  .formula-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 6px 10px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 8px; line-height: 1.4; color: #00d4ff; margin: 6px 0; }
+  .callout { background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.15); border-radius: 4px; padding: 6px 10px; margin: 6px 0; font-size: 9px; color: #9ca3af; }
+  .callout strong { color: #00d4ff; }
+  .note { font-size: 8px; color: #6b7280; font-style: italic; margin-top: 4px; }
+  .geom-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; padding: 6px 10px; margin: 6px 0; font-size: 8.5px; }
+  .geom-box .row { display: flex; justify-content: space-between; padding: 1px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+  .geom-box .row .label { color: #6b7280; }
+  .geom-box .row .value { color: #00d4ff; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+  @media print { .geom-box .row .value { color: #005577; } }
+
+  .config-header { background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.12); border-radius: 5px; padding: 8px 12px; margin-bottom: 8px; }
+  .config-header h2 { border: none; margin: 0; padding: 0; font-size: 13px; color: #00d4ff; }
+  .config-header p { margin: 3px 0 0; font-size: 9px; }
+
+  .verdict-pass { background: rgba(0,232,123,0.08); border: 1px solid rgba(0,232,123,0.2); border-radius: 4px; padding: 4px 8px; font-size: 8.5px; color: #00e87b; display: inline-block; margin: 3px 3px 3px 0; }
+  .verdict-warn { background: rgba(255,184,48,0.08); border: 1px solid rgba(255,184,48,0.2); border-radius: 4px; padding: 4px 8px; font-size: 8.5px; color: #ffb830; display: inline-block; margin: 3px 3px 3px 0; }
+  .verdict-fail { background: rgba(255,51,102,0.08); border: 1px solid rgba(255,51,102,0.2); border-radius: 4px; padding: 4px 8px; font-size: 8.5px; color: #ff3366; display: inline-block; margin: 3px 3px 3px 0; }
+
+  .flex-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .flex-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 </style>
 </head>
 <body>
 
-  <div class="page no-print" style="max-width: 850px; margin: 0 auto; text-align: right; padding: 10px 0; background: transparent; border: none; box-shadow: none;">
-    <button class="print-btn" onclick="window.print()">Print to PDF / Save as PDF</button>
+<div class="no-print" style="text-align:right;padding:10px 0;">
+  <button class="print-btn" onclick="window.print()">Print to PDF / Save as PDF</button>
+</div>
+
+<!-- ==================== COVER ==================== -->
+<div class="cover">
+  <h1 class="cover-title">2-DOF Robotic Ankle Joint<br>Actuator Sizing Report</h1>
+  <p class="cover-subtitle">
+    Complete torque evaluation of three Robstride motors (RS02, RS03, RS04) across four mechanism configurations for a 2-degree-of-freedom humanoid ankle joint. Each configuration is analyzed at every joint angle to determine worst-case torque capacity for both continuous operation and peak impact loading.
+  </p>
+
+  <div class="toc">
+    <h3 style="margin-bottom:6px">Contents</h3>
+    <div class="toc-item"><span>1. How the Ankle Mechanism Works</span></div>
+    <div class="toc-item"><span>2. The Four Configurations Explained</span></div>
+    <div class="toc-item"><span>3. Motor Specifications</span></div>
+    <div class="toc-item"><span>4. Overall Sizing Verdict — All Motors × All Configurations</span></div>
+    <div class="toc-item"><span>5. Config 1: Standard Layout, E = 2.3 cm (Current Design)</span></div>
+    <div class="toc-item"><span>6. Config 2: Standard Layout, E = 5.0 cm (Wide Spread)</span></div>
+    <div class="toc-item"><span>7. Config 3: Orthogonal Layout, E = 2.3 cm</span></div>
+    <div class="toc-item"><span>8. Config 4: Orthogonal Layout, E = 5.0 cm</span></div>
+    <div class="toc-item"><span>9. Cross-Configuration Comparison Charts</span></div>
+    <div class="toc-item"><span>10. Conclusions and Recommendations</span></div>
   </div>
 
-  <!-- Page 1: Cover & Sizing Verdict -->
-  <div class="page">
-    <div class="cover">
-      <div class="cover-header">
-        <h1 class="cover-title">2-DOF Robotic Ankle Joint Actuator Sizing & Workspace Performance Report</h1>
-        <p class="cover-subtitle">Complete torque estimation and workspace capacity analysis of standard parallel mounting layouts for Robstride RS02, RS03, and RS04 actuators. Tilted decoupled orthogonal mounting variations and multi-parameter sweeps are detailed separately at the end.</p>
-      </div>
-      
-      <h2>Actuator Sizing Verdict: Standard Parallel Layout</h2>
-      <p>
-        The table below summarizes the worst-case minimum ankle torque capacities across the pitch (Roll = 0°) and roll (Pitch = 0°) sweeps for each motor under the <strong>Current robot design (Ankle Spread E = 2.3 cm)</strong> and the <strong>Parallel design (Ankle Spread E = 5.0 cm)</strong>.
-      </p>
-      <table>
-        <thead>
-          <tr>
-            <th>Motor Model</th>
-            <th>Continuous Rated Limit (N·m)</th>
-            <th>Peak Impact Limit (N·m)</th>
-            <th>Current Design (E=2.3 cm) Min Pitch (N·m)</th>
-            <th>Current Design (E=2.3 cm) Min Roll (N·m)</th>
-            <th>Parallel Design (E=5.0 cm) Min Pitch (N·m)</th>
-            <th>Parallel Design (E=5.0 cm) Min Roll (N·m)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Robstride RS02</td>
-            <td>6.0 N·m</td>
-            <td>17.0 N·m</td>
-            <td>17.82 Rated / 50.50 Peak</td>
-            <td>4.44 Rated / 12.59 Peak</td>
-            <td>18.03 Rated / 51.08 Peak</td>
-            <td>11.90 Rated / 33.72 Peak</td>
-          </tr>
-          <tr class="highlight">
-            <td>Robstride RS03</td>
-            <td>20.0 N·m</td>
-            <td>60.0 N·m</td>
-            <td>66.84 Rated / 200.53 Peak</td>
-            <td>14.36 Rated / 43.07 Peak</td>
-            <td>67.20 Rated / 201.60 Peak</td>
-            <td>40.00 Rated / 120.00 Peak</td>
-          </tr>
-          <tr>
-            <td>Robstride RS04</td>
-            <td>40.0 N·m</td>
-            <td>120.0 N·m</td>
-            <td>133.68 Rated / 401.05 Peak</td>
-            <td>28.71 Rated / 86.13 Peak</td>
-            <td>134.40 Rated / 403.20 Peak</td>
-            <td>80.00 Rated / 240.00 Peak</td>
-          </tr>
-        </tbody>
-      </table>
-      <p>
-        <strong>Sizing Summary:</strong> While pitch torque is highly robust in all standard configurations, the narrow spread (E = 2.3 cm) severely restricts the leverage for Roll control, providing only <strong>14.36 N·m continuous</strong> on RS03. Widening the ankle spread to E = 5.0 cm multiplies roll capacity by **2.78x**, providing a much safer **40.00 N·m** rated limit.
-      </p>
-
-      <div class="cover-metadata">
-        <strong>Prepared For:</strong> Robotic Design Review & Ankle Actuator Selection<br>
-        <strong>Author:</strong> Antigravity Autonomous Sizing Subsystem<br>
-        <strong>Dimensions Version:</strong> Verified Physical Drawing Mappings<br>
-        <strong>Date:</strong> July 9, 2026
-      </div>
-    </div>
+  <div class="cover-metadata">
+    <strong>Prepared For:</strong> Ankle Actuator Selection & Design Review<br>
+    <strong>Robot System:</strong> 2-DOF Parallel Linkage Ankle (2-RSS Configuration)<br>
+    <strong>Motors Evaluated:</strong> Robstride RS02 (6 N·m rated / 17 N·m peak), RS03 (20 / 60), RS04 (40 / 120)<br>
+    <strong>Configurations:</strong> Standard Parallel × 2 spread widths + Orthogonal × 2 spread widths<br>
+    <strong>Date:</strong> July 10, 2026
   </div>
+</div>
 
-  <!-- Page 2: Sizing Equations & Calculation Methods -->
-  <div class="page">
-    <h2>2. Kinematics Calculation Methods & Formulas</h2>
-    <p>
-      The linkage is modeled as a closed-loop parallel kinematic system. The position of each servo motor's crank tip c_i is constrained by the length of the pushrod L_i to the footplate attachment joint a_i:
-    </p>
-    <div class="formula-box">
-      Linkage Length Constraint:<br>
-      ||c_i(θ_i) - a_i(p, r)||^2 = L_i^2   (for i = 1, 2)
-    </div>
-    <p>
-      Where:
-      <ul>
-        <li><strong>θ_i:</strong> Angular position of Motor i.</li>
-        <li><strong>p, r:</strong> Pitch and Roll orientation of the footplate.</li>
-        <li><strong>c_i(θ_i):</strong> Position of the crank tip in the global chassis frame.</li>
-        <li><strong>a_i(p, r):</strong> Position of the pushrod attachment joint on the footplate in the global chassis frame:
-          <div style="margin: 5px 0; color: #ff6b35;">a_i = a_c + R_x(p) · R_y(r) · a_ib</div>
-          where a_c is the central Universal Joint coordinate and a_ib is the attachment joint position in the foot's local frame.
-        </li>
-      </ul>
-    </p>
-    
-    <h3>2.1 Jacobian and Torque Mapping</h3>
-    <p>
-      Differentiating the constraint equations with respect to time yields the system Jacobian J, which maps footplate velocities [ṗ, ṙ]ᵀ to motor velocities [θ̇_1, θ̇_2]ᵀ:
-    </p>
-    <div class="formula-box">
-      Velocity Mapping:  θ̇ = J · ẋ<br>
-      Jacobian Element (Row i, Col j):<br>
-      J_ij = ((c_i - a_i) · (∂a_i / ∂x_j)) / ((c_i - a_i) · (∂c_i / ∂θ_i))
-    </div>
-    <p>
-      By the Principle of Virtual Work, the torque transmission is mapped as:
-    </p>
-    <div class="formula-box">
-      Torque Mapping:  τ_ankle = Jᵀ · τ_motor
-    </div>
-    <p>
-      For a given motor torque limit (Rated/Peak), the ankle output torque is determined as the sum of contributions under motor limits, finding the worst-case minimum capacity across the Pitch (from -25° to +25°) and Roll (from -40° to +40°) sweeps.
-    </p>
-    
-    <h3>2.2 Kinematics Dimensions Reference</h3>
-    <ul>
-      <li><strong>Robstride RS02 (Current Base):</strong> Crank 1/2 Radius = 2.5 cm, Pushrod 1 Length = 24.3 cm, Universal Joint to Motor 2 Height = 16.0 cm, Foot to Universal Joint Height = 3.6 cm, Universal Joint to Motor 1 Height = 23.5 cm, Pushrod 2 Length = 16.3 cm.</li>
-      <li><strong>Robstride RS03 & RS04 (New Base):</strong> Crank 1/2 Radius = 2.5 cm, Pushrod 1 Length = 22.2 cm, Universal Joint to Motor 2 Height = 11.2 cm, Foot to Universal Joint Height = 3.6 cm, Universal Joint to Motor 1 Height = 22.2 cm, Pushrod 2 Length = 11.2 cm.</li>
-    </ul>
+<!-- ==================== SECTION 1: HOW IT WORKS ==================== -->
+<div class="page-break"></div>
+<h2>1. How the Ankle Mechanism Works</h2>
+
+<h3>1.1 What is a 2-DOF Ankle?</h3>
+<p>The ankle joint rotates around two axes: <strong>Pitch</strong> (tilting the foot forward/backward, like pressing a gas pedal) and <strong>Roll</strong> (tilting the foot sideways, like standing on the edge of your foot). These two combined let the robot balance on uneven ground.</p>
+
+<h3>1.2 What Drives It?</h3>
+<p>Two rotary servo motors sit inside the robot's lower leg. Each motor has a short arm (the <strong>crank</strong>) attached to its output shaft. A long rod (the <strong>pushrod</strong>) connects the end of each crank arm down to the foot platform through a universal joint (U-Joint). When a motor spins its crank, the pushrod pushes or pulls the foot, tilting it. The two motors working together control both pitch and roll.</p>
+
+<h3>1.3 Key Dimensions</h3>
+<table style="font-size:8px;">
+  <thead><tr><th style="text-align:left;width:60px">Label</th><th style="text-align:left;width:160px">Full Name</th><th style="text-align:left">What It Means</th></tr></thead>
+  <tbody>
+    <tr><td style="text-align:left">r₁, r₂</td><td style="text-align:left">Crank 1 / Crank 2 Radius</td><td style="text-align:left">Length of the motor's arm. Bigger = more leverage but needs more space.</td></tr>
+    <tr><td style="text-align:left">L₁</td><td style="text-align:left">Pushrod 1 Length</td><td style="text-align:left">Length of the connecting rod from Motor 1's crank to the foot.</td></tr>
+    <tr><td style="text-align:left">L₂</td><td style="text-align:left">Pushrod 2 Length</td><td style="text-align:left">Length of the connecting rod from Motor 2's crank to the foot.</td></tr>
+    <tr><td style="text-align:left">H</td><td style="text-align:left">U-Joint to Motor 1 Height</td><td style="text-align:left">Vertical distance from ankle pivot up to the top motor (Motor 1).</td></tr>
+    <tr><td style="text-align:left">D</td><td style="text-align:left">U-Joint to Motor 2 Height</td><td style="text-align:left">Vertical distance from ankle pivot up to the bottom motor (Motor 2).</td></tr>
+    <tr><td style="text-align:left">G</td><td style="text-align:left">Foot-to-UJoint Height</td><td style="text-align:left">Height of the ankle pivot point above the bottom of the foot plate.</td></tr>
+    <tr><td style="text-align:left">E</td><td style="text-align:left">Ankle Spread</td><td style="text-align:left">Horizontal gap between the two pushrod attachment points on the foot. Wider = better roll torque.</td></tr>
+    <tr><td style="text-align:left">L</td><td style="text-align:left">Motor Depth Y-Offset</td><td style="text-align:left">How far forward/backward the motors are offset from the ankle center.</td></tr>
+    <tr><td style="text-align:left">h</td><td style="text-align:left">Attachment Offset</td><td style="text-align:left">Vertical offset of pushrod attachment on the foot above/below the U-Joint.</td></tr>
+  </tbody>
+</table>
+
+<h3>1.4 How Motor Torque Converts to Ankle Torque</h3>
+<p>Motor torque does not transfer 1:1 to the ankle. The linkage geometry amplifies or reduces it depending on the foot angle. We use the <strong>Jacobian matrix</strong> (a 2×2 matrix that changes at every foot position) to compute exactly how much ankle torque results from a given motor torque:</p>
+<div class="formula-box">
+  τ_ankle = Jᵀ × τ_motor &nbsp;&nbsp;|&nbsp;&nbsp; J is the 2×2 Jacobian at the current (Pitch, Roll) position<br>
+  For Pitch torque capacity: τ_pitch = (|J₁₁| + |J₂₁|) × τ_motor &nbsp;(both motors contributing to pitch)<br>
+  For Roll torque capacity: τ_roll = (|J₁₂| + |J₂₂|) × τ_motor &nbsp;(both motors contributing to roll)
+</div>
+<p>The <strong>worst-case minimum</strong> across all joint angles is what matters. If at any angle the torque drops too low, the robot falls.</p>
+
+<h3>1.5 How the Evaluation Sweep Works</h3>
+<div class="flex-2col">
+  <div class="callout"><strong>Pitch Sweep:</strong> Fix Roll = 0°. Move Pitch from −25° to +25° in 1° steps. At each step, compute ankle pitch torque using the Jacobian. Record the minimum value and the angle where it occurs.</div>
+  <div class="callout"><strong>Roll Sweep:</strong> Fix Pitch = 0°. Move Roll from −40° to +40° in 2° steps. At each step, compute ankle roll torque using the Jacobian. Record the minimum value and the angle where it occurs.</div>
+</div>
+
+<!-- ==================== SECTION 2: CONFIGURATIONS ==================== -->
+<h2>2. The Four Configurations</h2>
+
+<div class="flex-2col">
+  <div>
+    <h4>Standard Parallel Layout</h4>
+    <p>Both motors face the same direction (rotation axes parallel). When the foot pitches, both motors cooperate (push together). When the foot rolls, motors oppose each other (one pushes, one pulls). Result: <strong>strong pitch, weak roll</strong> — especially with narrow ankle spread.</p>
   </div>
-
-  <!-- Page 3: Configuration 1: Standard Current E=2.3 -->
-  <div class="page">
-    <h2>3. Configuration 1: Standard Layout, Current Mechanism (E = 2.3 cm)</h2>
-    <p>
-      <strong>Parameters:</strong> Standard parallel motor axes (both face front). Ankle Spread E = 2.3 cm. Height G = 3.6 cm, H = 23.5 cm, D = 16.0 cm. Motor Depth Y-Offset L = 3.8 cm.
-    </p>
-    
-    <div class="image-grid">
-      <div class="image-card"><img src="report_images/conf1_front.png"><span>Front View</span></div>
-      <div class="image-card"><img src="report_images/conf1_side.png"><span>Side View</span></div>
-      <div class="image-card"><img src="report_images/conf1_iso.png"><span>Isometric View</span></div>
-    </div>
-
-    <div class="charts-row">
-      <div class="chart-box"><canvas id="c1_pitch"></canvas></div>
-      <div class="chart-box"><canvas id="c1_roll"></canvas></div>
-    </div>
-
-    <h3>Configuration 1 Torque Table (L = 3.8 cm, h = 0.0 cm)</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Motor Model</th>
-          <th>Continuous Rated Torque Capacity (N·m)</th>
-          <th>Peak Impact Torque Capacity (N·m)</th>
-          <th>Rated Min Pitch (Pose)</th>
-          <th>Rated Min Roll (Pose)</th>
-          <th>Peak Min Pitch (Pose)</th>
-          <th>Peak Min Roll (Pose)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>RS02</td><td>6.0</td><td>17.0</td><td>17.82 (-16.5°)</td><td>4.44 (+40.0°)</td><td>50.50 (-16.5°)</td><td>12.59 (+40.0°)</td></tr>
-        <tr class="highlight"><td>RS03</td><td>20.0</td><td>60.0</td><td>66.84 (-3.5°)</td><td>14.36 (+40.0°)</td><td>200.53 (-3.5°)</td><td>43.07 (+40.0°)</td></tr>
-        <tr><td>RS04</td><td>40.0</td><td>120.0</td><td>133.68 (-3.5°)</td><td>28.71 (+40.0°)</td><td>401.05 (-3.5°)</td><td>86.13 (+40.0°)</td></tr>
-      </tbody>
-    </table>
+  <div>
+    <h4>Orthogonal Layout (Top Motor Rotated 90°)</h4>
+    <p>Motor 1 (top) is rotated 90° in yaw so its crank sweeps side-to-side. This separates the motors' action planes: Motor 1 primarily controls roll, Motor 2 primarily controls pitch. Result: <strong>balanced pitch and roll</strong> — decoupled axes.</p>
   </div>
+</div>
 
-  <!-- Page 4: Configuration 2: Standard Parallel E=5.0 -->
-  <div class="page">
-    <h2>4. Configuration 2: Standard Layout, Parallel Mechanism (E = 5.0 cm)</h2>
-    <p>
-      <strong>Parameters:</strong> Standard parallel motor axes (both face front). Ankle Spread E = 5.0 cm. Height G = 3.6 cm, H = 23.5 cm, D = 16.0 cm. Motor Depth Y-Offset L = 3.8 cm.
-    </p>
-    
-    <div class="image-grid">
-      <div class="image-card"><img src="report_images/conf2_front.png"><span>Front View</span></div>
-      <div class="image-card"><img src="report_images/conf2_side.png"><span>Side View</span></div>
-      <div class="image-card"><img src="report_images/conf2_iso.png"><span>Isometric View</span></div>
-    </div>
-
-    <div class="charts-row">
-      <div class="chart-box"><canvas id="c2_pitch"></canvas></div>
-      <div class="chart-box"><canvas id="c2_roll"></canvas></div>
-    </div>
-
-    <h3>Configuration 2 Torque Table (L = 3.8 cm, h = 0.0 cm)</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Motor Model</th>
-          <th>Continuous Rated Torque Capacity (N·m)</th>
-          <th>Peak Impact Torque Capacity (N·m)</th>
-          <th>Rated Min Pitch (Pose)</th>
-          <th>Rated Min Roll (Pose)</th>
-          <th>Peak Min Pitch (Pose)</th>
-          <th>Peak Min Roll (Pose)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>RS02</td><td>6.0</td><td>17.0</td><td>18.03 (-13.5°)</td><td>11.90 (+33.0°)</td><td>51.08 (-13.5°)</td><td>33.72 (+33.0°)</td></tr>
-        <tr class="highlight"><td>RS03</td><td>20.0</td><td>60.0</td><td>67.20 (+0.0°)</td><td>40.00 (-35.5°)</td><td>201.60 (+0.0°)</td><td>120.00 (-32.0°)</td></tr>
-        <tr><td>RS04</td><td>40.0</td><td>120.0</td><td>134.40 (+0.0°)</td><td>80.00 (-35.5°)</td><td>403.20 (+0.0°)</td><td>240.00 (-32.0°)</td></tr>
-      </tbody>
-    </table>
+<div class="flex-2col" style="margin-top:6px">
+  <div>
+    <h4>Ankle Spread E = 2.3 cm (Current Design)</h4>
+    <p>Narrow gap between pushrod attachment points. Gives the motors very little lateral leverage for roll. This is the existing robot design.</p>
   </div>
-
-  <!-- Page 5: Why Orthogonal? Layout Decoupling -->
-  <div class="page">
-    <h2>5. Why Orthogonal? Pitch & Roll Coupling Decoupling</h2>
-    <p>
-      In the Standard Parallel layout, both motor crank shafts are parallel (facing front). When the foot tilts in Roll, the pushrods move in opposite directions (push-pull). However, because the linkages are located in the same vertical plane, they must act against a very narrow lateral spread. This couples the motors and results in highly asymmetric torque: Pitch capacity is high, but Roll capacity is extremely weak.
-    </p>
-    <p>
-      The <strong>Orthogonal layout</strong> decouples this system by rotating Motor 1 (the upper actuator) by 90 degrees in yaw, so it sweeps in the YZ plane (perpendicular to Motor 2). This separates the actuators' main planes of action:
-      <ul>
-        <li>Motor 1 acts primarily in the pitch plane (sweeping front/back).</li>
-        <li>Motor 2 acts primarily in the roll plane (sweeping left/right).</li>
-      </ul>
-    </p>
-    <div class="image-grid" style="grid-template-columns: 1fr 1fr 1fr; max-width: 600px; margin: 10px auto;">
-      <div class="image-card"><img src="report_images/conf3_front.png"><span>Ortho Front</span></div>
-      <div class="image-card"><img src="report_images/conf3_side.png"><span>Ortho Side</span></div>
-      <div class="image-card"><img src="report_images/conf3_iso.png"><span>Ortho Iso</span></div>
-    </div>
-    <p>
-      This physical separation multiplies Roll torque capacity by <strong>over 2.6x</strong> in the narrow design (112.6 N·m peak vs 44.4 N·m peak on RS03), providing highly isotropic (balanced) control torque in both axes.
-    </p>
+  <div>
+    <h4>Ankle Spread E = 5.0 cm (Parallel Design)</h4>
+    <p>Wider gap between attachment points. Directly increases roll torque by providing a wider base for the push-pull action.</p>
   </div>
+</div>
 
-  <!-- Page 6: Configuration 3: Orthogonal Current E=2.3 -->
-  <div class="page">
-    <h2>6. Configuration 3: Orthogonal Layout, Current Mechanism (E = 2.3 cm)</h2>
-    <p>
-      <strong>Parameters:</strong> Decoupled orthogonal motor axes (top motor rotated 90°). Ankle Spread E = 2.3 cm. Height G = 3.6 cm, H = 23.5 cm, D = 16.0 cm. Motor Depth Y-Offset L = 3.8 cm.
-    </p>
-    
-    <div class="image-grid">
-      <div class="image-card"><img src="report_images/conf3_front.png"><span>Front View</span></div>
-      <div class="image-card"><img src="report_images/conf3_side.png"><span>Side View</span></div>
-      <div class="image-card"><img src="report_images/conf3_iso.png"><span>Isometric View</span></div>
-    </div>
+<div class="callout" style="margin-top:8px">
+  <strong>The 4 Configurations:</strong><br>
+  <strong>Config 1:</strong> Standard + E=2.3 cm (current robot) &nbsp;|&nbsp; <strong>Config 2:</strong> Standard + E=5.0 cm (widened)<br>
+  <strong>Config 3:</strong> Orthogonal + E=2.3 cm (decoupled, compact) &nbsp;|&nbsp; <strong>Config 4:</strong> Orthogonal + E=5.0 cm (decoupled, wide)
+</div>
 
-    <div class="charts-row">
-      <div class="chart-box"><canvas id="c3_pitch"></canvas></div>
-      <div class="chart-box"><canvas id="c3_roll"></canvas></div>
-    </div>
+<!-- ==================== SECTION 3: MOTORS ==================== -->
+<h2>3. Motor Specifications</h2>
+<table style="font-size:8.5px">
+  <thead><tr><th style="text-align:left">Motor</th><th>Continuous Rated Torque</th><th>Peak Impact Torque</th><th style="text-align:left">Geometry Used</th></tr></thead>
+  <tbody>
+    <tr><td style="text-align:left;font-family:Inter">RS02</td><td>6.0 N·m</td><td>17.0 N·m</td><td style="text-align:left;font-size:7px">r=2.5, L₁=24.3, L₂=16.3, H=23.5, D=16.0, G=3.6, L=3.8 cm</td></tr>
+    <tr><td style="text-align:left;font-family:Inter">RS03</td><td>20.0 N·m</td><td>60.0 N·m</td><td style="text-align:left;font-size:7px">r=2.5, L₁=22.2, L₂=11.2, H=22.2, D=11.2, G=3.6, L=3.8 cm</td></tr>
+    <tr><td style="text-align:left;font-family:Inter">RS04</td><td>40.0 N·m</td><td>120.0 N·m</td><td style="text-align:left;font-size:7px">r=2.5, L₁=22.2, L₂=11.2, H=22.2, D=11.2, G=3.6, L=3.8 cm</td></tr>
+  </tbody>
+</table>
+<p class="note">RS02 uses the current base dimensions from the existing robot. RS03 and RS04 use updated dimensions from new physical measurements.</p>
 
-    <h3>Configuration 3 Torque Table (L = 3.8 cm, h = 0.0 cm)</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Motor Model</th>
-          <th>Continuous Rated Torque Capacity (N·m)</th>
-          <th>Peak Impact Torque Capacity (N·m)</th>
-          <th>Rated Min Pitch (Pose)</th>
-          <th>Rated Min Roll (Pose)</th>
-          <th>Peak Min Pitch (Pose)</th>
-          <th>Peak Min Roll (Pose)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>RS02</td><td>6.0</td><td>17.0</td><td>11.80 (-14.5°)</td><td>11.26 (-28.0°)</td><td>33.44 (-14.5°)</td><td>31.90 (-28.0°)</td></tr>
-        <tr class="highlight"><td>RS03</td><td>20.0</td><td>60.0</td><td>42.50 (-4.5°)</td><td>42.71 (-2.0°)</td><td>127.50 (-4.5°)</td><td>128.14 (-2.0°)</td></tr>
-        <tr><td>RS04</td><td>40.0</td><td>120.0</td><td>85.00 (-4.5°)</td><td>85.42 (-2.0°)</td><td>255.01 (-4.5°)</td><td>256.27 (-2.0°)</td></tr>
-      </tbody>
-    </table>
-  </div>
+<!-- ==================== SECTION 4: OVERALL VERDICT ==================== -->
+<div class="page-break"></div>
+<h2>4. Overall Sizing Verdict — Master Performance Matrix</h2>
+<p>Guaranteed worst-case minimum ankle torque across the Pitch [−25°, +25°] and Roll [−40°, +40°] workspace limits, alongside the critical pose angles where the minimum values occur.</p>
 
-  <!-- Page 7: Configuration 4: Orthogonal Parallel E=5.0 -->
-  <div class="page">
-    <h2>7. Configuration 4: Orthogonal Layout, Parallel Mechanism (E = 5.0 cm)</h2>
-    <p>
-      <strong>Parameters:</strong> Decoupled orthogonal motor axes. Ankle Spread E = 5.0 cm. Height G = 3.6 cm, H = 23.5 cm, D = 16.0 cm. Motor Depth Y-Offset L = 3.8 cm.
-    </p>
-    
-    <div class="image-grid">
-      <div class="image-card"><img src="report_images/conf4_front.png"><span>Front View</span></div>
-      <div class="image-card"><img src="report_images/conf4_side.png"><span>Side View</span></div>
-      <div class="image-card"><img src="report_images/conf4_iso.png"><span>Isometric View</span></div>
-    </div>
+<table style="font-size: 7.5px;">
+  <thead>
+    <tr>
+      <th style="text-align:left; width:130px;">Configuration</th>
+      <th style="text-align:left; width:50px;">Motor</th>
+      <th>Limit Level</th>
+      <th>Motor Torque</th>
+      <th>Min Ankle Pitch</th>
+      <th>Critical Pitch Pose</th>
+      <th>Min Ankle Roll</th>
+      <th>Critical Roll Pose</th>
+      <th>Balance Ratio (P/R)</th>
+    </tr>
+  </thead>
+  <tbody id="master_matrix_body"></tbody>
+</table>
 
-    <div class="charts-row">
-      <div class="chart-box"><canvas id="c4_pitch"></canvas></div>
-      <div class="chart-box"><canvas id="c4_roll"></canvas></div>
-    </div>
+<div class="callout">
+  <strong>Key Takeaways:</strong>
+  <ul>
+    <li><strong>Config 1 (Standard, E=2.3):</strong> Roll torque is dangerously low (only 4.44 N·m continuous / 12.59 N·m peak on RS02). Robot cannot resist lateral disturbances.</li>
+    <li><strong>Config 2 (Standard, E=5.0):</strong> Widening ankle spread to 5.0 cm boosts roll by <strong>2.8×</strong> (RS03: 14.36 → 40.00 N·m continuous) without modifying motor positions.</li>
+    <li><strong>Config 3 (Orthogonal, E=2.3):</strong> Decoupled orthogonal axes give balanced pitch/roll torques (RS03: 42.50 / 42.71 N·m continuous) even with a narrow spread.</li>
+    <li><strong>Config 4 (Orthogonal, E=5.0):</strong> Combining orthogonal mounting and wide spread yields perfectly symmetric torque (RS03: 53.60 / 53.60 N·m continuous).</li>
+  </ul>
+</div>
 
-    <h3>Configuration 4 Torque Table (L = 3.8 cm, h = 0.0 cm)</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Motor Model</th>
-          <th>Continuous Rated Torque Capacity (N·m)</th>
-          <th>Peak Impact Torque Capacity (N·m)</th>
-          <th>Rated Min Pitch (Pose)</th>
-          <th>Rated Min Roll (Pose)</th>
-          <th>Peak Min Pitch (Pose)</th>
-          <th>Peak Min Roll (Pose)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>RS02</td><td>6.0</td><td>17.0</td><td>15.01 (-14.5°)</td><td>14.52 (-25.0°)</td><td>42.52 (-14.5°)</td><td>41.15 (-25.0°)</td></tr>
-        <tr class="highlight"><td>RS03</td><td>20.0</td><td>60.0</td><td>53.60 (+0.0°)</td><td>53.60 (+0.0°)</td><td>160.80 (+0.0°)</td><td>160.80 (+0.0°)</td></tr>
-        <tr><td>RS04</td><td>40.0</td><td>120.0</td><td>107.20 (+0.0°)</td><td>107.20 (+0.0°)</td><td>321.60 (+0.0°)</td><td>321.60 (+0.0°)</td></tr>
-      </tbody>
-    </table>
-  </div>
+<!-- ==================== CONFIG 1 ==================== -->
+<div class="page-break"></div>
+<div class="config-header">
+  <h2>5. Configuration 1: Standard Layout, E = 2.3 cm (Current Design)</h2>
+  <p>Both motors face forward (0° yaw). Ankle spread = 2.3 cm. This is the existing robot design. Strong pitch but extremely weak roll.</p>
+</div>
 
-  <!-- Page 8: End Page - Parametric Sweeps: Depth L & Offset h (RS02) -->
-  <div class="page">
-    <h2>8. Parametric Sweeps: Motor Depth (L) & Attachment Offset (h) (RS02)</h2>
-    <p>
-      To analyze joint geometry sensitivity, we perform sweeps of the Motor Depth Y-Offset (L) and the Attachment Offset (h) on the Robstride RS02 under both Standard and Orthogonal layouts.
-    </p>
+<div class="image-grid">
+  <div class="image-card"><img src="report_images/conf1_front.png"><span>Front View</span></div>
+  <div class="image-card"><img src="report_images/conf1_iso.png"><span>Isometric View</span></div>
+</div>
 
-    <h3>8.1 RS02 Standard Layout Sweep (Limit: 6.0 N·m Rated / 17.0 N·m Peak)</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Ankle Spread (E) (cm)</th>
-          <th>Motor Depth Y-Offset (L) (cm)</th>
-          <th>Attachment Offset (h) (cm)</th>
-          <th>Rated Min Pitch (N·m)</th>
-          <th>Rated Min Roll (N·m)</th>
-          <th>Peak Min Pitch (N·m)</th>
-          <th>Peak Min Roll (N·m)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>2.3</td><td>3.2</td><td>-1.0</td><td>15.45</td><td>4.61</td><td>43.76</td><td>13.07</td></tr>
-        <tr class="highlight"><td>2.3</td><td>3.8</td><td>0.0</td><td>17.82</td><td>4.44</td><td>50.50</td><td>12.59</td></tr>
-        <tr><td>2.3</td><td>4.4</td><td>1.0</td><td>21.35</td><td>4.25</td><td>60.50</td><td>12.04</td></tr>
-        <tr><td>5.0</td><td>3.2</td><td>-1.0</td><td>15.71</td><td>10.92</td><td>44.52</td><td>30.95</td></tr>
-        <tr class="highlight"><td>5.0</td><td>3.8</td><td>0.0</td><td>18.03</td><td>11.90</td><td>51.08</td><td>33.72</td></tr>
-        <tr><td>5.0</td><td>4.4</td><td>1.0</td><td>21.53</td><td>14.90</td><td>61.01</td><td>42.23</td></tr>
-      </tbody>
-    </table>
+<div class="charts-row">
+  <div class="chart-box"><canvas id="c1_pitch"></canvas></div>
+  <div class="chart-box"><canvas id="c1_roll"></canvas></div>
+</div>
 
-    <h3>8.2 RS02 Orthogonal Layout Sweep (Limit: 6.0 N·m Rated / 17.0 N·m Peak)</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Ankle Spread (E) (cm)</th>
-          <th>Motor Depth Y-Offset (L) (cm)</th>
-          <th>Attachment Offset (h) (cm)</th>
-          <th>Rated Min Pitch (N·m)</th>
-          <th>Rated Min Roll (N·m)</th>
-          <th>Peak Min Pitch (N·m)</th>
-          <th>Peak Min Roll (N·m)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>2.3</td><td>3.2</td><td>-1.0</td><td>10.56</td><td>9.16</td><td>29.91</td><td>25.95</td></tr>
-        <tr class="highlight"><td>2.3</td><td>3.8</td><td>0.0</td><td>11.80</td><td>11.26</td><td>33.44</td><td>31.90</td></tr>
-        <tr><td>2.3</td><td>4.4</td><td>1.0</td><td>14.78</td><td>14.19</td><td>41.87</td><td>40.21</td></tr>
-        <tr><td>5.0</td><td>3.2</td><td>-1.0</td><td>14.00</td><td>12.48</td><td>39.66</td><td>35.35</td></tr>
-        <tr class="highlight"><td>5.0</td><td>3.8</td><td>0.0</td><td>15.01</td><td>14.52</td><td>42.52</td><td>41.15</td></tr>
-        <tr><td>5.0</td><td>4.4</td><td>1.0</td><td>17.62</td><td>17.00</td><td>49.91</td><td>48.15</td></tr>
-      </tbody>
-    </table>
-    <p>
-      <strong>Sensitivity Summary:</strong> Increasing Motor Depth Y-offset (L) improves pitch capacity for both standard and orthogonal layouts. In the standard layout, varying attachment offset (h) shifts joint efficiency slightly without affecting the worst-case roll limit.
-    </p>
-  </div>
+<h3>5.1 Pitch Torque at Every Angle (Roll = 0°)</h3>
+<table>
+  <thead><tr><th style="text-align:left;width:80px">Motor / Mode</th><th>-25°</th><th>-20°</th><th>-15°</th><th>-10°</th><th>-5°</th><th>0°</th><th>+5°</th><th>+10°</th><th>+15°</th><th>+20°</th><th>+25°</th><th style="color:#ff6b35">MIN</th></tr></thead>
+  <tbody id="c1_pitch_tbody"></tbody>
+</table>
 
-  <!-- Page 9: End Page - Parametric Sweeps: Depth L & Offset h (RS03 & RS04) -->
-  <div class="page">
-    <h2>9. Parametric Sweeps: Motor Depth (L) & Attachment Offset (h) (RS03 & RS04)</h2>
-    <p>
-      Sweeps performed using the screenshot dimensions: Crank 1/2 Radius = 2.5 cm, Pushrod 1 Length = 22.2 cm, Universal Joint to Motor 2 Height = 11.2 cm, Foot to Universal Joint Height = 3.6 cm, Universal Joint to Motor 1 Height = 22.2 cm, Pushrod 2 Length = 11.2 cm.
-    </p>
+<h3>5.2 Roll Torque at Every Angle (Pitch = 0°)</h3>
+<table>
+  <thead><tr><th style="text-align:left;width:80px">Motor / Mode</th><th>-40°</th><th>-30°</th><th>-20°</th><th>-10°</th><th>0°</th><th>+10°</th><th>+20°</th><th>+30°</th><th>+40°</th><th style="color:#ff6b35">MIN</th></tr></thead>
+  <tbody id="c1_roll_tbody"></tbody>
+</table>
 
-    <h3>9.1 RS03 Parametric Sweep (Limit: 20.0 N·m Rated / 60.0 N·m Peak)</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Layout Type</th>
-          <th>Spread (E) (cm)</th>
-          <th>Depth (L) (cm)</th>
-          <th>Offset (h) (cm)</th>
-          <th>Rated Min Pitch (N·m)</th>
-          <th>Rated Min Roll (N·m)</th>
-          <th>Peak Min Pitch (N·m)</th>
-          <th>Peak Min Roll (N·m)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>Standard</td><td>2.3</td><td>3.6</td><td>-1.0</td><td>59.39</td><td>15.61</td><td>178.17</td><td>46.84</td></tr>
-        <tr class="highlight"><td>Standard</td><td>2.3</td><td>4.2</td><td>0.0</td><td>66.84</td><td>14.36</td><td>200.53</td><td>43.07</td></tr>
-        <tr><td>Standard</td><td>2.3</td><td>4.8</td><td>1.0</td><td>78.04</td><td>12.19</td><td>234.11</td><td>36.56</td></tr>
-        <tr><td>Orthogonal</td><td>2.3</td><td>3.6</td><td>-1.0</td><td>40.51</td><td>41.11</td><td>121.53</td><td>123.32</td></tr>
-        <tr class="highlight"><td>Orthogonal</td><td>2.3</td><td>4.2</td><td>0.0</td><td>42.50</td><td>42.71</td><td>127.50</td><td>128.14</td></tr>
-        <tr><td>Orthogonal</td><td>2.3</td><td>4.8</td><td>1.0</td><td>50.03</td><td>49.95</td><td>150.10</td><td>149.86</td></tr>
-      </tbody>
-    </table>
+<h3>5.3 Verdict for Config 1</h3>
+<div id="c1_verdict"></div>
 
-    <h3>9.2 RS04 Parametric Sweep (Limit: 40.0 N·m Rated / 120.0 N·m Peak)</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Layout Type</th>
-          <th>Spread (E) (cm)</th>
-          <th>Depth (L) (cm)</th>
-          <th>Offset (h) (cm)</th>
-          <th>Rated Min Pitch (N·m)</th>
-          <th>Rated Min Roll (N·m)</th>
-          <th>Peak Min Pitch (N·m)</th>
-          <th>Peak Min Roll (N·m)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>Standard</td><td>2.3</td><td>3.6</td><td>-1.0</td><td>118.78</td><td>31.23</td><td>356.35</td><td>93.68</td></tr>
-        <tr class="highlight"><td>Standard</td><td>2.3</td><td>4.2</td><td>0.0</td><td>133.68</td><td>28.71</td><td>401.05</td><td>86.13</td></tr>
-        <tr><td>Standard</td><td>2.3</td><td>4.8</td><td>1.0</td><td>156.07</td><td>24.38</td><td>468.22</td><td>73.13</td></tr>
-        <tr><td>Orthogonal</td><td>2.3</td><td>3.6</td><td>-1.0</td><td>81.02</td><td>82.22</td><td>243.05</td><td>246.65</td></tr>
-        <tr class="highlight"><td>Orthogonal</td><td>2.3</td><td>4.2</td><td>0.0</td><td>85.00</td><td>85.42</td><td>255.01</td><td>256.27</td></tr>
-        <tr><td>Orthogonal</td><td>2.3</td><td>4.8</td><td>1.0</td><td>100.06</td><td>99.90</td><td>300.19</td><td>299.71</td></tr>
-      </tbody>
-    </table>
-    
-    <h3>9.3 Final Mechanical Optimization Recommendations</h3>
-    <ul>
-      <li><strong>Motor Sizing Verdict:</strong> The <strong>Robstride RS03</strong> is the optimal actuator selection. It ensures excellent continuous workspace rated torques and provides peak torque limits exceeding 120 N·m for foot strike stabilization.</li>
-      <li><strong>Mounting Choice:</strong> If keeping the current chassis footprint (narrow spread E = 2.3 cm), the <strong>Orthogonal layout is highly recommended</strong> to decouple joint roll and pitch action, preventing critical roll torque collapse (provides 42.71 N·m continuous vs 14.36 N·m in standard layout).</li>
-      <li><strong>Parametric Alignment:</strong> Retain the attachment offset at <strong>h = 0.0 cm</strong> for symmetric workspace limits. Set depth offset to <strong>L = 4.2 cm to 4.8 cm</strong> to maximize link transmission angles.</li>
-    </ul>
-  </div>
+<!-- ==================== CONFIG 2 ==================== -->
+<div class="page-break"></div>
+<div class="config-header">
+  <h2>6. Configuration 2: Standard Layout, E = 5.0 cm (Wide Spread)</h2>
+  <p>Both motors face forward (0° yaw). Ankle spread widened to 5.0 cm. Provides much better roll leverage than Config 1 while maintaining similar pitch.</p>
+</div>
 
+<div class="image-grid">
+  <div class="image-card"><img src="report_images/conf2_front.png"><span>Front View</span></div>
+  <div class="image-card"><img src="report_images/conf2_iso.png"><span>Isometric View</span></div>
+</div>
+
+<div class="charts-row">
+  <div class="chart-box"><canvas id="c2_pitch"></canvas></div>
+  <div class="chart-box"><canvas id="c2_roll"></canvas></div>
+</div>
+
+<h3>6.1 Pitch Torque at Every Angle (Roll = 0°)</h3>
+<table>
+  <thead><tr><th style="text-align:left;width:80px">Motor / Mode</th><th>-25°</th><th>-20°</th><th>-15°</th><th>-10°</th><th>-5°</th><th>0°</th><th>+5°</th><th>+10°</th><th>+15°</th><th>+20°</th><th>+25°</th><th style="color:#ff6b35">MIN</th></tr></thead>
+  <tbody id="c2_pitch_tbody"></tbody>
+</table>
+
+<h3>6.2 Roll Torque at Every Angle (Pitch = 0°)</h3>
+<table>
+  <thead><tr><th style="text-align:left;width:80px">Motor / Mode</th><th>-40°</th><th>-30°</th><th>-20°</th><th>-10°</th><th>0°</th><th>+10°</th><th>+20°</th><th>+30°</th><th>+40°</th><th style="color:#ff6b35">MIN</th></tr></thead>
+  <tbody id="c2_roll_tbody"></tbody>
+</table>
+
+<h3>6.3 Verdict for Config 2</h3>
+<div id="c2_verdict"></div>
+
+<!-- ==================== CONFIG 3 ==================== -->
+<div class="page-break"></div>
+<div class="config-header">
+  <h2>7. Configuration 3: Orthogonal Layout, E = 2.3 cm</h2>
+  <p>Top motor (Motor 1) rotated 90° in yaw — its crank sweeps side-to-side instead of front-to-back. This decouples the pitch and roll axes, giving nearly balanced torque even with narrow 2.3 cm spread.</p>
+</div>
+
+<div class="image-grid">
+  <div class="image-card"><img src="report_images/conf3_front.png"><span>Front View</span></div>
+  <div class="image-card"><img src="report_images/conf3_iso.png"><span>Isometric View</span></div>
+</div>
+
+<div class="charts-row">
+  <div class="chart-box"><canvas id="c3_pitch"></canvas></div>
+  <div class="chart-box"><canvas id="c3_roll"></canvas></div>
+</div>
+
+<h3>7.1 Pitch Torque at Every Angle (Roll = 0°)</h3>
+<table>
+  <thead><tr><th style="text-align:left;width:80px">Motor / Mode</th><th>-25°</th><th>-20°</th><th>-15°</th><th>-10°</th><th>-5°</th><th>0°</th><th>+5°</th><th>+10°</th><th>+15°</th><th>+20°</th><th>+25°</th><th style="color:#ff6b35">MIN</th></tr></thead>
+  <tbody id="c3_pitch_tbody"></tbody>
+</table>
+
+<h3>7.2 Roll Torque at Every Angle (Pitch = 0°)</h3>
+<table>
+  <thead><tr><th style="text-align:left;width:80px">Motor / Mode</th><th>-40°</th><th>-30°</th><th>-20°</th><th>-10°</th><th>0°</th><th>+10°</th><th>+20°</th><th>+30°</th><th>+40°</th><th style="color:#ff6b35">MIN</th></tr></thead>
+  <tbody id="c3_roll_tbody"></tbody>
+</table>
+
+<h3>7.3 Verdict for Config 3</h3>
+<div id="c3_verdict"></div>
+
+<!-- ==================== CONFIG 4 ==================== -->
+<div class="page-break"></div>
+<div class="config-header">
+  <h2>8. Configuration 4: Orthogonal Layout, E = 5.0 cm</h2>
+  <p>Top motor rotated 90° AND ankle spread widened to 5.0 cm. This is the most balanced configuration: pitch and roll are nearly identical and both very high. Recommended if space allows the wider spread.</p>
+</div>
+
+<div class="image-grid">
+  <div class="image-card"><img src="report_images/conf4_front.png"><span>Front View</span></div>
+  <div class="image-card"><img src="report_images/conf4_iso.png"><span>Isometric View</span></div>
+</div>
+
+<div class="charts-row">
+  <div class="chart-box"><canvas id="c4_pitch"></canvas></div>
+  <div class="chart-box"><canvas id="c4_roll"></canvas></div>
+</div>
+
+<h3>8.1 Pitch Torque at Every Angle (Roll = 0°)</h3>
+<table>
+  <thead><tr><th style="text-align:left;width:80px">Motor / Mode</th><th>-25°</th><th>-20°</th><th>-15°</th><th>-10°</th><th>-5°</th><th>0°</th><th>+5°</th><th>+10°</th><th>+15°</th><th>+20°</th><th>+25°</th><th style="color:#ff6b35">MIN</th></tr></thead>
+  <tbody id="c4_pitch_tbody"></tbody>
+</table>
+
+<h3>8.2 Roll Torque at Every Angle (Pitch = 0°)</h3>
+<table>
+  <thead><tr><th style="text-align:left;width:80px">Motor / Mode</th><th>-40°</th><th>-30°</th><th>-20°</th><th>-10°</th><th>0°</th><th>+10°</th><th>+20°</th><th>+30°</th><th>+40°</th><th style="color:#ff6b35">MIN</th></tr></thead>
+  <tbody id="c4_roll_tbody"></tbody>
+</table>
+
+<h3>8.3 Verdict for Config 4</h3>
+<div id="c4_verdict"></div>
+
+<!-- ==================== SECTION 9: CROSS-COMPARISON ==================== -->
+<div class="page-break"></div>
+<h2>9. Cross-Configuration Comparison</h2>
+<p>Side-by-side charts showing how all 4 configurations compare for RS03 (recommended motor) at peak torque (60 N·m).</p>
+
+<div class="charts-row">
+  <div class="chart-box" style="height:160px"><canvas id="compare_pitch"></canvas></div>
+  <div class="chart-box" style="height:160px"><canvas id="compare_roll"></canvas></div>
+</div>
+
+<h3>9.1 Minimum Torque Comparison (RS03, All Configs)</h3>
+<table style="font-size:8px">
+  <thead>
+    <tr><th style="text-align:left">Metric</th><th>Config 1<br>Std E=2.3</th><th>Config 2<br>Std E=5.0</th><th>Config 3<br>Ortho E=2.3</th><th>Config 4<br>Ortho E=5.0</th></tr>
+  </thead>
+  <tbody id="compare_table"></tbody>
+</table>
+
+<h3>9.2 Pitch/Roll Balance Ratio</h3>
+<p>A balanced mechanism has a ratio close to 1.0. The further from 1.0, the more unbalanced the torque distribution between pitch and roll.</p>
+<table style="font-size:8px">
+  <thead><tr><th style="text-align:left">Motor</th><th>Config 1</th><th>Config 2</th><th>Config 3</th><th>Config 4</th></tr></thead>
+  <tbody id="balance_table"></tbody>
+</table>
+
+<!-- ==================== SECTION 10: CONCLUSIONS ==================== -->
+<div style="margin-top: 15px;"></div>
+<h2>10. Conclusions and Recommendations</h2>
+
+<h3>10.1 Motor Selection</h3>
+<p>The <strong>Robstride RS03</strong> (20 N·m continuous, 60 N·m peak) is the optimal motor. It provides sufficient continuous torque for sustained balance and large peak torque for impacts. RS02 is too weak for roll stability. RS04 is unnecessarily oversized and heavy.</p>
+
+<h3>10.2 Configuration Comparison</h3>
+<table style="font-size:8.5px">
+  <thead><tr><th style="text-align:left">Configuration</th><th>RS03 Continuous<br>Pitch / Roll (N·m)</th><th>Balance<br>Ratio</th><th>Assessment</th></tr></thead>
+  <tbody>
+    <tr><td style="text-align:left;font-family:Inter">Config 1: Standard, E=2.3 cm</td><td id="final_c1"></td><td id="final_b1"></td><td style="text-align:left;font-family:Inter;color:#ff3366">Roll too low. Not recommended.</td></tr>
+    <tr><td style="text-align:left;font-family:Inter">Config 2: Standard, E=5.0 cm</td><td id="final_c2"></td><td id="final_b2"></td><td style="text-align:left;font-family:Inter;color:#ffb830">Acceptable if wider base is feasible.</td></tr>
+    <tr class="highlight"><td style="text-align:left;font-family:Inter">Config 3: Orthogonal, E=2.3 cm</td><td id="final_c3"></td><td id="final_b3"></td><td style="text-align:left;font-family:Inter">Best compact design. Balanced torque.</td></tr>
+    <tr class="highlight"><td style="text-align:left;font-family:Inter">Config 4: Orthogonal, E=5.0 cm</td><td id="final_c4"></td><td id="final_b4"></td><td style="text-align:left;font-family:Inter">Best overall. Perfectly balanced.</td></tr>
+  </tbody>
+</table>
+
+<h3>10.3 Design Recommendations</h3>
+<ul>
+  <li><strong>If keeping narrow ankle spread (E = 2.3 cm):</strong> Switch to Orthogonal layout (Config 3). Provides balanced 42.5 / 42.7 N·m continuous without changing the robot's footprint.</li>
+  <li><strong>If wider ankle spread is possible (E = 5.0 cm):</strong> Use Orthogonal layout (Config 4) for symmetric 53.6 N·m in both axes.</li>
+  <li><strong>Motor Depth Y-Offset (L):</strong> Keep at 3.8 – 4.2 cm for optimal transmission angles.</li>
+  <li><strong>Attachment Offset (h):</strong> Keep at 0.0 cm for symmetric workspace.</li>
+</ul>
+
+<h3>10.4 Parameter Sensitivity</h3>
+<table style="font-size:8.5px">
+  <thead><tr><th style="text-align:left">Parameter</th><th style="text-align:left">Effect When Increased</th><th>Recommended</th></tr></thead>
+  <tbody>
+    <tr><td style="text-align:left;font-family:Inter">Ankle Spread (E)</td><td style="text-align:left;font-family:Inter">Strongly increases roll torque (2.8× from 2.3 → 5.0 cm)</td><td>5.0 cm if possible</td></tr>
+    <tr><td style="text-align:left;font-family:Inter">Motor Depth Y-Offset (L)</td><td style="text-align:left;font-family:Inter">Increases pitch torque slightly, minor effect on roll</td><td>3.8 – 4.2 cm</td></tr>
+    <tr><td style="text-align:left;font-family:Inter">Attachment Offset (h)</td><td style="text-align:left;font-family:Inter">Shifts worst-case angle location; minimal overall benefit</td><td>0.0 cm (neutral)</td></tr>
+    <tr><td style="text-align:left;font-family:Inter">Motor Orientation</td><td style="text-align:left;font-family:Inter">Orthogonal layout decouples axes, dramatically balances torque</td><td>Orthogonal (90°)</td></tr>
+  </tbody>
+</table>
+
+<!-- ==================== JAVASCRIPT ENGINE ==================== -->
 <script>
 'use strict';
-const DEG = Math.PI / 180;
-const v3 = (x,y,z) => ({x,y,z});
-const v3a = (a,b) => v3(a.x+b.x, a.y+b.y, a.z+b.z);
-const v3s = (a,b) => v3(a.x-b.x, a.y-b.y, a.z-b.z);
-const v3d = (a,b) => a.x*b.x + a.y*b.y + a.z*b.z;
-const clamp = (x,a,b) => Math.max(a, Math.min(b,x));
-
+const DEG=Math.PI/180;
+const v3=(x,y,z)=>({x,y,z});
+const v3a=(a,b)=>v3(a.x+b.x,a.y+b.y,a.z+b.z);
+const v3s=(a,b)=>v3(a.x-b.x,a.y-b.y,a.z-b.z);
+const v3d=(a,b)=>a.x*b.x+a.y*b.y+a.z*b.z;
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 function Rx(a){const c=Math.cos(a),s=Math.sin(a);return[[1,0,0],[0,c,-s],[0,s,c]];}
 function Ry(a){const c=Math.cos(a),s=Math.sin(a);return[[c,0,s],[0,1,0],[-s,0,c]];}
 function mm(A,B){const R=[[0,0,0],[0,0,0],[0,0,0]];for(let i=0;i<3;i++)for(let j=0;j<3;j++)for(let k=0;k<3;k++)R[i][j]+=A[i][k]*B[k][j];return R;}
 function mv(M,v){return v3(M[0][0]*v.x+M[0][1]*v.y+M[0][2]*v.z,M[1][0]*v.x+M[1][1]*v.y+M[1][2]*v.z,M[2][0]*v.x+M[2][1]*v.y+M[2][2]*v.z);}
 
-class Mech {
+class Mech{
   constructor(p){this.set(p);}
-  set(p){
-    this.m1z=p.m1z; this.m2z=p.m2z;
-    this.r1=p.r1; this.r2=p.r2;
-    this.L1=p.L1; this.L2=p.L2;
-    this.E=p.E; this.ujZ=p.ujZ; this.ah=p.ah;
-    this.oy=p.oy; this.orthoYaw = p.orthoYaw;
-    if(this.orthoYaw) {
-      this.a1b=v3(-this.oy, p.E/2, p.ah);
-    } else {
-      this.a1b=v3(p.E/2, this.oy, p.ah);
-    }
-    this.a2b=v3(-p.E/2, this.oy, p.ah);
-    this.ac=v3(0, 0, p.ujZ);
-  }
+  set(p){this.m1z=p.m1z;this.m2z=p.m2z;this.r1=p.r1;this.r2=p.r2;this.L1=p.L1;this.L2=p.L2;this.E=p.E;this.ujZ=p.ujZ;this.ah=p.ah;this.oy=p.oy;this.orthoYaw=p.orthoYaw;this.a1b=this.orthoYaw?v3(-this.oy,p.E/2,p.ah):v3(p.E/2,this.oy,p.ah);this.a2b=v3(-p.E/2,this.oy,p.ah);this.ac=v3(0,0,p.ujZ);}
   rot(p,r){return mm(Rx(p),Ry(r));}
   ankW(bp,p,r){return v3a(mv(this.rot(p,r),bp),this.ac);}
-
-  ik(pitch,roll,b1=1,b2=1){
-    const a1=this.ankW(this.a1b,pitch,roll);
-    const a2=this.ankW(this.a2b,pitch,roll);
-    let t1, ok1;
-    if(this.orthoYaw) {
-      const dx = -this.oy - a1.x;
-      const dy = -a1.y;
-      const dz = this.m1z - a1.z;
-      const a = -2.0 * this.r1 * a1.y;
-      const b = 2.0 * this.r1 * dz;
-      const c = this.L1*this.L1 - this.r1*this.r1 - dy*dy - dz*dz - dx*dx;
-      const R = Math.sqrt(a*a + b*b);
-      if (R < 1e-12) { t1 = 0; ok1 = false; }
-      else {
-        const ratio = c / R;
-        if (Math.abs(ratio) > 1) { t1 = 0; ok1 = false; }
-        else {
-          const psi = Math.atan2(a, b);
-          const delta = Math.acos(clamp(ratio,-1,1));
-          t1 = (b1 === 0) ? (psi - delta) : (psi + delta);
-          ok1 = true;
-        }
-      }
-    } else {
-      const dx=-a1.x, dy=this.oy-a1.y, dz=this.m1z-a1.z;
-      const a = 2*this.r1*dx;
-      const b = 2*this.r1*dz;
-      const c = this.L1*this.L1 - this.r1*this.r1 - dx*dx - dy*dy - dz*dz;
-      const R = Math.sqrt(a*a+b*b);
-      if(R<1e-12) { t1 = 0; ok1 = false; }
-      else {
-        const ratio = c/R;
-        if(Math.abs(ratio)>1) { t1 = 0; ok1 = false; }
-        else {
-          const psi=Math.atan2(a,b);
-          const delta=Math.acos(clamp(ratio,-1,1));
-          t1 = b1===0?psi-delta:psi+delta; ok1 = true;
-        }
-      }
-    }
-    const dx2=-a2.x, dy2=this.oy-a2.y, dz2=this.m2z-a2.z;
-    const a_ = 2*-1*this.r2*dx2;
-    const b_ = 2*this.r2*dz2;
-    const c_ = this.L2*this.L2 - this.r2*this.r2 - dx2*dx2 - dy2*dy2 - dz2*dz2;
-    const R_ = Math.sqrt(a_*a_+b_*b_);
-    let t2, ok2;
-    if(R_<1e-12) { t2 = 0; ok2 = false; }
-    else {
-      const ratio = c_/R_;
-      if(Math.abs(ratio)>1) { t2 = 0; ok2 = false; }
-      else {
-        const psi=Math.atan2(a_,b_);
-        const delta=Math.acos(clamp(ratio,-1,1));
-        t2 = b2===0?psi-delta:psi+delta; ok2 = true;
-      }
-    }
-    return {t1, t2, ok:ok1 && ok2};
+  ik(pitch,roll){
+    const a1=this.ankW(this.a1b,pitch,roll),a2=this.ankW(this.a2b,pitch,roll);
+    let t1,ok1;
+    if(this.orthoYaw){const dx=-this.oy-a1.x,dy=-a1.y,dz=this.m1z-a1.z;const a=-2*this.r1*a1.y,b=2*this.r1*dz,c=this.L1*this.L1-this.r1*this.r1-dy*dy-dz*dz-dx*dx;const R=Math.sqrt(a*a+b*b);if(R<1e-12){t1=0;ok1=false;}else{const ratio=c/R;if(Math.abs(ratio)>1){t1=0;ok1=false;}else{const psi=Math.atan2(a,b);t1=psi+Math.acos(clamp(ratio,-1,1));ok1=true;}}}
+    else{const dx=-a1.x,dy=this.oy-a1.y,dz=this.m1z-a1.z;const a=2*this.r1*dx,b=2*this.r1*dz,c=this.L1*this.L1-this.r1*this.r1-dx*dx-dy*dy-dz*dz;const R=Math.sqrt(a*a+b*b);if(R<1e-12){t1=0;ok1=false;}else{const ratio=c/R;if(Math.abs(ratio)>1){t1=0;ok1=false;}else{const psi=Math.atan2(a,b);t1=psi+Math.acos(clamp(ratio,-1,1));ok1=true;}}}
+    const dx2=-a2.x,dy2=this.oy-a2.y,dz2=this.m2z-a2.z;const a_=-2*this.r2*dx2,b_=2*this.r2*dz2,c_=this.L2*this.L2-this.r2*this.r2-dx2*dx2-dy2*dy2-dz2*dz2;const R_=Math.sqrt(a_*a_+b_*b_);let t2,ok2;if(R_<1e-12){t2=0;ok2=false;}else{const ratio=c_/R_;if(Math.abs(ratio)>1){t2=0;ok2=false;}else{const psi=Math.atan2(a_,b_);t2=psi+Math.acos(clamp(ratio,-1,1));ok2=true;}}
+    return{t1,t2,ok:ok1&&ok2};
   }
-
   jacobian(t1,t2,p,r){
-    const cp=Math.cos(p), sp=Math.sin(p);
-    const cr=Math.cos(r), sr=Math.sin(r);
-    const tip1=v3(this.orthoYaw?-this.oy:this.r1*Math.sin(t1), this.orthoYaw?this.r1*Math.sin(t1):this.oy, this.m1z+this.r1*Math.cos(t1));
-    const tip2=v3(-this.r2*Math.sin(t2), this.oy, this.m2z+this.r2*Math.cos(t2));
-    const a1=this.ankW(this.a1b,p,r), a2=this.ankW(this.a2b,p,r);
-
-    let dc1_dt1;
-    if(this.orthoYaw) {
-      dc1_dt1 = v3(0.0, this.r1 * Math.cos(t1), -this.r1 * Math.sin(t1));
-    } else {
-      dc1_dt1 = v3(this.r1 * Math.cos(t1), 0.0, -this.r1 * Math.sin(t1));
-    }
-    const dc2_dt2 = v3(-this.r2 * Math.cos(t2), 0.0, -this.r2 * Math.sin(t2));
-
-    const den1 = v3d(v3s(tip1, a1), dc1_dt1);
-    const den2 = v3d(v3s(tip2, a2), dc2_dt2);
-
-    const get_da_dp = (bp) => v3(
-      0.0,
-      (cp * sr) * bp.x + (-sp) * bp.y + (-cp * cr) * bp.z,
-      (sp * sr) * bp.x + (cp) * bp.y + (-sp * cr) * bp.z
-    );
-
-    const get_da_dr = (bp) => v3(
-      -sr * bp.x + cr * bp.z,
-      (sp * cr) * bp.x + (sp * sr) * bp.z,
-      (-cp * cr) * bp.x + (-cp * sr) * bp.z
-    );
-
-    const J = [[0.0, 0.0], [0.0, 0.0]];
-    let det = 0.0, cn = Infinity;
-    if (Math.abs(den1) > 1e-12 && Math.abs(den2) > 1e-12) {
-      J[0][0] = v3d(v3s(tip1, a1), get_da_dp(this.a1b)) / den1;
-      J[0][1] = v3d(v3s(tip1, a1), get_da_dr(this.a1b)) / den1;
-      J[1][0] = v3d(v3s(tip2, a2), get_da_dp(this.a2b)) / den2;
-      J[1][1] = v3d(v3s(tip2, a2), get_da_dr(this.a2b)) / den2;
+    const tip1=v3(this.orthoYaw?-this.oy:this.r1*Math.sin(t1),this.orthoYaw?this.r1*Math.sin(t1):this.oy,this.m1z+this.r1*Math.cos(t1));
+    const tip2=v3(-this.r2*Math.sin(t2),this.oy,this.m2z+this.r2*Math.cos(t2));
+    const a1=this.ankW(this.a1b,p,r),a2=this.ankW(this.a2b,p,r);
+    const dc1=this.orthoYaw?v3(0,this.r1*Math.cos(t1),-this.r1*Math.sin(t1)):v3(this.r1*Math.cos(t1),0,-this.r1*Math.sin(t1));
+    const dc2=v3(-this.r2*Math.cos(t2),0,-this.r2*Math.sin(t2));
+    const den1=v3d(v3s(tip1,a1),dc1),den2=v3d(v3s(tip2,a2),dc2);
+    const cp=Math.cos(p),sp=Math.sin(p),cr=Math.cos(r),sr=Math.sin(r);
+    const da_dp=bp=>v3(0,(cp*sr)*bp.x+(-sp)*bp.y+(-cp*cr)*bp.z,(sp*sr)*bp.x+(cp)*bp.y+(-sp*cr)*bp.z);
+    const da_dr=bp=>v3(-sr*bp.x+cr*bp.z,(sp*cr)*bp.x+(sp*sr)*bp.z,(-cp*cr)*bp.x+(-cp*sr)*bp.z);
+    const J=[[0,0],[0,0]];
+    if(Math.abs(den1)>1e-12&&Math.abs(den2)>1e-12){
+      J[0][0]=v3d(v3s(tip1,a1),da_dp(this.a1b))/den1;J[0][1]=v3d(v3s(tip1,a1),da_dr(this.a1b))/den1;
+      J[1][0]=v3d(v3s(tip2,a2),da_dp(this.a2b))/den2;J[1][1]=v3d(v3s(tip2,a2),da_dr(this.a2b))/den2;
     }
     return J;
   }
 }
 
-// Generate curves for RS03 Peak (60 Nm)
-const rs03Peak = 60.0;
-const pRange = [], rRange = [];
-for (let p = -25; p <= 25; p += 1) pRange.push(p);
-for (let r = -40; r <= 40; r += 2) rRange.push(r);
-
-function generateDatasets(mech) {
-  const pData = [], rData = [];
-  pRange.forEach(p => {
-    const ik = mech.ik(p * DEG, 0.0);
-    let cap = 0;
-    if (ik.ok) {
-      const J = mech.jacobian(ik.t1, ik.t2, p * DEG, 0.0);
-      cap = (Math.abs(J[0][0]) + Math.abs(J[1][0])) * rs03Peak;
-    }
-    pData.push(cap > 0 ? parseFloat(cap.toFixed(2)) : null);
-  });
-  rRange.forEach(r => {
-    const ik = mech.ik(0.0, r * DEG);
-    let cap = 0;
-    if (ik.ok) {
-      const J = mech.jacobian(ik.t1, ik.t2, 0.0, r * DEG);
-      cap = (Math.abs(J[0][1]) + Math.abs(J[1][1])) * rs03Peak;
-    }
-    rData.push(cap > 0 ? parseFloat(cap.toFixed(2)) : null);
-  });
-  return { pData, rData };
-}
-
-// Configurations order matched with index_orthogonal:
-// conf1 = standard base E=2.3
-// conf2 = standard parallel E=5.0
-// conf3 = ortho base E=2.3
-// conf4 = ortho parallel E=5.0
-const mechs = [
-  new Mech({ m1z: 27.1, m2z: 19.6, r1: 2.5, r2: 2.5, L1: 24.3, L2: 16.3, E: 2.3, ujZ: 3.6, ah: 0, oy: 3.8, orthoYaw: false }),
-  new Mech({ m1z: 27.1, m2z: 19.6, r1: 2.5, r2: 2.5, L1: 24.3, L2: 16.3, E: 5.0, ujZ: 3.6, ah: 0, oy: 3.8, orthoYaw: false }),
-  new Mech({ m1z: 27.1, m2z: 19.6, r1: 2.5, r2: 2.5, L1: 24.3, L2: 16.3, E: 2.3, ujZ: 3.6, ah: 0, oy: 3.8, orthoYaw: true }),
-  new Mech({ m1z: 27.1, m2z: 19.6, r1: 2.5, r2: 2.5, L1: 24.3, L2: 16.3, E: 5.0, ujZ: 3.6, ah: 0, oy: 3.8, orthoYaw: true })
+// Motor definitions
+const motors=[
+  {name:'RS02',cont:6.0,peak:17.0},
+  {name:'RS03',cont:20.0,peak:60.0},
+  {name:'RS04',cont:40.0,peak:120.0}
 ];
 
-window.onload = () => {
-  for (let i = 0; i < 4; i++) {
-    const { pData, rData } = generateDatasets(mechs[i]);
-    const num = i + 1;
-    
-    // Pitch Chart
-    new Chart(document.getElementById(`c${num}_pitch`).getContext('2d'), {
-      type: 'line',
-      data: {
-        labels: pRange.map(p => p + '°'),
-        datasets: [{ label: 'Ankle Pitch Output (N·m)', data: pData, borderColor: '#00d4ff', backgroundColor: 'rgba(0,212,255,0.1)', tension: 0.1, fill: true }]
-      },
-      options: {
-        animation: false,
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { title: { display: true, text: `Pitch Capacity Sweep (Peak)`, color: '#6b7280', font: { size: 10 } }, legend: { display: false } },
-        scales: { x: { ticks: { color: '#888', font: { size: 7 } } }, y: { ticks: { color: '#888', font: { size: 7 } } } }
-      }
+// 4 configurations
+const configs=[
+  {name:'Config 1',label:'Standard, E=2.3cm',mech:new Mech({m1z:27.1,m2z:19.6,r1:2.5,r2:2.5,L1:24.3,L2:16.3,E:2.3,ujZ:3.6,ah:0,oy:3.8,orthoYaw:false})},
+  {name:'Config 2',label:'Standard, E=5.0cm',mech:new Mech({m1z:27.1,m2z:19.6,r1:2.5,r2:2.5,L1:24.3,L2:16.3,E:5.0,ujZ:3.6,ah:0,oy:3.8,orthoYaw:false})},
+  {name:'Config 3',label:'Orthogonal, E=2.3cm',mech:new Mech({m1z:27.1,m2z:19.6,r1:2.5,r2:2.5,L1:24.3,L2:16.3,E:2.3,ujZ:3.6,ah:0,oy:3.8,orthoYaw:true})},
+  {name:'Config 4',label:'Orthogonal, E=5.0cm',mech:new Mech({m1z:27.1,m2z:19.6,r1:2.5,r2:2.5,L1:24.3,L2:16.3,E:5.0,ujZ:3.6,ah:0,oy:3.8,orthoYaw:true})}
+];
+
+const pAngles=[];for(let p=-25;p<=25;p+=1)pAngles.push(p);
+const rAngles=[];for(let r=-40;r<=40;r+=2)rAngles.push(r);
+const pTable=[-25,-20,-15,-10,-5,0,5,10,15,20,25];
+const rTable=[-40,-30,-20,-10,0,10,20,30,40];
+
+function calcPitchTorque(m,angle,motorTorque){const ik=m.ik(angle*DEG,0);if(!ik.ok)return null;const J=m.jacobian(ik.t1,ik.t2,angle*DEG,0);return parseFloat(((Math.abs(J[0][0])+Math.abs(J[1][0]))*motorTorque).toFixed(1));}
+function calcRollTorque(m,angle,motorTorque){const ik=m.ik(0,angle*DEG);if(!ik.ok)return null;const J=m.jacobian(ik.t1,ik.t2,0,angle*DEG);return parseFloat(((Math.abs(J[0][1])+Math.abs(J[1][1]))*motorTorque).toFixed(1));}
+
+function findMin(arr){let min=Infinity,idx=-1;arr.forEach((v,i)=>{if(v!==null&&v<min){min=v;idx=i;}});return{val:min===Infinity?null:min,idx};}
+
+window.onload=()=>{
+  // Precompute all data
+  const allData=configs.map(cfg=>{
+    const pitchData={},rollData={};
+    motors.forEach(mot=>{
+      ['cont','peak'].forEach(mode=>{
+        const torque=mot[mode];
+        const pFull=pAngles.map(a=>calcPitchTorque(cfg.mech,a,torque));
+        const rFull=rAngles.map(a=>calcRollTorque(cfg.mech,a,torque));
+        const pDisc=pTable.map(a=>calcPitchTorque(cfg.mech,a,torque));
+        const rDisc=rTable.map(a=>calcRollTorque(cfg.mech,a,torque));
+        const pMin=findMin(pFull);
+        const rMin=findMin(rFull);
+        const key=mot.name+'_'+mode;
+        pitchData[key]={full:pFull,disc:pDisc,min:pMin.val,minAngle:pAngles[pMin.idx]};
+        rollData[key]={full:rFull,disc:rDisc,min:rMin.val,minAngle:rAngles[rMin.idx]};
+      });
+    });
+    return{pitch:pitchData,roll:rollData};
+  });
+
+  // Section 4: Master Performance Matrix Table
+  const masterTbody = document.getElementById('master_matrix_body');
+  configs.forEach((cfg, ci) => {
+    motors.forEach((mot, mi) => {
+      ['cont', 'peak'].forEach((mode, modeIdx) => {
+        const tr = document.createElement('tr');
+        if (mot.name === 'RS03' && mode === 'peak') tr.className = 'highlight';
+        
+        const key = mot.name + '_' + mode;
+        const pData = allData[ci].pitch[key];
+        const rData = allData[ci].roll[key];
+        
+        const pMin = pData.min;
+        const pAngle = pData.minAngle;
+        const rMin = rData.min;
+        const rAngle = rData.minAngle;
+        const ratio = rMin > 0 ? (pMin / rMin).toFixed(2) : '∞';
+        
+        let html = '';
+        if (mi === 0 && modeIdx === 0) {
+          html += `<td rowspan="6" style="vertical-align: middle; font-weight: 700; text-align: left; background: rgba(255,255,255,0.01); border-right: 1px solid rgba(255,255,255,0.06); font-family: Inter; font-size: 8px;">${cfg.name}<br><small style="font-weight:400;color:#6b7280;">${cfg.label}</small></td>`;
+        }
+        
+        html += `
+          <td style="font-weight: 600; font-family: Inter; text-align: left;">${mot.name}</td>
+          <td><span class="limit-badge ${mode}">${mode.toUpperCase()}</span></td>
+          <td>${mot[mode].toFixed(1)} N·m</td>
+          <td style="font-weight: 700;">${pMin !== null ? pMin.toFixed(2) + ' N·m' : '—'}</td>
+          <td>${pAngle !== undefined ? (pAngle >= 0 ? '+' : '') + pAngle + '°' : '—'}</td>
+          <td style="font-weight: 700;">${rMin !== null ? rMin.toFixed(2) + ' N·m' : '—'}</td>
+          <td>${rAngle !== undefined ? (rAngle >= 0 ? '+' : '') + rAngle + '°' : '—'}</td>
+          <td>${ratio}</td>
+        `;
+        tr.innerHTML = html;
+        masterTbody.appendChild(tr);
+      });
+    });
+  });
+
+  // Config detail pages (5-8)
+  configs.forEach((cfg,ci)=>{
+    const n=ci+1;
+    // Pitch table
+    const pTbody=document.getElementById('c'+n+'_pitch_tbody');
+    motors.forEach(mot=>{
+      ['cont','peak'].forEach(mode=>{
+        const key=mot.name+'_'+mode;
+        const d=allData[ci].pitch[key];
+        const tr=document.createElement('tr');
+        if(mot.name==='RS03'&&mode==='peak')tr.className='highlight';
+        let html='<td style="font-family:Inter;font-size:6.5px">'+mot.name+' '+(mode==='cont'?'Rated '+mot.cont:'Peak '+mot.peak)+'</td>';
+        d.disc.forEach(v=>{html+='<td>'+(v!==null?v.toFixed(1):'—')+'</td>';});
+        html+='<td style="font-weight:700;color:#ff6b35">'+(d.min!==null?d.min.toFixed(1):'—')+'</td>';
+        tr.innerHTML=html;
+        pTbody.appendChild(tr);
+      });
     });
 
-    // Roll Chart
-    new Chart(document.getElementById(`c${num}_roll`).getContext('2d'), {
-      type: 'line',
-      data: {
-        labels: rRange.map(r => r + '°'),
-        datasets: [{ label: 'Ankle Roll Output (N·m)', data: rData, borderColor: '#ff6b35', backgroundColor: 'rgba(255,107,53,0.1)', tension: 0.1, fill: true }]
-      },
-      options: {
-        animation: false,
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { title: { display: true, text: `Roll Capacity Sweep (Peak)`, color: '#6b7280', font: { size: 10 } }, legend: { display: false } },
-        scales: { x: { ticks: { color: '#888', font: { size: 7 } } }, y: { ticks: { color: '#888', font: { size: 7 } } } }
-      }
+    // Roll table
+    const rTbody=document.getElementById('c'+n+'_roll_tbody');
+    motors.forEach(mot=>{
+      ['cont','peak'].forEach(mode=>{
+        const key=mot.name+'_'+mode;
+        const d=allData[ci].roll[key];
+        const tr=document.createElement('tr');
+        if(mot.name==='RS03'&&mode==='peak')tr.className='highlight';
+        let html='<td style="font-family:Inter;font-size:6.5px">'+mot.name+' '+(mode==='cont'?'Rated '+mot.cont:'Peak '+mot.peak)+'</td>';
+        d.disc.forEach(v=>{html+='<td>'+(v!==null?v.toFixed(1):'—')+'</td>';});
+        html+='<td style="font-weight:700;color:#ff6b35">'+(d.min!==null?d.min.toFixed(1):'—')+'</td>';
+        tr.innerHTML=html;
+        rTbody.appendChild(tr);
+      });
     });
-  }
+
+    // Verdict badges
+    const vDiv=document.getElementById('c'+n+'_verdict');
+    let vHTML='';
+    motors.forEach(mot=>{
+      const pCont=allData[ci].pitch[mot.name+'_cont'].min;
+      const rCont=allData[ci].roll[mot.name+'_cont'].min;
+      const pPeak=allData[ci].pitch[mot.name+'_peak'].min;
+      const rPeak=allData[ci].roll[mot.name+'_peak'].min;
+      const minCont=Math.min(pCont||0,rCont||0);
+      const cls=minCont>=20?'verdict-pass':minCont>=8?'verdict-warn':'verdict-fail';
+      vHTML+='<span class="'+cls+'"><strong>'+mot.name+':</strong> Continuous '+pCont?.toFixed(1)+'/'+rCont?.toFixed(1)+' N·m &nbsp;|&nbsp; Peak '+pPeak?.toFixed(1)+'/'+rPeak?.toFixed(1)+' N·m &nbsp;|&nbsp; Min@Pitch: '+allData[ci].pitch[mot.name+'_peak'].minAngle+'° Min@Roll: '+allData[ci].roll[mot.name+'_peak'].minAngle+'°</span><br>';
+    });
+    vDiv.innerHTML=vHTML;
+
+    // Charts (all 3 motors overlaid)
+    const colors=['#ff3366','#00d4ff','#00e87b'];
+    const pitchDatasets=motors.map((mot,mi)=>({label:mot.name+' Peak',data:allData[ci].pitch[mot.name+'_peak'].full,borderColor:colors[mi],backgroundColor:'transparent',tension:0.15,pointRadius:0,borderWidth:1.5}));
+    const rollDatasets=motors.map((mot,mi)=>({label:mot.name+' Peak',data:allData[ci].roll[mot.name+'_peak'].full,borderColor:colors[mi],backgroundColor:'transparent',tension:0.15,pointRadius:0,borderWidth:1.5}));
+    const chartOpts=(title)=>({animation:false,responsive:true,maintainAspectRatio:false,plugins:{title:{display:true,text:title,color:'#888',font:{size:8}},legend:{display:true,labels:{font:{size:6},boxWidth:10,color:'#888'}}},scales:{x:{ticks:{color:'#888',font:{size:5},maxTicksLimit:11}},y:{ticks:{color:'#888',font:{size:5}},beginAtZero:true}}});
+    new Chart(document.getElementById('c'+n+'_pitch').getContext('2d'),{type:'line',data:{labels:pAngles.map(p=>p+'°'),datasets:pitchDatasets},options:chartOpts('Pitch Capacity (Peak, Roll=0°)')});
+    new Chart(document.getElementById('c'+n+'_roll').getContext('2d'),{type:'line',data:{labels:rAngles.map(r=>r+'°'),datasets:rollDatasets},options:chartOpts('Roll Capacity (Peak, Pitch=0°)')});
+  });
+
+  // Section 9: Cross-comparison
+  const ccColors=['#ff3366','#ffb830','#00d4ff','#00e87b'];
+  const ccPitch=configs.map((cfg,ci)=>({label:cfg.name,data:allData[ci].pitch['RS03_peak'].full,borderColor:ccColors[ci],backgroundColor:'transparent',tension:0.15,pointRadius:0,borderWidth:1.5}));
+  const ccRoll=configs.map((cfg,ci)=>({label:cfg.name,data:allData[ci].roll['RS03_peak'].full,borderColor:ccColors[ci],backgroundColor:'transparent',tension:0.15,pointRadius:0,borderWidth:1.5}));
+  const ccOpts=(t)=>({animation:false,responsive:true,maintainAspectRatio:false,plugins:{title:{display:true,text:t,color:'#888',font:{size:9}},legend:{display:true,labels:{font:{size:7},boxWidth:12,color:'#888'}}},scales:{x:{ticks:{color:'#888',font:{size:5},maxTicksLimit:11}},y:{ticks:{color:'#888',font:{size:6}},beginAtZero:true}}});
+  new Chart(document.getElementById('compare_pitch').getContext('2d'),{type:'line',data:{labels:pAngles.map(p=>p+'°'),datasets:ccPitch},options:ccOpts('Pitch: All 4 Configs (RS03 Peak 60 N·m)')});
+  new Chart(document.getElementById('compare_roll').getContext('2d'),{type:'line',data:{labels:rAngles.map(r=>r+'°'),datasets:ccRoll},options:ccOpts('Roll: All 4 Configs (RS03 Peak 60 N·m)')});
+
+  // Compare table
+  const cmpTbody=document.getElementById('compare_table');
+  [['Min Pitch (Continuous)','RS03_cont','pitch','min'],['Min Roll (Continuous)','RS03_cont','roll','min'],['Min Pitch (Peak)','RS03_peak','pitch','min'],['Min Roll (Peak)','RS03_peak','roll','min'],['Worst Pitch Angle','RS03_peak','pitch','minAngle'],['Worst Roll Angle','RS03_peak','roll','minAngle']].forEach(row=>{
+    const tr=document.createElement('tr');
+    let html='<td style="text-align:left;font-family:Inter">'+row[0]+'</td>';
+    configs.forEach((cfg,ci)=>{
+      const v=allData[ci][row[2]][row[1]][row[3]];
+      html+='<td>'+(row[3]==='minAngle'?(v+'°'):(v!==null?v.toFixed(1)+' N·m':'—'))+'</td>';
+    });
+    tr.innerHTML=html;
+    cmpTbody.appendChild(tr);
+  });
+
+  // Balance table
+  const balTbody=document.getElementById('balance_table');
+  motors.forEach((mot,mi)=>{
+    const tr=document.createElement('tr');
+    if(mi===1)tr.className='highlight';
+    let html='<td style="text-align:left;font-family:Inter">'+mot.name+'</td>';
+    configs.forEach((cfg,ci)=>{
+      const p=allData[ci].pitch[mot.name+'_cont'].min;
+      const r=allData[ci].roll[mot.name+'_cont'].min;
+      const ratio=r>0?(p/r).toFixed(2):'∞';
+      html+='<td>'+ratio+'</td>';
+    });
+    tr.innerHTML=html;
+    balTbody.appendChild(tr);
+  });
+
+  // Final conclusion table
+  configs.forEach((cfg,ci)=>{
+    const p=allData[ci].pitch['RS03_cont'].min;
+    const r=allData[ci].roll['RS03_cont'].min;
+    const el=document.getElementById('final_c'+(ci+1));
+    if(el)el.textContent=p?.toFixed(1)+' / '+r?.toFixed(1);
+    const bel=document.getElementById('final_b'+(ci+1));
+    if(bel)bel.textContent=r>0?(p/r).toFixed(2):'∞';
+  });
 };
 </script>
 </body>

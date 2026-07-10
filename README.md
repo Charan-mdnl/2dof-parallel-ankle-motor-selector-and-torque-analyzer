@@ -78,21 +78,58 @@ Static torque propagation uses the transpose of the Jacobian ($\boldsymbol{\tau}
 
 ## 🛠️ How to Run
 
-### Web UI (Interactive Visualizer)
+### 1. Web UI (Interactive Visualizers & Sizing Dashboard)
+Start a local HTTP server in this directory:
 ```bash
-python3 -m http.server 8001
-# Open http://localhost:8001/ in your web browser
+python3 -m http.server 8000
+```
+Then, open your web browser and navigate to:
+* **Interactive 3D Visualizer (Standard 2-RSS)**: `http://localhost:8000/index.html`
+* **Interactive 3D Visualizer (Orthogonal 90° Yaw)**: `http://localhost:8000/index_orthogonal.html`
+* **Actuator Sizing & Sweep Dashboard**: `http://localhost:8000/sizing_report.html`
+
+---
+
+### 2. 📄 Comprehensive Sizing Report PDF
+A pre-generated print-ready report is located at:
+👉 **[ankle_motor_evaluation_report_comprehensive.pdf](ankle_motor_evaluation_report_comprehensive.pdf)**
+
+To regenerate this PDF from a fresh terminal:
+```bash
+# 1. Start the HTTP server in the background
+python3 -m http.server 8000 &
+SERVER_PID=$!
+
+# 2. Wait 2 seconds for server to start, then print to PDF using headless Chrome
+sleep 2
+google-chrome --headless --disable-gpu --no-sandbox --print-to-pdf=ankle_motor_evaluation_report_comprehensive.pdf http://localhost:8000/comprehensive_report_print.html
+
+# 3. Kill the background server
+kill $SERVER_PID
 ```
 
-### Python Kinematic Solver
+---
+
+### 3. Command Line Kinematic Solvers
+
+#### Python Kinematic Solver
 ```bash
+# Standard 2-RSS layout solver
 python3 ankle_torque_solver.py
+
+# Orthogonal 90° yaw layout solver
+python3 ankle_orthogonal_solver.py
 ```
 
-### C++ Kinematic Solver
+#### C++ Kinematic Solver
 ```bash
+# Compile and run standard 2-RSS solver
 g++ -O2 -std=c++17 -o ankle_torque_solver ankle_torque_solver.cpp -lm
 ./ankle_torque_solver
+
+# Compile and run orthogonal solver
+g++ -O2 -std=c++17 -o ankle_orthogonal_solver ankle_orthogonal_solver.cpp -lm
+./ankle_orthogonal_solver
 ```
 
 ---

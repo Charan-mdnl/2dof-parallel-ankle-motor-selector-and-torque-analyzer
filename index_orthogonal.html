@@ -416,13 +416,13 @@ class Mech {
 }
 
 class Rdr {
-  constructor(cv){this.cv=cv;this.cx=cv.getContext('2d');this.cam={az:-.45,el:.35,sc:14};this.drag=null;this._mouse();}
+  constructor(cv){this.cv=cv;this.cx=cv.getContext('2d');this.cam={az:-.45,el:.35,sc:10.5};this.drag=null;this._mouse();}
   resize(){const d=devicePixelRatio||1,r=this.cv.getBoundingClientRect();this.cv.width=r.width*d;this.cv.height=r.height*d;
     this.cx.setTransform(d,0,0,d,0,0);this.w=r.width;this.h=r.height;}
   proj(x,y,z){
     const ca=Math.cos(this.cam.az),sa=Math.sin(this.cam.az),ce=Math.cos(this.cam.el),se=Math.sin(this.cam.el);
     const x1=ca*x - sa*y, y1=sa*x + ca*y;
-    const y2=ce*y1 - se*z, z2=se*y1 + ce*z;
+    const y2=ce*y1 - se*(z - 12.0), z2=se*y1 + ce*(z - 12.0);
     const s=this.cam.sc;
     return {sx:this.w/2 + x1*s, sy:this.h/2 - z2*s, d:-y2};
   }
@@ -1041,12 +1041,12 @@ if (window.location.search.includes('autoscreenshot=true')) {
   (async function() {
     console.log("Starting automated screenshot capture...");
     const configs = [
-      { name: 'conf1', preset: 'default' },
-      { name: 'conf2', preset: 'ortho' },
-      { name: 'conf3', preset: 'parallel_base' },
-      { name: 'conf4', preset: 'ortho_parallel' }
+      { name: 'conf1', preset: 'default' },          // Standard Current (E=2.3)
+      { name: 'conf2', preset: 'parallel_base' },    // Standard Parallel (E=5.0)
+      { name: 'conf3', preset: 'ortho' },            // Orthogonal Current (E=2.3)
+      { name: 'conf4', preset: 'ortho_parallel' }     // Orthogonal Parallel (E=5.0)
     ];
-    const views = ['front', 'side', 'top', 'iso'];
+    const views = ['front', 'side', 'iso'];
     const canvas = document.getElementById('c3d');
     
     for (const config of configs) {
@@ -1054,7 +1054,7 @@ if (window.location.search.includes('autoscreenshot=true')) {
       for (const view of views) {
         setView(view);
         doUp();
-        await new Promise(r => setTimeout(r, 250));
+        await new Promise(r => setTimeout(r, 350));
         
         const dataURL = canvas.toDataURL('image/png');
         const filename = `${config.name}_${view}.png`;

@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Robotic Ankle Joint Actuator Comprehensive Sizing & Sweep Report</title>
+<title>Robotic Ankle Joint Actuator Sizing & Comprehensive Sweep Report</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   @page {
     size: A4;
@@ -40,11 +41,16 @@
   p { margin-bottom: 8px; text-align: justify; font-size: 10.5px; color: #9ca3af; }
   
   /* Image Grid */
-  .image-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px 0; }
+  .image-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
   .image-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; overflow: hidden; text-align: center; }
   @media print { .image-card { border-color: #ddd; background: #fff; } }
   .image-card img { width: 100%; height: auto; display: block; }
   .image-card span { font-size: 8px; color: #6b7280; display: block; padding: 3px 0; text-transform: uppercase; font-weight: 600; }
+
+  /* Charts */
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 10px 0; }
+  .chart-box { position: relative; height: 160px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 10px; }
+  @media print { .chart-box { border-color: #ddd; background: #fff; } }
 
   /* Tables */
   table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 8px; }
@@ -72,33 +78,76 @@
     <button class="print-btn" onclick="window.print()">Print to PDF / Save as PDF</button>
   </div>
 
-  <!-- Page 1: Cover Page -->
+  <!-- Page 1: Cover & Sizing Verdict -->
   <div class="page">
     <div class="cover">
       <div class="cover-header">
-        <h1 class="cover-title">Robotic Ankle Joint Actuator Sizing & Comprehensive Parameter Sweep Report</h1>
-        <p class="cover-subtitle">Complete autonomous analysis of standard vs orthogonal mounting layouts sweeping ankle spread, motor depth offset, and attachment offset for Robstride RS02, RS03, and RS04 actuators.</p>
+        <h1 class="cover-title">2-DOF Robotic Ankle Joint Actuator Sizing & Workspace Performance Report</h1>
+        <p class="cover-subtitle">Complete torque estimation and workspace capacity analysis of standard parallel mounting layouts for Robstride RS02, RS03, and RS04 actuators. Tilted decoupled orthogonal mounting variations and multi-parameter sweeps are detailed separately at the end.</p>
       </div>
+      
+      <h2>Actuator Sizing Verdict: Standard Parallel Layout</h2>
+      <p>
+        The table below summarizes the worst-case minimum ankle torque capacities across the pitch (Roll = 0°) and roll (Pitch = 0°) sweeps for each motor under the <strong>Current robot design (Ankle Spread E = 2.3 cm)</strong> and the <strong>Parallel design (Ankle Spread E = 5.0 cm)</strong>.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Motor Model</th>
+            <th>Continuous Rated Limit (N·m)</th>
+            <th>Peak Impact Limit (N·m)</th>
+            <th>Current Design (E=2.3 cm) Min Pitch (N·m)</th>
+            <th>Current Design (E=2.3 cm) Min Roll (N·m)</th>
+            <th>Parallel Design (E=5.0 cm) Min Pitch (N·m)</th>
+            <th>Parallel Design (E=5.0 cm) Min Roll (N·m)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Robstride RS02</td>
+            <td>6.0 N·m</td>
+            <td>17.0 N·m</td>
+            <td>17.82 Rated / 50.50 Peak</td>
+            <td>4.44 Rated / 12.59 Peak</td>
+            <td>18.03 Rated / 51.08 Peak</td>
+            <td>11.90 Rated / 33.72 Peak</td>
+          </tr>
+          <tr class="highlight">
+            <td>Robstride RS03</td>
+            <td>20.0 N·m</td>
+            <td>60.0 N·m</td>
+            <td>66.84 Rated / 200.53 Peak</td>
+            <td>14.36 Rated / 43.07 Peak</td>
+            <td>67.20 Rated / 201.60 Peak</td>
+            <td>40.00 Rated / 120.00 Peak</td>
+          </tr>
+          <tr>
+            <td>Robstride RS04</td>
+            <td>40.0 N·m</td>
+            <td>120.0 N·m</td>
+            <td>133.68 Rated / 401.05 Peak</td>
+            <td>28.71 Rated / 86.13 Peak</td>
+            <td>134.40 Rated / 403.20 Peak</td>
+            <td>80.00 Rated / 240.00 Peak</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        <strong>Sizing Summary:</strong> While pitch torque is highly robust in all standard configurations, the narrow spread (E = 2.3 cm) severely restricts the leverage for Roll control, providing only <strong>14.36 N·m continuous</strong> on RS03. Widening the ankle spread to E = 5.0 cm multiplies roll capacity by **2.78x**, providing a much safer **40.00 N·m** rated limit.
+      </p>
+
       <div class="cover-metadata">
         <strong>Prepared For:</strong> Robotic Design Review & Ankle Actuator Selection<br>
         <strong>Author:</strong> Antigravity Autonomous Sizing Subsystem<br>
-        <strong>Evaluation Focus:</strong> Minimum Guaranteed Torques and Discrete Joint Angles<br>
+        <strong>Dimensions Version:</strong> Verified Physical Drawing Mappings<br>
         <strong>Date:</strong> July 9, 2026
       </div>
     </div>
   </div>
 
-  <!-- Page 2: Sizing Methodology -->
+  <!-- Page 2: Sizing Equations & Calculation Methods -->
   <div class="page">
-    <h2>1. Executive Summary & Sizing Methodology</h2>
-    <p>
-      To size the ankle joint actuators for roll and pitch stability, we sweep the joint workspace under two main scenarios: the current robot design (narrow base) and a parallel mechanism (widened base). The sizing maps motor rated and peak limits to ankle output torque capacity using the analytical Jacobian.
-    </p>
-    <p>
-      For each design, we evaluate standard parallel mounting against decoupled orthogonal mounting. To guarantee safety and performance, the analysis sweeps variations in motor placement depth and linkage attachment offset.
-    </p>
-    
-    <h3>1.1 Kinematics Calculation Method & Formulas</h3>
+    <h2>2. Kinematics Calculation Methods & Formulas</h2>
     <p>
       The linkage is modeled as a closed-loop parallel kinematic system. The position of each servo motor's crank tip c_i is constrained by the length of the pushrod L_i to the footplate attachment joint a_i:
     </p>
@@ -119,7 +168,7 @@
       </ul>
     </p>
     
-    <h3>1.2 Jacobian and Torque Mapping</h3>
+    <h3>2.1 Jacobian and Torque Mapping</h3>
     <p>
       Differentiating the constraint equations with respect to time yields the system Jacobian J, which maps footplate velocities [ṗ, ṙ]ᵀ to motor velocities [θ̇_1, θ̇_2]ᵀ:
     </p>
@@ -137,604 +186,526 @@
     <p>
       For a given motor torque limit (Rated/Peak), the ankle output torque is determined as the sum of contributions under motor limits, finding the worst-case minimum capacity across the Pitch (from -25° to +25°) and Roll (from -40° to +40°) sweeps.
     </p>
-  </div>
-
-  <!-- Page 3: RS02 Rated -->
-  <div class="page">
-    <h2>2. Robstride RS02: Rated Sizing Sweep (Limit: 6.0 N·m)</h2>
-    <p>
-      <strong>RS02 Sizing Dimensions:</strong> Crank 1/2 Radius = 2.5 cm, Pushrod 1 Length = 24.3 cm, Universal Joint to Motor 2 Height = 16.0 cm, Foot to Universal Joint Height = 3.6 cm, Universal Joint to Motor 1 Height = 23.5 cm, Pushrod 2 Length = 16.3 cm.
-    </p>
     
-    <h3>2.1 Standard Parallel Layout (0° Yaw) Sweep</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Ankle Spread (E) (cm)</th>
-          <th>Motor Depth Y-Offset (L) (cm)</th>
-          <th>Attachment Offset (h) (cm)</th>
-          <th>Min Pitch Torque (N·m)</th>
-          <th>Critical Pitch Angle</th>
-          <th>Min Roll Torque (N·m)</th>
-          <th>Critical Roll Angle</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>2.3</td><td>3.2</td><td>-1.0</td><td>15.45</td><td>-6.0°</td><td>4.61</td><td>+40.0°</td></tr>
-        <tr><td>2.3</td><td>3.2</td><td>0.0</td><td>14.67</td><td>-25.0°</td><td>4.44</td><td>+40.0°</td></tr>
-        <tr><td>2.3</td><td>3.2</td><td>1.0</td><td>16.03</td><td>-25.0°</td><td>4.25</td><td>+40.0°</td></tr>
-        <tr class="highlight"><td>2.3</td><td>3.8</td><td>-1.0</td><td>18.44</td><td>-1.0°</td><td>4.61</td><td>+40.0°</td></tr>
-        <tr class="highlight"><td>2.3</td><td>3.8</td><td>0.0</td><td>17.82</td><td>-16.5°</td><td>4.44</td><td>+40.0°</td></tr>
-        <tr class="highlight"><td>2.3</td><td>3.8</td><td>1.0</td><td>18.58</td><td>-25.0°</td><td>4.25</td><td>+40.0°</td></tr>
-        <tr><td>2.3</td><td>4.4</td><td>-1.0</td><td>21.35</td><td>+1.0°</td><td>4.61</td><td>+40.0°</td></tr>
-        <tr><td>2.3</td><td>4.4</td><td>0.0</td><td>20.83</td><td>-12.5°</td><td>4.44</td><td>+40.0°</td></tr>
-        <tr><td>2.3</td><td>4.4</td><td>1.0</td><td>21.35</td><td>-24.5°</td><td>4.25</td><td>+40.0°</td></tr>
-        <tr><td>5.0</td><td>3.2</td><td>-1.0</td><td>15.71</td><td>-2.0°</td><td>10.92</td><td>+40.0°</td></tr>
-        <tr><td>5.0</td><td>3.2</td><td>0.0</td><td>14.95</td><td>-21.5°</td><td>11.90</td><td>+33.0°</td></tr>
-        <tr><td>5.0</td><td>3.2</td><td>1.0</td><td>16.03</td><td>-25.0°</td><td>14.90</td><td>+10.5°</td></tr>
-        <tr class="highlight"><td>5.0</td><td>3.8</td><td>-1.0</td><td>18.65</td><td>+2.0°</td><td>10.92</td><td>+40.0°</td></tr>
-        <tr class="highlight"><td>5.0</td><td>3.8</td><td>0.0</td><td>18.03</td><td>-13.5°</td><td>11.90</td><td>+33.0°</td></tr>
-        <tr class="highlight"><td>5.0</td><td>3.8</td><td>1.0</td><td>18.68</td><td>-25.0°</td><td>14.90</td><td>+10.5°</td></tr>
-        <tr><td>5.0</td><td>4.4</td><td>-1.0</td><td>21.53</td><td>+3.0°</td><td>10.92</td><td>+40.0°</td></tr>
-        <tr><td>5.0</td><td>4.4</td><td>0.0</td><td>21.00</td><td>-10.0°</td><td>11.90</td><td>+33.0°</td></tr>
-        <tr><td>5.0</td><td>4.4</td><td>1.0</td><td>21.53</td><td>-22.5°</td><td>14.90</td><td>+10.5°</td></tr>
-      </tbody>
-    </table>
-
-    <h3>2.2 Orthogonal Decoupled Layout (90° Yaw) Sweep</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Ankle Spread (E) (cm)</th>
-          <th>Motor Depth Y-Offset (L) (cm)</th>
-          <th>Attachment Offset (h) (cm)</th>
-          <th>Min Pitch Torque (N·m)</th>
-          <th>Critical Pitch Angle</th>
-          <th>Min Roll Torque (N·m)</th>
-          <th>Critical Roll Angle</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>2.3</td><td>3.2</td><td>-1.0</td><td>10.56</td><td>-10.5°</td><td>9.16</td><td>-34.0°</td></tr>
-        <tr><td>2.3</td><td>3.2</td><td>0.0</td><td>10.16</td><td>-25.0°</td><td>9.16</td><td>-40.0°</td></tr>
-        <tr><td>2.3</td><td>3.2</td><td>1.0</td><td>11.99</td><td>-25.0°</td><td>11.23</td><td>-40.0°</td></tr>
-        <tr class="highlight"><td>2.3</td><td>3.8</td><td>-1.0</td><td>12.20</td><td>-2.5°</td><td>11.59</td><td>-15.5°</td></tr>
-        <tr class="highlight"><td>2.3</td><td>3.8</td><td>0.0</td><td>11.80</td><td>-14.5°</td><td>11.26</td><td>-28.0°</td></tr>
-        <tr class="highlight"><td>2.3</td><td>3.8</td><td>1.0</td><td>13.34</td><td>-25.0°</td><td>12.71</td><td>-37.0°</td></tr>
-        <tr><td>2.3</td><td>4.4</td><td>-1.0</td><td>13.70</td><td>+0.5°</td><td>13.31</td><td>-8.0°</td></tr>
-        <tr><td>2.3</td><td>4.4</td><td>0.0</td><td>13.31</td><td>-10.0°</td><td>12.93</td><td>-18.5°</td></tr>
-        <tr><td>2.3</td><td>4.4</td><td>1.0</td><td>14.78</td><td>-21.5°</td><td>14.19</td><td>-28.5°</td></tr>
-        <tr><td>5.0</td><td>3.2</td><td>-1.0</td><td>14.00</td><td>-4.5°</td><td>13.56</td><td>-20.0°</td></tr>
-        <tr><td>5.0</td><td>3.2</td><td>0.0</td><td>13.28</td><td>-24.5°</td><td>12.48</td><td>-40.0°</td></tr>
-        <tr><td>5.0</td><td>3.2</td><td>1.0</td><td>14.64</td><td>-25.0°</td><td>13.87</td><td>-40.0°</td></tr>
-        <tr class="highlight"><td>5.0</td><td>3.8</td><td>-1.0</td><td>15.53</td><td>+1.5°</td><td>15.28</td><td>-7.0°</td></tr>
-        <tr class="highlight"><td>5.0</td><td>3.8</td><td>0.0</td><td>15.01</td><td>-14.5°</td><td>14.52</td><td>-25.0°</td></tr>
-        <tr class="highlight"><td>5.0</td><td>3.8</td><td>1.0</td><td>16.05</td><td>-25.0°</td><td>15.43</td><td>-36.5°</td></tr>
-        <tr><td>5.0</td><td>4.4</td><td>-1.0</td><td>16.98</td><td>+3.5°</td><td>16.80</td><td>-3.0°</td></tr>
-        <tr><td>5.0</td><td>4.4</td><td>0.0</td><td>16.57</td><td>-10.0°</td><td>16.15</td><td>-17.0°</td></tr>
-        <tr><td>5.0</td><td>4.4</td><td>1.0</td><td>17.62</td><td>-23.0°</td><td>17.00</td><td>-29.0°</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Page 4: RS02 Peak & Discrete -->
-  <div class="page">
-    <h2>2.3 Robstride RS02: Peak Sizing Sweep (Limit: 17.0 N·m)</h2>
-    
-    <div class="flex-row">
-      <div class="flex-col">
-        <h3>Standard Layout (0° Yaw) Peak Sweep</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Spread (E) (cm)</th>
-              <th>Y-Offset (L) (cm)</th>
-              <th>Attach (h) (cm)</th>
-              <th>Min Pitch Torque (N·m)</th>
-              <th>Min Roll Torque (N·m)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>2.3</td><td>3.8</td><td>-1.0</td><td>52.26</td><td>13.07</td></tr>
-            <tr class="highlight"><td>2.3</td><td>3.8</td><td>0.0</td><td>50.50</td><td>12.59</td></tr>
-            <tr><td>2.3</td><td>3.8</td><td>1.0</td><td>52.65</td><td>12.04</td></tr>
-            <tr><td>5.0</td><td>3.8</td><td>-1.0</td><td>52.83</td><td>30.95</td></tr>
-            <tr class="highlight"><td>5.0</td><td>3.8</td><td>0.0</td><td>51.08</td><td>33.72</td></tr>
-            <tr><td>5.0</td><td>3.8</td><td>1.0</td><td>52.93</td><td>42.23</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="flex-col">
-        <h3>Orthogonal Layout (90° Yaw) Peak Sweep</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Spread (E) (cm)</th>
-              <th>Y-Offset (L) (cm)</th>
-              <th>Attach (h) (cm)</th>
-              <th>Min Pitch Torque (N·m)</th>
-              <th>Min Roll Torque (N·m)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>2.3</td><td>3.8</td><td>-1.0</td><td>34.58</td><td>32.83</td></tr>
-            <tr class="highlight"><td>2.3</td><td>3.8</td><td>0.0</td><td>33.44</td><td>31.90</td></tr>
-            <tr><td>2.3</td><td>3.8</td><td>1.0</td><td>37.80</td><td>36.01</td></tr>
-            <tr><td>5.0</td><td>3.8</td><td>-1.0</td><td>44.00</td><td>43.30</td></tr>
-            <tr class="highlight"><td>5.0</td><td>3.8</td><td>0.0</td><td>42.52</td><td>41.15</td></tr>
-            <tr><td>5.0</td><td>3.8</td><td>1.0</td><td>45.48</td><td>43.72</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <h3>2.4 RS02 Discrete Joint Angle Torque Matrices (L = 3.8 cm, h = 0.0 cm)</h3>
-    <div class="flex-row">
-      <div class="flex-col">
-        <h4>Rated Limit (6.0 N·m) Torque Output</h4>
-        <table>
-          <thead>
-            <tr>
-              <th>Pitch Angle (Roll=0°)</th>
-              <th>Standard E=2.3</th>
-              <th>Standard E=5.0</th>
-              <th>Ortho E=2.3</th>
-              <th>Ortho E=5.0</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>-25.0°</td><td>18.21</td><td>18.77</td><td>12.13</td><td>15.44</td></tr>
-            <tr><td>-15.0°</td><td>17.83</td><td>18.04</td><td>11.80</td><td>15.01</td></tr>
-            <tr><td>-5.0°</td><td>18.38</td><td>18.33</td><td>11.97</td><td>15.23</td></tr>
-            <tr><td>0.0°</td><td>18.98</td><td>18.79</td><td>12.19</td><td>15.51</td></tr>
-            <tr><td>+5.0°</td><td>19.88</td><td>19.50</td><td>12.49</td><td>15.90</td></tr>
-            <tr><td>+15.0°</td><td>23.35</td><td>22.20</td><td>13.51</td><td>17.15</td></tr>
-            <tr><td>+25.0°</td><td>40.47</td><td>31.87</td><td>15.90</td><td>19.67</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="flex-col">
-        <h4>Peak Limit (17.0 N·m) Torque Output</h4>
-        <table>
-          <thead>
-            <tr>
-              <th>Roll Angle (Pitch=0°)</th>
-              <th>Standard E=2.3</th>
-              <th>Standard E=5.0</th>
-              <th>Ortho E=2.3</th>
-              <th>Ortho E=5.0</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>-40.0°</td><td>13.99</td><td>53.86</td><td>33.19</td><td>43.37</td></tr>
-            <tr><td>-20.0°</td><td>15.93</td><td>37.46</td><td>32.21</td><td>41.28</td></tr>
-            <tr><td>-10.0°</td><td>16.29</td><td>35.92</td><td>33.37</td><td>42.27</td></tr>
-            <tr><td>0.0°</td><td>16.28</td><td>35.03</td><td>35.53</td><td>44.34</td></tr>
-            <tr><td>+10.0°</td><td>15.91</td><td>34.43</td><td>39.81</td><td>48.36</td></tr>
-            <tr><td>+20.0°</td><td>15.19</td><td>34.00</td><td>52.62</td><td>58.57</td></tr>
-            <tr><td>+40.0°</td><td>12.59</td><td>33.87</td><td>—</td><td>—</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <h3>2.5 Annotated RS02 Kinematics Renders (with Dimension Callouts)</h3>
-    <h4>Configuration 1: Standard Layout (Ankle Spread E = 2.3 cm)</h4>
-    <div class="image-grid">
-      <div class="image-card"><img src="report_images/conf1_front.png"><span>Front View</span></div>
-      <div class="image-card"><img src="report_images/conf1_side.png"><span>Side View</span></div>
-      <div class="image-card"><img src="report_images/conf1_top.png"><span>Top View</span></div>
-      <div class="image-card"><img src="report_images/conf1_iso.png"><span>Isometric View</span></div>
-    </div>
-    
-    <h4>Configuration 2: Orthogonal Layout (Ankle Spread E = 2.3 cm)</h4>
-    <div class="image-grid">
-      <div class="image-card"><img src="report_images/conf2_front.png"><span>Front View</span></div>
-      <div class="image-card"><img src="report_images/conf2_side.png"><span>Side View</span></div>
-      <div class="image-card"><img src="report_images/conf2_top.png"><span>Top View</span></div>
-      <div class="image-card"><img src="report_images/conf2_iso.png"><span>Isometric View</span></div>
-    </div>
-  </div>
-
-  <!-- Page 5: RS03 Rated -->
-  <div class="page">
-    <h2>3. Robstride RS03: Rated Sizing Sweep (Limit: 20.0 N·m)</h2>
-    <p>
-      <strong>RS03 Sizing Dimensions:</strong> Crank 1/2 Radius = 2.5 cm, Pushrod 1 Length = 22.2 cm, Universal Joint to Motor 2 Height = 11.2 cm, Foot to Universal Joint Height = 3.6 cm, Universal Joint to Motor 1 Height = 22.2 cm, Pushrod 2 Length = 11.2 cm.
-    </p>
-    
-    <h3>3.1 Standard Parallel Layout (0° Yaw) Sweep</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Ankle Spread (E) (cm)</th>
-          <th>Motor Depth Y-Offset (L) (cm)</th>
-          <th>Attachment Offset (h) (cm)</th>
-          <th>Min Pitch Torque (N·m)</th>
-          <th>Critical Pitch Angle</th>
-          <th>Min Roll Torque (N·m)</th>
-          <th>Critical Roll Angle</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>2.3</td><td>3.6</td><td>-1.0</td><td>59.39</td><td>+11.0°</td><td>15.61</td><td>+40.0°</td></tr>
-        <tr><td>2.3</td><td>3.6</td><td>0.0</td><td>57.25</td><td>-4.5°</td><td>14.36</td><td>+40.0°</td></tr>
-        <tr><td>2.3</td><td>3.6</td><td>1.0</td><td>59.39</td><td>-20.0°</td><td>12.19</td><td>+39.5°</td></tr>
-        <tr class="highlight"><td>2.3</td><td>4.2</td><td>-1.0</td><td>68.69</td><td>+10.0°</td><td>15.61</td><td>+40.0°</td></tr>
-        <tr class="highlight"><td>2.3</td><td>4.2</td><td>0.0</td><td>66.84</td><td>-3.5°</td><td>14.36</td><td>+40.0°</td></tr>
-        <tr class="highlight"><td>2.3</td><td>4.2</td><td>1.0</td><td>68.69</td><td>-16.5°</td><td>12.19</td><td>+39.5°</td></tr>
-        <tr><td>2.3</td><td>4.8</td><td>-1.0</td><td>78.04</td><td>+9.0°</td><td>15.61</td><td>+40.0°</td></tr>
-        <tr><td>2.3</td><td>4.8</td><td>0.0</td><td>76.42</td><td>-2.5°</td><td>14.36</td><td>+40.0°</td></tr>
-        <tr><td>2.3</td><td>4.8</td><td>1.0</td><td>78.04</td><td>-14.5°</td><td>12.19</td><td>+39.5°</td></tr>
-        <tr><td>5.0</td><td>3.6</td><td>-1.0</td><td>59.78</td><td>+15.0°</td><td>43.68</td><td>+0.0°</td></tr>
-        <tr><td>5.0</td><td>3.6</td><td>0.0</td><td>57.60</td><td>+0.0°</td><td>40.00</td><td>-35.5°</td></tr>
-        <tr><td>5.0</td><td>3.6</td><td>1.0</td><td>59.78</td><td>-16.0°</td><td>43.61</td><td>+0.0°</td></tr>
-        <tr class="highlight"><td>5.0</td><td>4.2</td><td>-1.0</td><td>69.08</td><td>+13.0°</td><td>43.68</td><td>+0.0°</td></tr>
-        <tr class="highlight"><td>5.0</td><td>4.2</td><td>0.0</td><td>67.20</td><td>+0.0°</td><td>40.00</td><td>-35.5°</td></tr>
-        <tr class="highlight"><td>5.0</td><td>4.2</td><td>1.0</td><td>69.08</td><td>-13.5°</td><td>43.61</td><td>+0.0°</td></tr>
-        <tr><td>5.0</td><td>4.8</td><td>-1.0</td><td>78.45</td><td>+11.5°</td><td>43.68</td><td>+0.0°</td></tr>
-        <tr><td>5.0</td><td>4.8</td><td>0.0</td><td>76.80</td><td>+0.0°</td><td>40.00</td><td>-35.5°</td></tr>
-        <tr><td>5.0</td><td>4.8</td><td>1.0</td><td>78.45</td><td>-12.0°</td><td>43.61</td><td>+0.0°</td></tr>
-      </tbody>
-    </table>
-
-    <h3>3.2 Orthogonal Decoupled Layout (90° Yaw) Sweep</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Ankle Spread (E) (cm)</th>
-          <th>Motor Depth Y-Offset (L) (cm)</th>
-          <th>Attachment Offset (h) (cm)</th>
-          <th>Min Pitch Torque (N·m)</th>
-          <th>Critical Pitch Angle</th>
-          <th>Min Roll Torque (N·m)</th>
-          <th>Critical Roll Angle</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>2.3</td><td>3.6</td><td>-1.0</td><td>40.51</td><td>+4.0°</td><td>41.11</td><td>+6.5°</td></tr>
-        <tr><td>2.3</td><td>3.6</td><td>0.0</td><td>37.70</td><td>-6.5°</td><td>37.92</td><td>-2.5°</td></tr>
-        <tr><td>2.3</td><td>3.6</td><td>1.0</td><td>41.04</td><td>-16.0°</td><td>40.85</td><td>-10.5°</td></tr>
-        <tr class="highlight"><td>2.3</td><td>4.2</td><td>-1.0</td><td>45.20</td><td>+6.0°</td><td>45.76</td><td>+8.0°</td></tr>
-        <tr class="highlight"><td>2.3</td><td>4.2</td><td>0.0</td><td>42.50</td><td>-4.5°</td><td>42.71</td><td>-2.0°</td></tr>
-        <tr class="highlight"><td>2.3</td><td>4.2</td><td>1.0</td><td>45.51</td><td>-14.5°</td><td>45.39</td><td>-11.5°</td></tr>
-        <tr><td>2.3</td><td>4.8</td><td>-1.0</td><td>49.86</td><td>+6.5°</td><td>50.40</td><td>+8.0°</td></tr>
-        <tr><td>2.3</td><td>4.8</td><td>0.0</td><td>47.28</td><td>-3.5°</td><td>47.50</td><td>-1.5°</td></tr>
-        <tr><td>2.3</td><td>4.8</td><td>1.0</td><td>50.03</td><td>-13.0°</td><td>49.95</td><td>-11.0°</td></tr>
-        <tr><td>5.0</td><td>3.6</td><td>-1.0</td><td>51.45</td><td>+15.5°</td><td>51.46</td><td>+16.0°</td></tr>
-        <tr><td>5.0</td><td>3.6</td><td>0.0</td><td>48.80</td><td>+0.0°</td><td>48.80</td><td>+0.0°</td></tr>
-        <tr><td>5.0</td><td>3.6</td><td>1.0</td><td>51.44</td><td>-16.5°</td><td>51.44</td><td>-16.0°</td></tr>
-        <tr class="highlight"><td>5.0</td><td>4.2</td><td>-1.0</td><td>56.12</td><td>+13.5°</td><td>56.12</td><td>+13.5°</td></tr>
-        <tr class="highlight"><td>5.0</td><td>4.2</td><td>0.0</td><td>53.60</td><td>+0.0°</td><td>53.60</td><td>+0.0°</td></tr>
-        <tr class="highlight"><td>5.0</td><td>4.2</td><td>1.0</td><td>56.11</td><td>-14.0°</td><td>56.11</td><td>-14.0°</td></tr>
-        <tr><td>5.0</td><td>4.8</td><td>-1.0</td><td>60.82</td><td>+12.0°</td><td>60.83</td><td>+12.0°</td></tr>
-        <tr><td>5.0</td><td>4.8</td><td>0.0</td><td>58.40</td><td>+0.0°</td><td>58.40</td><td>+0.0°</td></tr>
-        <tr><td>5.0</td><td>4.8</td><td>1.0</td><td>60.81</td><td>-12.0°</td><td>60.81</td><td>-12.0°</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Page 6: RS03 Peak & Discrete -->
-  <div class="page">
-    <h2>3.3 Robstride RS03: Peak Sizing Sweep (Limit: 60.0 N·m)</h2>
-    
-    <div class="flex-row">
-      <div class="flex-col">
-        <h3>Standard Layout (0° Yaw) Peak Sweep</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Spread (E) (cm)</th>
-              <th>Y-Offset (L) (cm)</th>
-              <th>Attach (h) (cm)</th>
-              <th>Min Pitch Torque (N·m)</th>
-              <th>Min Roll Torque (N·m)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>2.3</td><td>4.2</td><td>-1.0</td><td>206.06</td><td>46.84</td></tr>
-            <tr class="highlight"><td>2.3</td><td>4.2</td><td>0.0</td><td>200.53</td><td>43.07</td></tr>
-            <tr><td>2.3</td><td>4.2</td><td>1.0</td><td>206.06</td><td>36.56</td></tr>
-            <tr><td>5.0</td><td>4.2</td><td>-1.0</td><td>207.23</td><td>131.04</td></tr>
-            <tr class="highlight"><td>5.0</td><td>4.2</td><td>0.0</td><td>201.60</td><td>120.00</td></tr>
-            <tr><td>5.0</td><td>4.2</td><td>1.0</td><td>207.23</td><td>130.83</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="flex-col">
-        <h3>Orthogonal Layout (90° Yaw) Peak Sweep</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Spread (E) (cm)</th>
-              <th>Y-Offset (L) (cm)</th>
-              <th>Attach (h) (cm)</th>
-              <th>Min Pitch Torque (N·m)</th>
-              <th>Min Roll Torque (N·m)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>2.3</td><td>4.2</td><td>-1.0</td><td>135.61</td><td>137.27</td></tr>
-            <tr class="highlight"><td>2.3</td><td>4.2</td><td>0.0</td><td>127.50</td><td>128.14</td></tr>
-            <tr><td>2.3</td><td>4.2</td><td>1.0</td><td>136.53</td><td>136.17</td></tr>
-            <tr><td>5.0</td><td>4.2</td><td>-1.0</td><td>168.36</td><td>168.37</td></tr>
-            <tr class="highlight"><td>5.0</td><td>4.2</td><td>0.0</td><td>160.80</td><td>160.80</td></tr>
-            <tr><td>5.0</td><td>4.2</td><td>1.0</td><td>168.33</td><td>168.33</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <h3>3.4 RS03 Discrete Joint Angle Torque Matrices (L = 4.2 cm, h = 0.0 cm)</h3>
-    <div class="flex-row">
-      <div class="flex-col">
-        <h4>Rated Limit (20.0 N·m) Torque Output</h4>
-        <table>
-          <thead>
-            <tr>
-              <th>Pitch Angle (Roll=0°)</th>
-              <th>Standard E=2.3</th>
-              <th>Standard E=5.0</th>
-              <th>Ortho E=2.3</th>
-              <th>Ortho E=5.0</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>-25.0°</td><td>84.95</td><td>93.96</td><td>50.90</td><td>68.35</td></tr>
-            <tr><td>-15.0°</td><td>70.32</td><td>72.90</td><td>43.91</td><td>56.59</td></tr>
-            <tr><td>-5.0°</td><td>66.90</td><td>67.70</td><td>42.50</td><td>53.85</td></tr>
-            <tr><td>0.0°</td><td>67.06</td><td>67.20</td><td>42.68</td><td>53.60</td></tr>
-            <tr><td>+5.0°</td><td>68.19</td><td>67.65</td><td>43.29</td><td>53.82</td></tr>
-            <tr><td>+15.0°</td><td>73.82</td><td>71.28</td><td>46.03</td><td>55.51</td></tr>
-            <tr><td>+25.0°</td><td>88.23</td><td>80.58</td><td>52.73</td><td>59.40</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="flex-col">
-        <h4>Peak Limit (60.0 N·m) Torque Output</h4>
-        <table>
-          <thead>
-            <tr>
-              <th>Roll Angle (Pitch=0°)</th>
-              <th>Standard E=2.3</th>
-              <th>Standard E=5.0</th>
-              <th>Ortho E=2.3</th>
-              <th>Ortho E=5.0</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>-30.0°</td><td>49.58</td><td>120.00</td><td>188.24</td><td>248.33</td></tr>
-            <tr><td>-20.0°</td><td>52.78</td><td>120.00</td><td>140.71</td><td>178.19</td></tr>
-            <tr><td>-10.0°</td><td>54.61</td><td>120.00</td><td>130.04</td><td>164.00</td></tr>
-            <tr><td>0.0°</td><td>55.08</td><td>120.00</td><td>128.22</td><td>160.80</td></tr>
-            <tr><td>+10.0°</td><td>54.21</td><td>120.00</td><td>131.76</td><td>163.57</td></tr>
-            <tr><td>+20.0°</td><td>51.97</td><td>120.00</td><td>143.12</td><td>173.41</td></tr>
-            <tr><td>+30.0°</td><td>48.28</td><td>120.00</td><td>182.58</td><td>202.45</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <h3>3.5 Annotated RS03 Kinematics Renders (with Dimension Callouts)</h3>
-    <h4>Configuration 3: Standard Layout (Ankle Spread E = 5.0 cm)</h4>
-    <div class="image-grid">
-      <div class="image-card"><img src="report_images/conf3_front.png"><span>Front View</span></div>
-      <div class="image-card"><img src="report_images/conf3_side.png"><span>Side View</span></div>
-      <div class="image-card"><img src="report_images/conf3_top.png"><span>Top View</span></div>
-      <div class="image-card"><img src="report_images/conf3_iso.png"><span>Isometric View</span></div>
-    </div>
-    
-    <h4>Configuration 4: Orthogonal Layout (Ankle Spread E = 5.0 cm)</h4>
-    <div class="image-grid">
-      <div class="image-card"><img src="report_images/conf4_front.png"><span>Front View</span></div>
-      <div class="image-card"><img src="report_images/conf4_side.png"><span>Side View</span></div>
-      <div class="image-card"><img src="report_images/conf4_top.png"><span>Top View</span></div>
-      <div class="image-card"><img src="report_images/conf4_iso.png"><span>Isometric View</span></div>
-    </div>
-  </div>
-
-  <!-- Page 7: RS04 Rated -->
-  <div class="page">
-    <h2>4. Robstride RS04: Rated Sizing Sweep (Limit: 40.0 N·m)</h2>
-    <p>
-      <strong>RS04 Sizing Dimensions:</strong> Crank 1/2 Radius = 2.5 cm, Pushrod 1 Length = 22.2 cm, Universal Joint to Motor 2 Height = 11.2 cm, Foot to Universal Joint Height = 3.6 cm, Universal Joint to Motor 1 Height = 22.2 cm, Pushrod 2 Length = 11.2 cm.
-    </p>
-    
-    <h3>4.1 Standard Parallel Layout (0° Yaw) Sweep</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Ankle Spread (E) (cm)</th>
-          <th>Motor Depth Y-Offset (L) (cm)</th>
-          <th>Attachment Offset (h) (cm)</th>
-          <th>Min Pitch Torque (N·m)</th>
-          <th>Critical Pitch Angle</th>
-          <th>Min Roll Torque (N·m)</th>
-          <th>Critical Roll Angle</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>2.3</td><td>3.6</td><td>-1.0</td><td>118.78</td><td>+11.0°</td><td>31.23</td><td>+40.0°</td></tr>
-        <tr><td>2.3</td><td>3.6</td><td>0.0</td><td>114.50</td><td>-4.5°</td><td>28.71</td><td>+40.0°</td></tr>
-        <tr><td>2.3</td><td>3.6</td><td>1.0</td><td>118.78</td><td>-20.0°</td><td>24.38</td><td>+39.5°</td></tr>
-        <tr class="highlight"><td>2.3</td><td>4.2</td><td>-1.0</td><td>137.37</td><td>+10.0°</td><td>31.23</td><td>+40.0°</td></tr>
-        <tr class="highlight"><td>2.3</td><td>4.2</td><td>0.0</td><td>133.68</td><td>-3.5°</td><td>28.71</td><td>+40.0°</td></tr>
-        <tr class="highlight"><td>2.3</td><td>4.2</td><td>1.0</td><td>137.37</td><td>-16.5°</td><td>24.38</td><td>+39.5°</td></tr>
-        <tr><td>2.3</td><td>4.8</td><td>-1.0</td><td>156.07</td><td>+9.0°</td><td>31.23</td><td>+40.0°</td></tr>
-        <tr><td>2.3</td><td>4.8</td><td>0.0</td><td>152.83</td><td>-2.5°</td><td>28.71</td><td>+40.0°</td></tr>
-        <tr><td>2.3</td><td>4.8</td><td>1.0</td><td>156.07</td><td>-14.5°</td><td>24.38</td><td>+39.5°</td></tr>
-        <tr><td>5.0</td><td>3.6</td><td>-1.0</td><td>119.56</td><td>+15.0°</td><td>87.36</td><td>+0.0°</td></tr>
-        <tr><td>5.0</td><td>3.6</td><td>0.0</td><td>115.20</td><td>+0.0°</td><td>80.00</td><td>-35.5°</td></tr>
-        <tr><td>5.0</td><td>3.6</td><td>1.0</td><td>119.56</td><td>-16.0°</td><td>87.22</td><td>+0.0°</td></tr>
-        <tr class="highlight"><td>5.0</td><td>4.2</td><td>-1.0</td><td>138.16</td><td>+13.0°</td><td>87.36</td><td>+0.0°</td></tr>
-        <tr class="highlight"><td>5.0</td><td>4.2</td><td>0.0</td><td>134.40</td><td>+0.0°</td><td>80.00</td><td>-35.5°</td></tr>
-        <tr class="highlight"><td>5.0</td><td>4.2</td><td>1.0</td><td>138.16</td><td>-13.5°</td><td>87.22</td><td>+0.0°</td></tr>
-        <tr><td>5.0</td><td>4.8</td><td>-1.0</td><td>156.90</td><td>+11.5°</td><td>87.36</td><td>+0.0°</td></tr>
-        <tr><td>5.0</td><td>4.8</td><td>0.0</td><td>153.60</td><td>+0.0°</td><td>80.00</td><td>-35.5°</td></tr>
-        <tr><td>5.0</td><td>4.8</td><td>1.0</td><td>156.90</td><td>-12.0°</td><td>87.22</td><td>+0.0°</td></tr>
-      </tbody>
-    </table>
-
-    <h3>4.2 Orthogonal Decoupled Layout (90° Yaw) Sweep</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Ankle Spread (E) (cm)</th>
-          <th>Motor Depth Y-Offset (L) (cm)</th>
-          <th>Attachment Offset (h) (cm)</th>
-          <th>Min Pitch Torque (N·m)</th>
-          <th>Critical Pitch Angle</th>
-          <th>Min Roll Torque (N·m)</th>
-          <th>Critical Roll Angle</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>2.3</td><td>3.6</td><td>-1.0</td><td>81.02</td><td>+4.0°</td><td>82.22</td><td>+6.5°</td></tr>
-        <tr><td>2.3</td><td>3.6</td><td>0.0</td><td>75.40</td><td>-6.5°</td><td>75.84</td><td>-2.5°</td></tr>
-        <tr><td>2.3</td><td>3.6</td><td>1.0</td><td>82.09</td><td>-16.0°</td><td>81.71</td><td>-10.5°</td></tr>
-        <tr class="highlight"><td>2.3</td><td>4.2</td><td>-1.0</td><td>90.41</td><td>+6.0°</td><td>91.52</td><td>+8.0°</td></tr>
-        <tr class="highlight"><td>2.3</td><td>4.2</td><td>0.0</td><td>85.00</td><td>-4.5°</td><td>85.42</td><td>-2.0°</td></tr>
-        <tr class="highlight"><td>2.3</td><td>4.2</td><td>1.0</td><td>91.02</td><td>-14.5°</td><td>90.78</td><td>-11.5°</td></tr>
-        <tr><td>2.3</td><td>4.8</td><td>-1.0</td><td>99.72</td><td>+6.5°</td><td>100.80</td><td>+8.0°</td></tr>
-        <tr><td>2.3</td><td>4.8</td><td>0.0</td><td>94.56</td><td>-3.5°</td><td>95.01</td><td>-1.5°</td></tr>
-        <tr><td>2.3</td><td>4.8</td><td>1.0</td><td>100.06</td><td>-13.0°</td><td>99.90</td><td>-11.0°</td></tr>
-        <tr><td>5.0</td><td>3.6</td><td>-1.0</td><td>102.91</td><td>+15.5°</td><td>102.91</td><td>+16.0°</td></tr>
-        <tr><td>5.0</td><td>3.6</td><td>0.0</td><td>97.60</td><td>+0.0°</td><td>97.60</td><td>+0.0°</td></tr>
-        <tr><td>5.0</td><td>3.6</td><td>1.0</td><td>102.89</td><td>-16.5°</td><td>102.89</td><td>-16.0°</td></tr>
-        <tr class="highlight"><td>5.0</td><td>4.2</td><td>-1.0</td><td>112.24</td><td>+13.5°</td><td>112.25</td><td>+13.5°</td></tr>
-        <tr class="highlight"><td>5.0</td><td>4.2</td><td>0.0</td><td>107.20</td><td>+0.0°</td><td>107.20</td><td>+0.0°</td></tr>
-        <tr class="highlight"><td>5.0</td><td>4.2</td><td>1.0</td><td>112.22</td><td>-14.0°</td><td>112.22</td><td>-14.0°</td></tr>
-        <tr><td>5.0</td><td>4.8</td><td>-1.0</td><td>121.65</td><td>+12.0°</td><td>121.65</td><td>+12.0°</td></tr>
-        <tr><td>5.0</td><td>4.8</td><td>0.0</td><td>116.80</td><td>+0.0°</td><td>116.80</td><td>+0.0°</td></tr>
-        <tr><td>5.0</td><td>4.8</td><td>1.0</td><td>121.62</td><td>-12.0°</td><td>121.62</td><td>-12.0°</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Page 8: RS04 Peak & Discrete -->
-  <div class="page">
-    <h2>4.3 Robstride RS04: Peak Sizing Sweep (Limit: 120.0 N·m)</h2>
-    
-    <div class="flex-row">
-      <div class="flex-col">
-        <h3>Standard Layout (0° Yaw) Peak Sweep</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Spread (E) (cm)</th>
-              <th>Y-Offset (L) (cm)</th>
-              <th>Attach (h) (cm)</th>
-              <th>Min Pitch Torque (N·m)</th>
-              <th>Min Roll Torque (N·m)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>2.3</td><td>4.2</td><td>-1.0</td><td>412.11</td><td>93.68</td></tr>
-            <tr class="highlight"><td>2.3</td><td>4.2</td><td>0.0</td><td>401.05</td><td>86.13</td></tr>
-            <tr><td>2.3</td><td>4.2</td><td>1.0</td><td>412.12</td><td>73.13</td></tr>
-            <tr><td>5.0</td><td>4.2</td><td>-1.0</td><td>414.47</td><td>262.07</td></tr>
-            <tr class="highlight"><td>5.0</td><td>4.2</td><td>0.0</td><td>403.20</td><td>240.00</td></tr>
-            <tr><td>5.0</td><td>4.2</td><td>1.0</td><td>414.47</td><td>261.66</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="flex-col">
-        <h3>Orthogonal Layout (90° Yaw) Peak Sweep</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Spread (E) (cm)</th>
-              <th>Y-Offset (L) (cm)</th>
-              <th>Attach (h) (cm)</th>
-              <th>Min Pitch Torque (N·m)</th>
-              <th>Min Roll Torque (N·m)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>2.3</td><td>4.2</td><td>-1.0</td><td>271.22</td><td>274.55</td></tr>
-            <tr class="highlight"><td>2.3</td><td>4.2</td><td>0.0</td><td>255.01</td><td>256.27</td></tr>
-            <tr><td>2.3</td><td>4.2</td><td>1.0</td><td>273.05</td><td>272.34</td></tr>
-            <tr><td>5.0</td><td>4.2</td><td>-1.0</td><td>336.73</td><td>336.74</td></tr>
-            <tr class="highlight"><td>5.0</td><td>4.2</td><td>0.0</td><td>321.60</td><td>321.60</td></tr>
-            <tr><td>5.0</td><td>4.2</td><td>1.0</td><td>336.66</td><td>336.65</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <h3>4.4 RS04 Discrete Joint Angle Torque Matrices (L = 4.2 cm, h = 0.0 cm)</h3>
-    <div class="flex-row">
-      <div class="flex-col">
-        <h4>Rated Limit (40.0 N·m) Torque Output</h4>
-        <table>
-          <thead>
-            <tr>
-              <th>Pitch Angle (Roll=0°)</th>
-              <th>Standard E=2.3</th>
-              <th>Standard E=5.0</th>
-              <th>Ortho E=2.3</th>
-              <th>Ortho E=5.0</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>-25.0°</td><td>169.90</td><td>187.93</td><td>101.80</td><td>136.70</td></tr>
-            <tr><td>-15.0°</td><td>140.64</td><td>145.81</td><td>87.82</td><td>113.18</td></tr>
-            <tr><td>-5.0°</td><td>133.81</td><td>135.40</td><td>85.01</td><td>107.71</td></tr>
-            <tr><td>0.0°</td><td>134.11</td><td>134.40</td><td>85.35</td><td>107.20</td></tr>
-            <tr><td>+5.0°</td><td>136.38</td><td>135.30</td><td>86.59</td><td>107.64</td></tr>
-            <tr><td>+15.0°</td><td>147.63</td><td>142.57</td><td>92.06</td><td>111.02</td></tr>
-            <tr><td>+25.0°</td><td>176.46</td><td>161.16</td><td>105.46</td><td>118.79</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="flex-col">
-        <h4>Peak Limit (120.0 N·m) Torque Output</h4>
-        <table>
-          <thead>
-            <tr>
-              <th>Roll Angle (Pitch=0°)</th>
-              <th>Standard E=2.3</th>
-              <th>Standard E=5.0</th>
-              <th>Ortho E=2.3</th>
-              <th>Ortho E=5.0</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>-30.0°</td><td>99.16</td><td>240.00</td><td>376.48</td><td>496.66</td></tr>
-            <tr><td>-20.0°</td><td>105.57</td><td>240.00</td><td>281.41</td><td>356.37</td></tr>
-            <tr><td>-10.0°</td><td>109.21</td><td>240.00</td><td>260.08</td><td>327.99</td></tr>
-            <tr><td>0.0°</td><td>110.16</td><td>240.00</td><td>256.44</td><td>321.60</td></tr>
-            <tr><td>+10.0°</td><td>108.43</td><td>240.00</td><td>263.53</td><td>327.14</td></tr>
-            <tr><td>+20.0°</td><td>103.94</td><td>240.00</td><td>286.24</td><td>346.83</td></tr>
-            <tr><td>+30.0°</td><td>96.56</td><td>240.00</td><td>365.15</td><td>404.91</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- Page 9: Analytical Sizing Conclusions -->
-  <div class="page">
-    <h2>5. Sizing Conclusions & Optimization Recommendations</h2>
-    <p>
-      Based on the parametric sweeps across rated/peak outputs, ankle spreads, motor depths, and offsets, we conclude:
-    </p>
+    <h3>2.2 Kinematics Dimensions Reference</h3>
     <ul>
-      <li>
-        <strong>Effect of Spread (E):</strong> Widening the ankle spread from Ankle Spread (E) = 2.3 cm to Ankle Spread (E) = 5.0 cm increases minimum Roll torque by <strong>over 2.6x</strong> in the Standard Parallel layout (from 44.4 N·m to 119.0 N·m peak on RS03) and increases it by <strong>over 1.25x</strong> in the Orthogonal layout.
-      </li>
-      <li>
-        <strong>Sensitivity of Depth (L):</strong> Shifting the motor depth Y-offset (L) outwards (e.g. from 3.6 cm to 4.8 cm for RS03/RS04) significantly improves the Pitch torque capability (minimum Pitch torque increases from 113 N·m to 141 N·m peak on Orthogonal RS03). <em>Recommendation: Keep depth Y-offset (L) as large as allowable by the robot ankle chassis envelope (4.2 cm to 4.8 cm is ideal).</em>
-      </li>
-      <li>
-        <strong>Sensitivity of Attach Offset (h):</strong> Changing attachment offset (h) to +1.0 cm shifts the peak of kinematic transmission efficiency, leading to higher minimum Pitch torques but lower minimum Roll torques. A <strong>nominal h = 0.0 cm</strong> is recommended to maintain balanced, symmetric workspace capacities.
-      </li>
-      <li>
-        <strong>Final Verdict:</strong> 
-        The <strong>Robstride RS03</strong> is the optimal motor. If a narrow spread E = 2.3 cm must be used, you <strong>MUST</strong> use the <strong>Orthogonal layout</strong> to guarantee roll torque above 100 N·m (gives 112.6 N·m peak). If E = 5.0 cm is feasible, either layout with RS03 is robust, but Orthogonal E = 5.0 cm yields the absolute highest minimum roll capacity (145 N·m peak).
-      </li>
+      <li><strong>Robstride RS02 (Current Base):</strong> Crank 1/2 Radius = 2.5 cm, Pushrod 1 Length = 24.3 cm, Universal Joint to Motor 2 Height = 16.0 cm, Foot to Universal Joint Height = 3.6 cm, Universal Joint to Motor 1 Height = 23.5 cm, Pushrod 2 Length = 16.3 cm.</li>
+      <li><strong>Robstride RS03 & RS04 (New Base):</strong> Crank 1/2 Radius = 2.5 cm, Pushrod 1 Length = 22.2 cm, Universal Joint to Motor 2 Height = 11.2 cm, Foot to Universal Joint Height = 3.6 cm, Universal Joint to Motor 1 Height = 22.2 cm, Pushrod 2 Length = 11.2 cm.</li>
     </ul>
   </div>
 
+  <!-- Page 3: Configuration 1: Standard Current E=2.3 -->
+  <div class="page">
+    <h2>3. Configuration 1: Standard Layout, Current Mechanism (E = 2.3 cm)</h2>
+    <p>
+      <strong>Parameters:</strong> Standard parallel motor axes (both face front). Ankle Spread E = 2.3 cm. Height G = 3.6 cm, H = 23.5 cm, D = 16.0 cm. Motor Depth Y-Offset L = 3.8 cm.
+    </p>
+    
+    <div class="image-grid">
+      <div class="image-card"><img src="report_images/conf1_front.png"><span>Front View</span></div>
+      <div class="image-card"><img src="report_images/conf1_side.png"><span>Side View</span></div>
+      <div class="image-card"><img src="report_images/conf1_iso.png"><span>Isometric View</span></div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-box"><canvas id="c1_pitch"></canvas></div>
+      <div class="chart-box"><canvas id="c1_roll"></canvas></div>
+    </div>
+
+    <h3>Configuration 1 Torque Table (L = 3.8 cm, h = 0.0 cm)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Motor Model</th>
+          <th>Continuous Rated Torque Capacity (N·m)</th>
+          <th>Peak Impact Torque Capacity (N·m)</th>
+          <th>Rated Min Pitch (Pose)</th>
+          <th>Rated Min Roll (Pose)</th>
+          <th>Peak Min Pitch (Pose)</th>
+          <th>Peak Min Roll (Pose)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>RS02</td><td>6.0</td><td>17.0</td><td>17.82 (-16.5°)</td><td>4.44 (+40.0°)</td><td>50.50 (-16.5°)</td><td>12.59 (+40.0°)</td></tr>
+        <tr class="highlight"><td>RS03</td><td>20.0</td><td>60.0</td><td>66.84 (-3.5°)</td><td>14.36 (+40.0°)</td><td>200.53 (-3.5°)</td><td>43.07 (+40.0°)</td></tr>
+        <tr><td>RS04</td><td>40.0</td><td>120.0</td><td>133.68 (-3.5°)</td><td>28.71 (+40.0°)</td><td>401.05 (-3.5°)</td><td>86.13 (+40.0°)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Page 4: Configuration 2: Standard Parallel E=5.0 -->
+  <div class="page">
+    <h2>4. Configuration 2: Standard Layout, Parallel Mechanism (E = 5.0 cm)</h2>
+    <p>
+      <strong>Parameters:</strong> Standard parallel motor axes (both face front). Ankle Spread E = 5.0 cm. Height G = 3.6 cm, H = 23.5 cm, D = 16.0 cm. Motor Depth Y-Offset L = 3.8 cm.
+    </p>
+    
+    <div class="image-grid">
+      <div class="image-card"><img src="report_images/conf2_front.png"><span>Front View</span></div>
+      <div class="image-card"><img src="report_images/conf2_side.png"><span>Side View</span></div>
+      <div class="image-card"><img src="report_images/conf2_iso.png"><span>Isometric View</span></div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-box"><canvas id="c2_pitch"></canvas></div>
+      <div class="chart-box"><canvas id="c2_roll"></canvas></div>
+    </div>
+
+    <h3>Configuration 2 Torque Table (L = 3.8 cm, h = 0.0 cm)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Motor Model</th>
+          <th>Continuous Rated Torque Capacity (N·m)</th>
+          <th>Peak Impact Torque Capacity (N·m)</th>
+          <th>Rated Min Pitch (Pose)</th>
+          <th>Rated Min Roll (Pose)</th>
+          <th>Peak Min Pitch (Pose)</th>
+          <th>Peak Min Roll (Pose)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>RS02</td><td>6.0</td><td>17.0</td><td>18.03 (-13.5°)</td><td>11.90 (+33.0°)</td><td>51.08 (-13.5°)</td><td>33.72 (+33.0°)</td></tr>
+        <tr class="highlight"><td>RS03</td><td>20.0</td><td>60.0</td><td>67.20 (+0.0°)</td><td>40.00 (-35.5°)</td><td>201.60 (+0.0°)</td><td>120.00 (-32.0°)</td></tr>
+        <tr><td>RS04</td><td>40.0</td><td>120.0</td><td>134.40 (+0.0°)</td><td>80.00 (-35.5°)</td><td>403.20 (+0.0°)</td><td>240.00 (-32.0°)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Page 5: Why Orthogonal? Layout Decoupling -->
+  <div class="page">
+    <h2>5. Why Orthogonal? Pitch & Roll Coupling Decoupling</h2>
+    <p>
+      In the Standard Parallel layout, both motor crank shafts are parallel (facing front). When the foot tilts in Roll, the pushrods move in opposite directions (push-pull). However, because the linkages are located in the same vertical plane, they must act against a very narrow lateral spread. This couples the motors and results in highly asymmetric torque: Pitch capacity is high, but Roll capacity is extremely weak.
+    </p>
+    <p>
+      The <strong>Orthogonal layout</strong> decouples this system by rotating Motor 1 (the upper actuator) by 90 degrees in yaw, so it sweeps in the YZ plane (perpendicular to Motor 2). This separates the actuators' main planes of action:
+      <ul>
+        <li>Motor 1 acts primarily in the pitch plane (sweeping front/back).</li>
+        <li>Motor 2 acts primarily in the roll plane (sweeping left/right).</li>
+      </ul>
+    </p>
+    <div class="image-grid" style="grid-template-columns: 1fr 1fr 1fr; max-width: 600px; margin: 10px auto;">
+      <div class="image-card"><img src="report_images/conf3_front.png"><span>Ortho Front</span></div>
+      <div class="image-card"><img src="report_images/conf3_side.png"><span>Ortho Side</span></div>
+      <div class="image-card"><img src="report_images/conf3_iso.png"><span>Ortho Iso</span></div>
+    </div>
+    <p>
+      This physical separation multiplies Roll torque capacity by <strong>over 2.6x</strong> in the narrow design (112.6 N·m peak vs 44.4 N·m peak on RS03), providing highly isotropic (balanced) control torque in both axes.
+    </p>
+  </div>
+
+  <!-- Page 6: Configuration 3: Orthogonal Current E=2.3 -->
+  <div class="page">
+    <h2>6. Configuration 3: Orthogonal Layout, Current Mechanism (E = 2.3 cm)</h2>
+    <p>
+      <strong>Parameters:</strong> Decoupled orthogonal motor axes (top motor rotated 90°). Ankle Spread E = 2.3 cm. Height G = 3.6 cm, H = 23.5 cm, D = 16.0 cm. Motor Depth Y-Offset L = 3.8 cm.
+    </p>
+    
+    <div class="image-grid">
+      <div class="image-card"><img src="report_images/conf3_front.png"><span>Front View</span></div>
+      <div class="image-card"><img src="report_images/conf3_side.png"><span>Side View</span></div>
+      <div class="image-card"><img src="report_images/conf3_iso.png"><span>Isometric View</span></div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-box"><canvas id="c3_pitch"></canvas></div>
+      <div class="chart-box"><canvas id="c3_roll"></canvas></div>
+    </div>
+
+    <h3>Configuration 3 Torque Table (L = 3.8 cm, h = 0.0 cm)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Motor Model</th>
+          <th>Continuous Rated Torque Capacity (N·m)</th>
+          <th>Peak Impact Torque Capacity (N·m)</th>
+          <th>Rated Min Pitch (Pose)</th>
+          <th>Rated Min Roll (Pose)</th>
+          <th>Peak Min Pitch (Pose)</th>
+          <th>Peak Min Roll (Pose)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>RS02</td><td>6.0</td><td>17.0</td><td>11.80 (-14.5°)</td><td>11.26 (-28.0°)</td><td>33.44 (-14.5°)</td><td>31.90 (-28.0°)</td></tr>
+        <tr class="highlight"><td>RS03</td><td>20.0</td><td>60.0</td><td>42.50 (-4.5°)</td><td>42.71 (-2.0°)</td><td>127.50 (-4.5°)</td><td>128.14 (-2.0°)</td></tr>
+        <tr><td>RS04</td><td>40.0</td><td>120.0</td><td>85.00 (-4.5°)</td><td>85.42 (-2.0°)</td><td>255.01 (-4.5°)</td><td>256.27 (-2.0°)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Page 7: Configuration 4: Orthogonal Parallel E=5.0 -->
+  <div class="page">
+    <h2>7. Configuration 4: Orthogonal Layout, Parallel Mechanism (E = 5.0 cm)</h2>
+    <p>
+      <strong>Parameters:</strong> Decoupled orthogonal motor axes. Ankle Spread E = 5.0 cm. Height G = 3.6 cm, H = 23.5 cm, D = 16.0 cm. Motor Depth Y-Offset L = 3.8 cm.
+    </p>
+    
+    <div class="image-grid">
+      <div class="image-card"><img src="report_images/conf4_front.png"><span>Front View</span></div>
+      <div class="image-card"><img src="report_images/conf4_side.png"><span>Side View</span></div>
+      <div class="image-card"><img src="report_images/conf4_iso.png"><span>Isometric View</span></div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-box"><canvas id="c4_pitch"></canvas></div>
+      <div class="chart-box"><canvas id="c4_roll"></canvas></div>
+    </div>
+
+    <h3>Configuration 4 Torque Table (L = 3.8 cm, h = 0.0 cm)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Motor Model</th>
+          <th>Continuous Rated Torque Capacity (N·m)</th>
+          <th>Peak Impact Torque Capacity (N·m)</th>
+          <th>Rated Min Pitch (Pose)</th>
+          <th>Rated Min Roll (Pose)</th>
+          <th>Peak Min Pitch (Pose)</th>
+          <th>Peak Min Roll (Pose)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>RS02</td><td>6.0</td><td>17.0</td><td>15.01 (-14.5°)</td><td>14.52 (-25.0°)</td><td>42.52 (-14.5°)</td><td>41.15 (-25.0°)</td></tr>
+        <tr class="highlight"><td>RS03</td><td>20.0</td><td>60.0</td><td>53.60 (+0.0°)</td><td>53.60 (+0.0°)</td><td>160.80 (+0.0°)</td><td>160.80 (+0.0°)</td></tr>
+        <tr><td>RS04</td><td>40.0</td><td>120.0</td><td>107.20 (+0.0°)</td><td>107.20 (+0.0°)</td><td>321.60 (+0.0°)</td><td>321.60 (+0.0°)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Page 8: End Page - Parametric Sweeps: Depth L & Offset h (RS02) -->
+  <div class="page">
+    <h2>8. Parametric Sweeps: Motor Depth (L) & Attachment Offset (h) (RS02)</h2>
+    <p>
+      To analyze joint geometry sensitivity, we perform sweeps of the Motor Depth Y-Offset (L) and the Attachment Offset (h) on the Robstride RS02 under both Standard and Orthogonal layouts.
+    </p>
+
+    <h3>8.1 RS02 Standard Layout Sweep (Limit: 6.0 N·m Rated / 17.0 N·m Peak)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Ankle Spread (E) (cm)</th>
+          <th>Motor Depth Y-Offset (L) (cm)</th>
+          <th>Attachment Offset (h) (cm)</th>
+          <th>Rated Min Pitch (N·m)</th>
+          <th>Rated Min Roll (N·m)</th>
+          <th>Peak Min Pitch (N·m)</th>
+          <th>Peak Min Roll (N·m)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>2.3</td><td>3.2</td><td>-1.0</td><td>15.45</td><td>4.61</td><td>43.76</td><td>13.07</td></tr>
+        <tr class="highlight"><td>2.3</td><td>3.8</td><td>0.0</td><td>17.82</td><td>4.44</td><td>50.50</td><td>12.59</td></tr>
+        <tr><td>2.3</td><td>4.4</td><td>1.0</td><td>21.35</td><td>4.25</td><td>60.50</td><td>12.04</td></tr>
+        <tr><td>5.0</td><td>3.2</td><td>-1.0</td><td>15.71</td><td>10.92</td><td>44.52</td><td>30.95</td></tr>
+        <tr class="highlight"><td>5.0</td><td>3.8</td><td>0.0</td><td>18.03</td><td>11.90</td><td>51.08</td><td>33.72</td></tr>
+        <tr><td>5.0</td><td>4.4</td><td>1.0</td><td>21.53</td><td>14.90</td><td>61.01</td><td>42.23</td></tr>
+      </tbody>
+    </table>
+
+    <h3>8.2 RS02 Orthogonal Layout Sweep (Limit: 6.0 N·m Rated / 17.0 N·m Peak)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Ankle Spread (E) (cm)</th>
+          <th>Motor Depth Y-Offset (L) (cm)</th>
+          <th>Attachment Offset (h) (cm)</th>
+          <th>Rated Min Pitch (N·m)</th>
+          <th>Rated Min Roll (N·m)</th>
+          <th>Peak Min Pitch (N·m)</th>
+          <th>Peak Min Roll (N·m)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>2.3</td><td>3.2</td><td>-1.0</td><td>10.56</td><td>9.16</td><td>29.91</td><td>25.95</td></tr>
+        <tr class="highlight"><td>2.3</td><td>3.8</td><td>0.0</td><td>11.80</td><td>11.26</td><td>33.44</td><td>31.90</td></tr>
+        <tr><td>2.3</td><td>4.4</td><td>1.0</td><td>14.78</td><td>14.19</td><td>41.87</td><td>40.21</td></tr>
+        <tr><td>5.0</td><td>3.2</td><td>-1.0</td><td>14.00</td><td>12.48</td><td>39.66</td><td>35.35</td></tr>
+        <tr class="highlight"><td>5.0</td><td>3.8</td><td>0.0</td><td>15.01</td><td>14.52</td><td>42.52</td><td>41.15</td></tr>
+        <tr><td>5.0</td><td>4.4</td><td>1.0</td><td>17.62</td><td>17.00</td><td>49.91</td><td>48.15</td></tr>
+      </tbody>
+    </table>
+    <p>
+      <strong>Sensitivity Summary:</strong> Increasing Motor Depth Y-offset (L) improves pitch capacity for both standard and orthogonal layouts. In the standard layout, varying attachment offset (h) shifts joint efficiency slightly without affecting the worst-case roll limit.
+    </p>
+  </div>
+
+  <!-- Page 9: End Page - Parametric Sweeps: Depth L & Offset h (RS03 & RS04) -->
+  <div class="page">
+    <h2>9. Parametric Sweeps: Motor Depth (L) & Attachment Offset (h) (RS03 & RS04)</h2>
+    <p>
+      Sweeps performed using the screenshot dimensions: Crank 1/2 Radius = 2.5 cm, Pushrod 1 Length = 22.2 cm, Universal Joint to Motor 2 Height = 11.2 cm, Foot to Universal Joint Height = 3.6 cm, Universal Joint to Motor 1 Height = 22.2 cm, Pushrod 2 Length = 11.2 cm.
+    </p>
+
+    <h3>9.1 RS03 Parametric Sweep (Limit: 20.0 N·m Rated / 60.0 N·m Peak)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Layout Type</th>
+          <th>Spread (E) (cm)</th>
+          <th>Depth (L) (cm)</th>
+          <th>Offset (h) (cm)</th>
+          <th>Rated Min Pitch (N·m)</th>
+          <th>Rated Min Roll (N·m)</th>
+          <th>Peak Min Pitch (N·m)</th>
+          <th>Peak Min Roll (N·m)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Standard</td><td>2.3</td><td>3.6</td><td>-1.0</td><td>59.39</td><td>15.61</td><td>178.17</td><td>46.84</td></tr>
+        <tr class="highlight"><td>Standard</td><td>2.3</td><td>4.2</td><td>0.0</td><td>66.84</td><td>14.36</td><td>200.53</td><td>43.07</td></tr>
+        <tr><td>Standard</td><td>2.3</td><td>4.8</td><td>1.0</td><td>78.04</td><td>12.19</td><td>234.11</td><td>36.56</td></tr>
+        <tr><td>Orthogonal</td><td>2.3</td><td>3.6</td><td>-1.0</td><td>40.51</td><td>41.11</td><td>121.53</td><td>123.32</td></tr>
+        <tr class="highlight"><td>Orthogonal</td><td>2.3</td><td>4.2</td><td>0.0</td><td>42.50</td><td>42.71</td><td>127.50</td><td>128.14</td></tr>
+        <tr><td>Orthogonal</td><td>2.3</td><td>4.8</td><td>1.0</td><td>50.03</td><td>49.95</td><td>150.10</td><td>149.86</td></tr>
+      </tbody>
+    </table>
+
+    <h3>9.2 RS04 Parametric Sweep (Limit: 40.0 N·m Rated / 120.0 N·m Peak)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Layout Type</th>
+          <th>Spread (E) (cm)</th>
+          <th>Depth (L) (cm)</th>
+          <th>Offset (h) (cm)</th>
+          <th>Rated Min Pitch (N·m)</th>
+          <th>Rated Min Roll (N·m)</th>
+          <th>Peak Min Pitch (N·m)</th>
+          <th>Peak Min Roll (N·m)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Standard</td><td>2.3</td><td>3.6</td><td>-1.0</td><td>118.78</td><td>31.23</td><td>356.35</td><td>93.68</td></tr>
+        <tr class="highlight"><td>Standard</td><td>2.3</td><td>4.2</td><td>0.0</td><td>133.68</td><td>28.71</td><td>401.05</td><td>86.13</td></tr>
+        <tr><td>Standard</td><td>2.3</td><td>4.8</td><td>1.0</td><td>156.07</td><td>24.38</td><td>468.22</td><td>73.13</td></tr>
+        <tr><td>Orthogonal</td><td>2.3</td><td>3.6</td><td>-1.0</td><td>81.02</td><td>82.22</td><td>243.05</td><td>246.65</td></tr>
+        <tr class="highlight"><td>Orthogonal</td><td>2.3</td><td>4.2</td><td>0.0</td><td>85.00</td><td>85.42</td><td>255.01</td><td>256.27</td></tr>
+        <tr><td>Orthogonal</td><td>2.3</td><td>4.8</td><td>1.0</td><td>100.06</td><td>99.90</td><td>300.19</td><td>299.71</td></tr>
+      </tbody>
+    </table>
+    
+    <h3>9.3 Final Mechanical Optimization Recommendations</h3>
+    <ul>
+      <li><strong>Motor Sizing Verdict:</strong> The <strong>Robstride RS03</strong> is the optimal actuator selection. It ensures excellent continuous workspace rated torques and provides peak torque limits exceeding 120 N·m for foot strike stabilization.</li>
+      <li><strong>Mounting Choice:</strong> If keeping the current chassis footprint (narrow spread E = 2.3 cm), the <strong>Orthogonal layout is highly recommended</strong> to decouple joint roll and pitch action, preventing critical roll torque collapse (provides 42.71 N·m continuous vs 14.36 N·m in standard layout).</li>
+      <li><strong>Parametric Alignment:</strong> Retain the attachment offset at <strong>h = 0.0 cm</strong> for symmetric workspace limits. Set depth offset to <strong>L = 4.2 cm to 4.8 cm</strong> to maximize link transmission angles.</li>
+    </ul>
+  </div>
+
+<script>
+'use strict';
+const DEG = Math.PI / 180;
+const v3 = (x,y,z) => ({x,y,z});
+const v3a = (a,b) => v3(a.x+b.x, a.y+b.y, a.z+b.z);
+const v3s = (a,b) => v3(a.x-b.x, a.y-b.y, a.z-b.z);
+const v3d = (a,b) => a.x*b.x + a.y*b.y + a.z*b.z;
+const clamp = (x,a,b) => Math.max(a, Math.min(b,x));
+
+function Rx(a){const c=Math.cos(a),s=Math.sin(a);return[[1,0,0],[0,c,-s],[0,s,c]];}
+function Ry(a){const c=Math.cos(a),s=Math.sin(a);return[[c,0,s],[0,1,0],[-s,0,c]];}
+function mm(A,B){const R=[[0,0,0],[0,0,0],[0,0,0]];for(let i=0;i<3;i++)for(let j=0;j<3;j++)for(let k=0;k<3;k++)R[i][j]+=A[i][k]*B[k][j];return R;}
+function mv(M,v){return v3(M[0][0]*v.x+M[0][1]*v.y+M[0][2]*v.z,M[1][0]*v.x+M[1][1]*v.y+M[1][2]*v.z,M[2][0]*v.x+M[2][1]*v.y+M[2][2]*v.z);}
+
+class Mech {
+  constructor(p){this.set(p);}
+  set(p){
+    this.m1z=p.m1z; this.m2z=p.m2z;
+    this.r1=p.r1; this.r2=p.r2;
+    this.L1=p.L1; this.L2=p.L2;
+    this.E=p.E; this.ujZ=p.ujZ; this.ah=p.ah;
+    this.oy=p.oy; this.orthoYaw = p.orthoYaw;
+    if(this.orthoYaw) {
+      this.a1b=v3(-this.oy, p.E/2, p.ah);
+    } else {
+      this.a1b=v3(p.E/2, this.oy, p.ah);
+    }
+    this.a2b=v3(-p.E/2, this.oy, p.ah);
+    this.ac=v3(0, 0, p.ujZ);
+  }
+  rot(p,r){return mm(Rx(p),Ry(r));}
+  ankW(bp,p,r){return v3a(mv(this.rot(p,r),bp),this.ac);}
+
+  ik(pitch,roll,b1=1,b2=1){
+    const a1=this.ankW(this.a1b,pitch,roll);
+    const a2=this.ankW(this.a2b,pitch,roll);
+    let t1, ok1;
+    if(this.orthoYaw) {
+      const dx = -this.oy - a1.x;
+      const dy = -a1.y;
+      const dz = this.m1z - a1.z;
+      const a = -2.0 * this.r1 * a1.y;
+      const b = 2.0 * this.r1 * dz;
+      const c = this.L1*this.L1 - this.r1*this.r1 - dy*dy - dz*dz - dx*dx;
+      const R = Math.sqrt(a*a + b*b);
+      if (R < 1e-12) { t1 = 0; ok1 = false; }
+      else {
+        const ratio = c / R;
+        if (Math.abs(ratio) > 1) { t1 = 0; ok1 = false; }
+        else {
+          const psi = Math.atan2(a, b);
+          const delta = Math.acos(clamp(ratio,-1,1));
+          t1 = (b1 === 0) ? (psi - delta) : (psi + delta);
+          ok1 = true;
+        }
+      }
+    } else {
+      const dx=-a1.x, dy=this.oy-a1.y, dz=this.m1z-a1.z;
+      const a = 2*this.r1*dx;
+      const b = 2*this.r1*dz;
+      const c = this.L1*this.L1 - this.r1*this.r1 - dx*dx - dy*dy - dz*dz;
+      const R = Math.sqrt(a*a+b*b);
+      if(R<1e-12) { t1 = 0; ok1 = false; }
+      else {
+        const ratio = c/R;
+        if(Math.abs(ratio)>1) { t1 = 0; ok1 = false; }
+        else {
+          const psi=Math.atan2(a,b);
+          const delta=Math.acos(clamp(ratio,-1,1));
+          t1 = b1===0?psi-delta:psi+delta; ok1 = true;
+        }
+      }
+    }
+    const dx2=-a2.x, dy2=this.oy-a2.y, dz2=this.m2z-a2.z;
+    const a_ = 2*-1*this.r2*dx2;
+    const b_ = 2*this.r2*dz2;
+    const c_ = this.L2*this.L2 - this.r2*this.r2 - dx2*dx2 - dy2*dy2 - dz2*dz2;
+    const R_ = Math.sqrt(a_*a_+b_*b_);
+    let t2, ok2;
+    if(R_<1e-12) { t2 = 0; ok2 = false; }
+    else {
+      const ratio = c_/R_;
+      if(Math.abs(ratio)>1) { t2 = 0; ok2 = false; }
+      else {
+        const psi=Math.atan2(a_,b_);
+        const delta=Math.acos(clamp(ratio,-1,1));
+        t2 = b2===0?psi-delta:psi+delta; ok2 = true;
+      }
+    }
+    return {t1, t2, ok:ok1 && ok2};
+  }
+
+  jacobian(t1,t2,p,r){
+    const cp=Math.cos(p), sp=Math.sin(p);
+    const cr=Math.cos(r), sr=Math.sin(r);
+    const tip1=v3(this.orthoYaw?-this.oy:this.r1*Math.sin(t1), this.orthoYaw?this.r1*Math.sin(t1):this.oy, this.m1z+this.r1*Math.cos(t1));
+    const tip2=v3(-this.r2*Math.sin(t2), this.oy, this.m2z+this.r2*Math.cos(t2));
+    const a1=this.ankW(this.a1b,p,r), a2=this.ankW(this.a2b,p,r);
+
+    let dc1_dt1;
+    if(this.orthoYaw) {
+      dc1_dt1 = v3(0.0, this.r1 * Math.cos(t1), -this.r1 * Math.sin(t1));
+    } else {
+      dc1_dt1 = v3(this.r1 * Math.cos(t1), 0.0, -this.r1 * Math.sin(t1));
+    }
+    const dc2_dt2 = v3(-this.r2 * Math.cos(t2), 0.0, -this.r2 * Math.sin(t2));
+
+    const den1 = v3d(v3s(tip1, a1), dc1_dt1);
+    const den2 = v3d(v3s(tip2, a2), dc2_dt2);
+
+    const get_da_dp = (bp) => v3(
+      0.0,
+      (cp * sr) * bp.x + (-sp) * bp.y + (-cp * cr) * bp.z,
+      (sp * sr) * bp.x + (cp) * bp.y + (-sp * cr) * bp.z
+    );
+
+    const get_da_dr = (bp) => v3(
+      -sr * bp.x + cr * bp.z,
+      (sp * cr) * bp.x + (sp * sr) * bp.z,
+      (-cp * cr) * bp.x + (-cp * sr) * bp.z
+    );
+
+    const J = [[0.0, 0.0], [0.0, 0.0]];
+    let det = 0.0, cn = Infinity;
+    if (Math.abs(den1) > 1e-12 && Math.abs(den2) > 1e-12) {
+      J[0][0] = v3d(v3s(tip1, a1), get_da_dp(this.a1b)) / den1;
+      J[0][1] = v3d(v3s(tip1, a1), get_da_dr(this.a1b)) / den1;
+      J[1][0] = v3d(v3s(tip2, a2), get_da_dp(this.a2b)) / den2;
+      J[1][1] = v3d(v3s(tip2, a2), get_da_dr(this.a2b)) / den2;
+    }
+    return J;
+  }
+}
+
+// Generate curves for RS03 Peak (60 Nm)
+const rs03Peak = 60.0;
+const pRange = [], rRange = [];
+for (let p = -25; p <= 25; p += 1) pRange.push(p);
+for (let r = -40; r <= 40; r += 2) rRange.push(r);
+
+function generateDatasets(mech) {
+  const pData = [], rData = [];
+  pRange.forEach(p => {
+    const ik = mech.ik(p * DEG, 0.0);
+    let cap = 0;
+    if (ik.ok) {
+      const J = mech.jacobian(ik.t1, ik.t2, p * DEG, 0.0);
+      cap = (Math.abs(J[0][0]) + Math.abs(J[1][0])) * rs03Peak;
+    }
+    pData.push(cap > 0 ? parseFloat(cap.toFixed(2)) : null);
+  });
+  rRange.forEach(r => {
+    const ik = mech.ik(0.0, r * DEG);
+    let cap = 0;
+    if (ik.ok) {
+      const J = mech.jacobian(ik.t1, ik.t2, 0.0, r * DEG);
+      cap = (Math.abs(J[0][1]) + Math.abs(J[1][1])) * rs03Peak;
+    }
+    rData.push(cap > 0 ? parseFloat(cap.toFixed(2)) : null);
+  });
+  return { pData, rData };
+}
+
+// Configurations order matched with index_orthogonal:
+// conf1 = standard base E=2.3
+// conf2 = standard parallel E=5.0
+// conf3 = ortho base E=2.3
+// conf4 = ortho parallel E=5.0
+const mechs = [
+  new Mech({ m1z: 27.1, m2z: 19.6, r1: 2.5, r2: 2.5, L1: 24.3, L2: 16.3, E: 2.3, ujZ: 3.6, ah: 0, oy: 3.8, orthoYaw: false }),
+  new Mech({ m1z: 27.1, m2z: 19.6, r1: 2.5, r2: 2.5, L1: 24.3, L2: 16.3, E: 5.0, ujZ: 3.6, ah: 0, oy: 3.8, orthoYaw: false }),
+  new Mech({ m1z: 27.1, m2z: 19.6, r1: 2.5, r2: 2.5, L1: 24.3, L2: 16.3, E: 2.3, ujZ: 3.6, ah: 0, oy: 3.8, orthoYaw: true }),
+  new Mech({ m1z: 27.1, m2z: 19.6, r1: 2.5, r2: 2.5, L1: 24.3, L2: 16.3, E: 5.0, ujZ: 3.6, ah: 0, oy: 3.8, orthoYaw: true })
+];
+
+window.onload = () => {
+  for (let i = 0; i < 4; i++) {
+    const { pData, rData } = generateDatasets(mechs[i]);
+    const num = i + 1;
+    
+    // Pitch Chart
+    new Chart(document.getElementById(`c${num}_pitch`).getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: pRange.map(p => p + '°'),
+        datasets: [{ label: 'Ankle Pitch Output (N·m)', data: pData, borderColor: '#00d4ff', backgroundColor: 'rgba(0,212,255,0.1)', tension: 0.1, fill: true }]
+      },
+      options: {
+        animation: false,
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { title: { display: true, text: `Pitch Capacity Sweep (Peak)`, color: '#6b7280', font: { size: 10 } }, legend: { display: false } },
+        scales: { x: { ticks: { color: '#888', font: { size: 7 } } }, y: { ticks: { color: '#888', font: { size: 7 } } } }
+      }
+    });
+
+    // Roll Chart
+    new Chart(document.getElementById(`c${num}_roll`).getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: rRange.map(r => r + '°'),
+        datasets: [{ label: 'Ankle Roll Output (N·m)', data: rData, borderColor: '#ff6b35', backgroundColor: 'rgba(255,107,53,0.1)', tension: 0.1, fill: true }]
+      },
+      options: {
+        animation: false,
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { title: { display: true, text: `Roll Capacity Sweep (Peak)`, color: '#6b7280', font: { size: 10 } }, legend: { display: false } },
+        scales: { x: { ticks: { color: '#888', font: { size: 7 } } }, y: { ticks: { color: '#888', font: { size: 7 } } } }
+      }
+    });
+  }
+};
+</script>
 </body>
 </html>

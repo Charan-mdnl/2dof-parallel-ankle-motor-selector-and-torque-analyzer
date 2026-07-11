@@ -131,13 +131,13 @@
     <h3 style="margin-top:0;margin-bottom:8px;font-size:12.0px;text-transform:uppercase;letter-spacing:0.5px;color:#00d4ff;">Table of Contents</h3>
     <div class="toc-item"><span>1. Introduction & Executive Summary</span><span>Page 2</span></div>
     <div class="toc-item"><span>2. Physics of Humanoid Balance (First Principles)</span><span>Page 2</span></div>
-    <div class="toc-item"><span>3. Foot Plate Sizing Parameters & Criteria</span><span>Page 3</span></div>
-    <div class="toc-item"><span>4. State-of-the-Art Humanoid Benchmark Matrix</span><span>Page 3</span></div>
-    <div class="toc-item"><span>5. Mathematical Model & Moment Arms</span><span>Page 4</span></div>
-    <div class="toc-item"><span>6. Torque Sweep Results (42 kg & 45 kg Loads)</span><span>Page 4</span></div>
-    <div class="toc-item"><span>7. Actuator Torque Translation & Linkage Sharing</span><span>Page 5</span></div>
-    <div class="toc-item"><span>8. MuJoCo Humanoid Integration & Dynamic Stability</span><span>Page 5</span></div>
-    <div class="toc-item"><span>9. Engineering Design Checklist & Hardware Guidelines</span><span>Page 6</span></div>
+    <div class="toc-item"><span>3. Foot Plate Sizing Parameters & Criteria</span><span>Page 4</span></div>
+    <div class="toc-item"><span>4. State-of-the-Art Humanoid Benchmark Matrix</span><span>Page 4</span></div>
+    <div class="toc-item"><span>5. Mathematical Model & Moment Arms</span><span>Page 5</span></div>
+    <div class="toc-item"><span>6. Torque Sweep Results (42 kg & 45 kg Loads)</span><span>Page 5</span></div>
+    <div class="toc-item"><span>7. Actuator Torque Translation & Linkage Sharing</span><span>Page 6</span></div>
+    <div class="toc-item"><span>8. MuJoCo Humanoid Integration & Dynamic Stability</span><span>Page 7</span></div>
+    <div class="toc-item"><span>9. Engineering Design Checklist & Hardware Guidelines</span><span>Page 7</span></div>
   </div>
 
   <div class="cover-bottom">
@@ -218,6 +218,69 @@
       <!-- Point force at heel -->
       <path d="M 40,65 L 40,80" stroke="#ff3366" stroke-width="1.5"/>
       <text x="100" y="16" font-size="10.0" text-anchor="middle" font-family="sans-serif">Heel Edge Contact (Regime B)</text>
+    </g>
+  </svg>
+</div>
+
+<h3>2.3 Why Mount Placement Does Not Affect Flat-Foot Torque</h3>
+<p>
+  When the robot is standing statically with its foot flat on the ground (Regime A), the vertical weight of the robot is supported by the ground reaction force distributed over the foot sole. The location of the Center of Pressure (CoP) under the foot is determined entirely by the location of the robot's Center of Mass (CoM). If the robot is in static equilibrium, the net moment about the CoP must be zero:
+  <br>&tau;<sub>ankle</sub> + F<sub>N</sub> · (x<sub>CoP</sub> − x<sub>ankle</sub>) = 0
+  <br>Solving for the required active ankle torque:
+  <br>&tau;<sub>ankle</sub> = −F<sub>N</sub> · (x<sub>CoP</sub> − x<sub>ankle</sub>)
+  <br>If the robot stands in a posture where its CoM projection aligns directly with the ankle joint (x<sub>CoP</sub> = x<sub>ankle</sub>), the required active ankle joint torque is exactly <strong>0 N·m</strong>, <em>regardless of where the ankle is mounted on the foot plate</em>.
+</p>
+<p>
+  For example, if the ankle is mounted in the center (x<sub>ankle</sub> = 0 cm) and the CoM is at 0 cm relative to the sole center, the torque is 0 N·m. If the ankle is mounted at −1.5 cm (closer to the heel) and the robot sways slightly backward so its CoM projection lies directly over the ankle joint (x<sub>CoM</sub> = −1.5 cm relative to the sole center), the torque is still exactly <strong>0 N·m</strong>.
+</p>
+<p>
+  Therefore, ankle joint placement does not dictate the static standing torque; it only shifts the position where zero-torque standing is achieved, and determines the sway margins (stability boundaries) in front of and behind that zero-torque position.
+</p>
+
+<h3>2.4 Why Mount Placement Strongly Affects Edge-Contact and Swing Torque</h3>
+<p>
+  <strong>Edge Contact (Regime B)</strong>: During heel strike or toe push-off, the foot plate tilts and contact is restricted to a single point (or line) at the heel edge (x<sub>c</sub> = −7.5 cm) or toe edge (x<sub>c</sub> = +7.5 cm). Unlike standing, the location of the reaction force is locked at the contact edge. To prevent the foot from collapsing, the ankle joint must apply a torque to balance the gravity moment arm:
+  <br>&tau;<sub>ankle</sub> = M · g · d<sub>h</sub>
+  <br>Here, the moment arm d<sub>h</sub> is directly determined by the distance from the ankle joint to the contact edge. Shifting the joint placement x<sub>ankle</sub> backward by 1.5 cm directly reduces the distance to the heel edge by 20% (from 7.5 cm to 6.0 cm), reducing the landing impact torque on the actuators by 20%. Consequently, it increases the distance to the toe edge (to 9.0 cm), which increases the toe push-off torque by 20%.
+</p>
+<p>
+  <strong>Gait Swing Phase</strong>: In the air, the foot is lifted. Shifting the ankle pivot creates a distance d between the joint center and the center of mass of the foot plate. By the parallel axis theorem, the moment of inertia of the foot plate about the ankle pivot increases as I = I<sub>0</sub> + M<sub>foot</sub> · d². A larger offset increases the required actuator torque to tilt the foot rapidly during swing, demonstrating that a centered pivot is theoretically optimal for swing phase dynamics.
+</p>
+
+<div class="diagram-container">
+  <svg width="600" height="110" viewBox="0 0 600 110">
+    <!-- Centered Mount (0 cm) -->
+    <g transform="translate(10, 5)">
+      <rect x="10" y="25" width="160" height="40" rx="3" fill="none" stroke="#475569" stroke-width="1.5"/>
+      <circle cx="90" cy="45" r="5" fill="#ff3366"/>
+      <line x1="90" y1="15" x2="90" y2="75" stroke="#475569" stroke-width="1" stroke-dasharray="2,2"/>
+      <path d="M 10,45 L 90,45" stroke="#ffb830" stroke-width="1"/>
+      <path d="M 90,45 L 170,45" stroke="#ffb830" stroke-width="1"/>
+      <text x="50" y="38" font-size="9" fill="#ffb830" text-anchor="middle">7.5 cm</text>
+      <text x="130" y="38" font-size="9" fill="#ffb830" text-anchor="middle">7.5 cm</text>
+      <text x="90" y="82" font-size="10" fill="#eef2fa" text-anchor="middle">Centered Mount (0.0 cm)</text>
+    </g>
+    <!-- Backward Offset (-1.5 cm) -->
+    <g transform="translate(210, 5)">
+      <rect x="10" y="25" width="160" height="40" rx="3" fill="none" stroke="#475569" stroke-width="1.5"/>
+      <circle cx="74" cy="45" r="5" fill="#00e87b"/>
+      <line x1="74" y1="15" x2="74" y2="75" stroke="#475569" stroke-width="1" stroke-dasharray="2,2"/>
+      <path d="M 10,45 L 74,45" stroke="#ffb830" stroke-width="1"/>
+      <path d="M 74,45 L 170,45" stroke="#ffb830" stroke-width="1"/>
+      <text x="42" y="38" font-size="9" fill="#ffb830" text-anchor="middle">6.0 cm</text>
+      <text x="122" y="38" font-size="9" fill="#ffb830" text-anchor="middle">9.0 cm</text>
+      <text x="90" y="82" font-size="10" fill="#eef2fa" text-anchor="middle">Backward Offset (-1.5 cm)</text>
+    </g>
+    <!-- Forward Offset (+1.5 cm) -->
+    <g transform="translate(410, 5)">
+      <rect x="10" y="25" width="160" height="40" rx="3" fill="none" stroke="#475569" stroke-width="1.5"/>
+      <circle cx="106" cy="45" r="5" fill="#af40ff"/>
+      <line x1="106" y1="15" x2="106" y2="75" stroke="#475569" stroke-width="1" stroke-dasharray="2,2"/>
+      <path d="M 10,45 L 106,45" stroke="#ffb830" stroke-width="1"/>
+      <path d="M 105,45 L 170,45" stroke="#ffb830" stroke-width="1"/>
+      <text x="58" y="38" font-size="9" fill="#ffb830" text-anchor="middle">9.0 cm</text>
+      <text x="138" y="38" font-size="9" fill="#ffb830" text-anchor="middle">6.0 cm</text>
+      <text x="90" y="82" font-size="10" fill="#eef2fa" text-anchor="middle">Forward Offset (+1.5 cm)</text>
     </g>
   </svg>
 </div>

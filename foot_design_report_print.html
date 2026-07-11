@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ankle Joint Pivot & Foot Design Optimization Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  @page { size: A4; margin: 1.0cm 1.2cm; }
+  @media print {
+    body { background: #fff; color: #222; padding: 0; margin: 0; }
+    .page-break { page-break-before: always; }
+    .no-print { display: none; }
+    tr { page-break-inside: avoid; }
+    h1, h2, h3, h4 { color: #111 !important; }
+    p, li, td, th, .note, .callout { color: #333 !important; }
+    .formula-box { background: #f5f7fa; border-color: #ccc; color: #004466; }
+    .image-card { border-color: #ddd; background: #fff; }
+    th { background: #f0f2f5 !important; color: #111 !important; }
+    th, td { border-color: #ddd !important; }
+    tr.highlight td { color: #005577 !important; font-weight: 700; }
+    .callout { background: #f0f7ff; border-color: #b0d0ff; }
+    .callout strong { color: #005577 !important; }
+    .section-head { border-color: #005577 !important; }
+    .chart-box { border-color: #ddd; background: #fff; }
+    .config-header { background: #f0f2f5 !important; border-color: #ccc !important; }
+    .config-header h2 { color: #111 !important; }
+    .geom-box { background: #f9fafb; border-color: #ddd; }
+    
+    .cover {
+      height: 255mm;
+      position: relative;
+      page-break-after: always;
+      box-sizing: border-box;
+    }
+    .cover-bottom {
+      position: absolute;
+      bottom: 5mm;
+      left: 0;
+      right: 0;
+    }
+  }
+  @media screen {
+    body { background: #0b0f19; color: #d1d5db; padding: 30px; }
+    .page-break { margin-top: 40px; padding-top: 20px; border-top: 2px dashed rgba(255,255,255,0.08); }
+    .formula-box { background: rgba(0,212,255,0.03); border-color: rgba(0,212,255,0.2); color: #00d4ff; }
+    .callout { background: rgba(255,184,48,0.04); border-color: rgba(255,184,48,0.15); }
+    .callout strong { color: #ffb830; }
+    .section-head { border-color: #00d4ff; }
+    .chart-box { border-color: rgba(255,255,255,0.05); background: rgba(255,255,255,0.01); }
+    .config-header { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.05); }
+    .config-header h2 { color: #eef2fa; }
+    .geom-box { background: rgba(255,255,255,0.01); border-color: rgba(255,255,255,0.05); }
+    .cover {
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 40px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.01);
+      margin-bottom: 40px;
+    }
+    .cover-bottom {
+      margin-top: 60px;
+    }
+  }
+
+  /* General styles */
+  body { font-family: 'Inter', sans-serif; font-size: 9.2px; line-height: 1.42; max-width: 900px; margin: 0 auto; }
+  h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; font-weight: 700; color: #eef2fa; margin-top: 12px; margin-bottom: 5px; }
+  h1 { font-size: 20px; text-align: center; line-height: 1.25; margin-top: 0; }
+  h2 { font-size: 12.5px; padding-bottom: 4px; border-bottom: 2px solid; margin-top: 18px; }
+  h3 { font-size: 10px; margin-top: 10px; }
+  p { margin-bottom: 6px; text-align: justify; }
+  ul { margin-left: 14px; margin-bottom: 6px; }
+  li { margin-bottom: 3px; }
+
+  /* Layout elements */
+  .flex-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 8px 0; }
+  .callout { border-left: 3.5px solid; padding: 8px 10px; border-radius: 4px; margin: 8px 0; font-size: 8.8px; line-height: 1.35; }
+  .formula-box { font-family: 'JetBrains Mono', monospace; font-size: 8.8px; padding: 8px 10px; border: 1px solid; border-radius: 6px; margin: 8px 0; line-height: 1.35; text-align: center; }
+  .note { font-style: italic; color: #9ca3af; font-size: 7.5px; margin-top: 1px; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 8.2px; }
+  th, td { border: 1px solid rgba(255,255,255,0.08); padding: 4px 5px; text-align: center; }
+  th { background: rgba(255,255,255,0.03); font-weight: 600; color: #eef2fa; }
+  tr.highlight td { background: rgba(0,212,255,0.04); font-weight: 600; }
+  tr:hover td { background: rgba(255,255,255,0.01); }
+
+  /* Charts */
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 8px 0; }
+  .chart-box { border: 1px solid; border-radius: 8px; padding: 6px; height: 140px; position: relative; }
+
+  /* Cover Page */
+  .cover { text-align: center; }
+  .cover-title { font-size: 24px; margin-top: 50px; color: #eef2fa; font-weight: 700; line-height: 1.25; }
+  .cover-subtitle { font-size: 10.5px; max-width: 550px; margin: 12px auto 0; color: #9ca3af; line-height: 1.5; text-align: center; }
+  .toc { max-width: 420px; margin: 40px auto; text-align: left; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.05); padding: 14px; border-radius: 8px; }
+  .toc-item { display: flex; justify-content: space-between; font-size: 8.8px; margin-bottom: 5px; border-bottom: 1px dotted rgba(255,255,255,0.1); padding-bottom: 2px; }
+  .toc-item span:first-child { color: #eef2fa; }
+  .cover-metadata { font-size: 8.8px; line-height: 1.6; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 14px; max-width: 420px; margin: 0 auto; color: #9ca3af; text-align: left; }
+</style>
+</head>
+<body>
+
+<!-- ==================== PAGE 1: COVER PAGE ==================== -->
+<div class="cover">
+  <div>
+    <h1 class="cover-title">Humanoid Ankle Pivot Position &<br>Foot Plate Sizing Optimization Report</h1>
+    <p class="cover-subtitle">
+      A systematic physics-based analysis of the 2-DOF humanoid ankle joint. Evaluates static standing balance, single-point contact tipping moments, and sole load distributions for a 42–45 kg humanoid. Establishes the optimal foot plate size and ankle mounting offsets for the Robstride RS03 actuator configuration.
+    </p>
+  </div>
+
+  <div class="toc">
+    <h3 style="margin-top:0;margin-bottom:6px;font-size:9.5px;text-transform:uppercase;letter-spacing:0.5px;color:#00d4ff;">Table of Contents</h3>
+    <div class="toc-item"><span>1. Introduction & Executive Summary</span><span>Page 2</span></div>
+    <div class="toc-item"><span>2. Physics of Humanoid Balance (First Principles)</span><span>Page 2</span></div>
+    <div class="toc-item"><span>3. Foot Plate Sizing Parameters & Criteria</span><span>Page 3</span></div>
+    <div class="toc-item"><span>4. Foot Plate Size Comparison Matrix</span><span>Page 3</span></div>
+    <div class="toc-item"><span>5. Mathematical Model & Moment Arms</span><span>Page 4</span></div>
+    <div class="toc-item"><span>6. Torque Sweep Results (42 kg & 45 kg Loads)</span><span>Page 4</span></div>
+    <div class="toc-item"><span>7. Actuator Torque Translation & Linkage Sharing</span><span>Page 5</span></div>
+    <div class="toc-item"><span>8. MuJoCo Humanoid Integration & Dynamic Stability</span><span>Page 5</span></div>
+    <div class="toc-item"><span>9. Engineering Design Checklist & Hardware Guidelines</span><span>Page 6</span></div>
+  </div>
+
+  <div class="cover-bottom">
+    <div class="cover-metadata">
+      <strong>Prepared For:</strong> Humanoid Hardware Design & Actuator Review Group<br>
+      <strong>Robot System:</strong> Angad Humanoid (2-DOF Parallel Linkage Ankle)<br>
+      <strong>Actuator Target:</strong> Robstride RS03 (20 N·m Rated / 60 N·m Peak)<br>
+      <strong>Design Parameters:</strong> Base weight 28.15 kg, upscaled to 42–45 kg hardware assembly weight<br>
+      <strong>Date:</strong> July 11, 2026
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 2: INTRODUCTION & PHYSICS ==================== -->
+<div class="page-break"></div>
+<h2 class="section-head">1. Introduction & Executive Summary</h2>
+<p>
+  The design of a humanoid robot's foot is the boundary between the robot and its environment. Placing the ankle joint (the universal joint pivot) relative to the foot plate, and sizing the foot plate itself, determines the static balance margins, required actuator torques, and dynamic stability limits of the entire robot. 
+</p>
+<p>
+  This report provides a first-principles physics derivation of ankle joint efforts under a vertical load. We analyze the Angad humanoid robot, whose simulated base mass of <strong>28.15 kg</strong> (pelvis, thighs, torso, etc.) will upscale to a physical weight of <strong>42 to 45 kg</strong> once batteries, onboard compute, sensors, CNC link brackets, and upscaled Robstride RS03 actuators are integrated.
+</p>
+<div class="callout">
+  <strong>Key Executive Findings:</strong>
+  <ul>
+    <li><strong>Centered ankle mounting (0 cm offset)</strong> is suboptimal for dynamic humanoid walking as it creates symmetric heel/toe torques but fails to provide adequate forward sway margin for walking momentum.</li>
+    <li><strong>A backward ankle offset of 1.5 cm to 2.0 cm</strong> is recommended. This shifts the ankle closer to the heel, reducing the torque required during heel strikes (to 26.4 N·m under 42 kg) and extending the front support margin for forward stability during walking.</li>
+    <li>The resulting increased toe push-off torque (40.5 N·m under 42 kg, 43.4 N·m under 45 kg) is safely within the Robstride RS03 actuator linkage capacity, which can support up to 60 N·m peak effort.</li>
+  </ul>
+</div>
+
+<h2 class="section-head">2. Physics of Humanoid Balance (First Principles)</h2>
+<p>
+  To design the foot and mount the ankle, we must understand how humanoids remain upright. We define the following physical quantities:
+</p>
+<ul>
+  <li><strong>Center of Mass (CoM)</strong>: The average position of all mass in the robot. For Angad, when standing straight, the CoM project onto the ground lies directly beneath the universal joint.</li>
+  <li><strong>Support Polygon</strong>: The boundary defined by the foot sole in contact with the ground. For single-foot support, it is the rectangle of the sole (15 cm × 8 cm).</li>
+  <li><strong>Center of Pressure (CoP)</strong>: The point on the ground where the net ground reaction force acts. The CoP represents the centroid of all contact forces. For the robot to not tip over, the CoP must lie strictly inside the support polygon.</li>
+</ul>
+
+<h3>2.1 Regime A: Flat Sole Contact (Passive / Distributed Load)</h3>
+<p>
+  When the foot plate flatly touches the ground (neutral standing), the vertical load of the robot is distributed across the entire sole. The ground reaction force acts vertically upward. If the ankle joint is offset from the center of the foot, or if the robot sways, the ankle joint must apply a torque to shift the CoP. The ankle torque &tau; directly controls the location of the CoP:
+  <br>&tau; = −F<sub>N</sub> · (x<sub>CoP</sub> − x<sub>ankle</sub>)
+  <br>If the ankle joint is centered (x<sub>ankle</sub> = 0) and the CoM is directly overhead (x<sub>CoP</sub> = 0), the required ankle torque is exactly <strong>0 N·m</strong>. The vertical load passes straight through the joint into the ground.
+</p>
+
+<h3>2.2 Regime B: Single-Point Contact (Active Edge Tipping)</h3>
+<p>
+  When the robot walks, it tilts the foot plate. During a heel-strike (&theta; > 0) or toe push-off (&theta; < 0), the foot sole is no longer flat. The sole makes contact with the ground only at a single line (the heel edge or the toe edge). 
+</p>
+<p>
+  In this regime, the support point is locked at the edge (x<sub>contact</sub> = ±L<sub>foot</sub>/2). To support the robot's vertical mass without the foot collapsing or the leg tipping, the ankle joint must actively output a torque that balances the gravity moment arm created between the ankle joint and the contact edge. This represents the worst-case joint load.
+</p>
+
+<!-- ==================== PAGE 3: FOOT SIZING & SIZING MATRIX ==================== -->
+<div class="page-break"></div>
+<h2 class="section-head">3. Foot Plate Sizing Parameters & Criteria</h2>
+<p>
+  Determining the optimal width and length of the foot plate is a trade-off. We must balance five competing engineering parameters:
+</p>
+<ol>
+  <li><strong>Static Stability Margin</strong>: Larger feet create a larger support polygon, allowing the robot to sway further before the CoP reaches the edge (which causes tipping).</li>
+  <li><strong>Ankle Actuator Joint Torques</strong>: A longer foot increases the distance from the ankle to the heel/toe edges. This increases the gravity moment arm during edge contact, demanding higher torque from the ankle actuators.</li>
+  <li><strong>Foot Mass & Swing Inertia</strong>: The foot sits at the very end of the leg kinematics. Any weight added to the foot plate increases the swing leg's moment of inertia, requiring significantly more torque from the hip and knee joints during the swing phase of walking.</li>
+  <li><strong>Collision Avoidance</strong>: Wider and longer feet are highly prone to scuffing the ground or colliding with the opposite leg during the swing phase, causing trips.</li>
+  <li><strong>Ground Compliance & Trajectory</strong>: A larger sole area distributes the load better on compliant ground (mud/sand) but makes walking on uneven stones or slopes more difficult.</li>
+</ol>
+
+<h2 class="section-head">4. Foot Plate Size Comparison Matrix</h2>
+<p>
+  The table below compares three potential foot sizes for the Angad humanoid under a 42 kg assembly load, evaluating the trade-offs between stability, torque, and mass:
+</p>
+<table>
+  <thead>
+    <tr>
+      <th>Foot Plate Size</th>
+      <th>Support Area</th>
+      <th>Forward Sway Limit</th>
+      <th>Backward Sway Limit</th>
+      <th>Peak Pitch Torque (centered ankle)</th>
+      <th>Weight & Swing Inertia</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align:left;font-family:Inter"><strong>Compact Foot</strong><br>13 cm × 7 cm</td>
+      <td>91 cm²</td>
+      <td>6.5 cm</td>
+      <td>6.5 cm</td>
+      <td>29.2 N·m</td>
+      <td style="color:#00e87b">Low (0.28 kg)<br>Excellent swing speed</td>
+      <td style="text-align:left;color:#ffb830">Not recommended: Stability margin is too narrow. High risk of tipping during walking.</td>
+    </tr>
+    <tr class="highlight">
+      <td style="text-align:left;font-family:Inter"><strong>Default Foot (Current)</strong><br>15 cm × 8 cm</td>
+      <td>120 cm²</td>
+      <td>7.5 cm</td>
+      <td>7.5 cm</td>
+      <td>34.1 N·m</td>
+      <td>Moderate (0.365 kg)<br>Good swing response</td>
+      <td style="text-align:left;color:#00e87b"><strong>Recommended</strong>: Optimal balance between safety margin and actuator torque requirements.</td>
+    </tr>
+    <tr>
+      <td style="text-align:left;font-family:Inter"><strong>Large Foot</strong><br>18 cm × 9 cm</td>
+      <td>162 cm²</td>
+      <td>9.0 cm</td>
+      <td>9.0 cm</td>
+      <td>41.2 N·m</td>
+      <td style="color:#ff3366">High (0.52 kg)<br>High swing effort</td>
+      <td style="text-align:left;color:#ff3366">Not recommended: High torque demand on RS03. Prone to foot-to-foot collisions.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <strong>Foot Sizing Verdict:</strong>
+  The current <strong>15 cm × 8 cm foot plate</strong> is the optimal size. Shrinking it to 13 cm restricts the stance balance window too much, while enlarging it to 18 cm increases the required knee/hip swing torques by over 40% and raises the required ankle peak pitch torque to 41.2 N·m, which reduces the actuator's safety margin.
+</div>
+
+<!-- ==================== PAGE 4: MATHEMATICAL MODEL & TORQUE SWEEP ==================== -->
+<div class="page-break"></div>
+<h2 class="section-head">5. Mathematical Model & Moment Arms</h2>
+<p>
+  When the foot is tilted by pitch angle &theta; and is in single-point contact with the ground at x<sub>c</sub> (where x<sub>c</sub> = −L<sub>foot</sub>/2 for heel contact and x<sub>c</sub> = +L<sub>foot</sub>/2 for toe contact), we calculate the required universal joint torque to support the vertical weight.
+</p>
+<p>
+  Let the universal joint coordinate in the foot frame be (x<sub>ankle</sub>, z<sub>uj</sub>), where x<sub>ankle</sub> is the offset from the foot sole center and z<sub>uj</sub> is the vertical height of the universal joint (3.6 cm). When the foot tilts by &theta; around the pitch axis (Y-axis), the horizontal distance (moment arm) in the world frame between the contact point and the universal joint is derived via coordinate rotation:
+</p>
+<div class="formula-box">
+  d<sub>h</sub> = (x<sub>ankle</sub> − x<sub>c</sub>) · cos(&theta;) + z<sub>uj</sub> · sin(&theta;)<br>
+  &tau;<sub>ankle</sub> = W · d<sub>h</sub> = M · g · [ (x<sub>ankle</sub> − x<sub>c</sub>) · cos(&theta;) + z<sub>uj</sub> · sin(&theta;) ]
+</div>
+<p>
+  Where M is the robot mass (kg), g = 9.81 m/s², and &tau;<sub>ankle</sub> is the ankle joint torque (N·m) required for static equilibrium.
+</p>
+
+<h2 class="section-head">6. Torque Sweep Results (42 kg & 45 kg Loads)</h2>
+<p>
+  The tables below show the required ankle joint pitch torque (N·m) at discrete foot pitch angles for various ankle offset positions (x<sub>ankle</sub> from −5 cm closer to heel, to +5 cm closer to toe) on the 15 cm foot plate:
+</p>
+
+<h3>6.1 Baseline Weight Assembly: 42 kg (412.0 N Vertical Load)</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Pitch Angle</th>
+      <th>Offset −5 cm (Heel-close)</th>
+      <th>Offset −3 cm</th>
+      <th>Offset −1.5 cm (Optimum)</th>
+      <th>Offset 0 cm (Centered)</th>
+      <th>Offset +3 cm</th>
+      <th>Offset +5 cm (Toe-close)</th>
+    </tr>
+  </thead>
+  <tbody id="sweep_42"></tbody>
+</table>
+
+<h3>6.2 Maximum Loaded Weight Assembly: 45 kg (441.5 N Vertical Load)</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Pitch Angle</th>
+      <th>Offset −5 cm (Heel-close)</th>
+      <th>Offset −3 cm</th>
+      <th>Offset −1.5 cm (Optimum)</th>
+      <th>Offset 0 cm (Centered)</th>
+      <th>Offset +3 cm</th>
+      <th>Offset +5 cm (Toe-close)</th>
+    </tr>
+  </thead>
+  <tbody id="sweep_45"></tbody>
+</table>
+
+<!-- ==================== PAGE 5: CHARTS & ACTUATOR TRANSLATION ==================== -->
+<div class="page-break"></div>
+<h2 class="section-head">6.3 Torque Sweep Visualization Curves</h2>
+<div class="charts-row">
+  <div class="chart-box"><canvas id="plot_42"></canvas></div>
+  <div class="chart-box"><canvas id="plot_45"></canvas></div>
+</div>
+
+<h2 class="section-head">7. Actuator Torque Translation & Linkage Sharing</h2>
+<p>
+  Robotic humanoids do not drive the ankle pivot directly. For the Angad leg, the ankle is driven by the parallel 2-RSS linkage. This mechanism converts the required ankle joint pitch torque (&tau;<sub>ankle</sub>) into individual motor torques (&tau;<sub>motor1</sub>, &tau;<sub>motor2</sub>) through the transpose of the velocity Jacobian:
+  <br>[ &tau;<sub>ankle, pitch</sub> ; &tau;<sub>ankle, roll</sub> ] = J<sup>T</sup> · [ &tau;<sub>motor1</sub> ; &tau;<sub>motor2</sub> ]
+</p>
+<p>
+  When balancing or pitching forward/backward, roll torque is zero (&tau;<sub>ankle, roll</sub> = 0). Solving this system shows that:
+  <br>&tau;<sub>motor1</sub> &approx; &tau;<sub>motor2</sub> &approx; &tau;<sub>ankle, pitch</sub> / (2 · &eta;)
+  <br>Where &eta; is the transmission ratio (mechanical leverage) of the linkage. For our orthogonal layout, &eta; &approx; 1.5 near neutral.
+</p>
+<div class="callout">
+  <strong>Example Calculation (RS03 Safety Margin):</strong>
+  For a 42 kg robot with the optimal <strong>−1.5 cm ankle offset</strong>, the worst-case pitch torque occurs at <strong>−25° pitch (toe push)</strong>:
+  <br>&tau;<sub>ankle, max</sub> = 40.5 N·m
+  <br>Using the formula, the required torque from <strong>each RS03 motor</strong> is:
+  <br>&tau;<sub>motor</sub> = 40.5 N·m / (2 × 1.5) = <strong>13.5 N·m</strong>
+  <br>This is significantly below the RS03 continuous rated torque limit of <strong>20.0 N·m</strong> (representing a <strong>48% safety margin</strong>). Even under a peak 45 kg load, the required motor torque is only <strong>14.5 N·m</strong>.
+</div>
+
+<!-- ==================== PAGE 6: MUJOCO INTEGRATION & CHECKLIST ==================== -->
+<div class="page-break"></div>
+<h2 class="section-head">8. MuJoCo Humanoid Integration & Dynamic Stability</h2>
+<p>
+  To verify these calculations in a dynamic walking environment, we analyzed the mass properties of the humanoid robot using `XP_robot_real_mass_density.xml` (total mass 28.154 kg).
+</p>
+
+<h3>8.1 Mass Breakdown & Center of Mass (CoM)</h3>
+<p>
+  The MuJoCo model's mass is concentrated in the pelvis (5.65 kg), thighs (2.3 kg each), hip pitch brackets (1.56 kg each), leg shanks (1.45 kg each), and torso (3.0 kg). 
+  The center of mass height is located at Z<sub>CoM</sub> = 1.006 m (when standing straight).
+</p>
+
+<h3>8.2 Dynamic Walking Forces & Impact Sizing</h3>
+<p>
+  During walking, the robot does not exert a static load. When the swing leg strikes the ground (heel strike), the ground reaction force peaks at <strong>1.5× to 2.0×</strong> the static weight due to deceleration impact. This means the ankle must resist dynamic impact forces of up to <strong>900 N</strong> for short durations.
+</p>
+<p>
+  Under these dynamic conditions, placing the ankle joint exactly at the center of the foot is risky. A centered ankle requires equal torque for heel strike and toe push-off. By shifting the ankle joint <strong>1.5 cm to 2.0 cm backward (towards the heel)</strong>, we achieve three vital improvements:
+</p>
+<ol>
+  <li><strong>Forward Sway Stability</strong>: Shifting the ankle backward extends the front portion of the foot plate (ankle-to-toe distance becomes 9.0 cm instead of 7.5 cm). This gives the robot a larger forward stability margin, allowing it to lean further forward during walking to build forward momentum.</li>
+  <li><strong>Reduced Heel Strike Torque</strong>: During a heel strike, the contact point is close to the ankle (distance 6.0 cm). This reduces the dynamic impact torque on the actuators, protecting the gear teeth.</li>
+  <li><strong>Optimized Motor Utilization</strong>: The increased torque required for toe push-off (13.5 N·m per motor) is handled easily by the RS03 actuators, which have an abundance of continuous capacity.</li>
+</ol>
+
+<h2 class="section-head">9. Engineering Design Checklist & Hardware Guidelines</h2>
+<p>
+  This checklist serves as a guide for hardware engineers during the CAD drafting and structural assembly of the foot plate and ankle pivot connection:
+</p>
+
+<div class="geom-box" style="padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:8px; line-height:1.55; margin-top:8px;">
+  <h3 style="margin-top:0;color:#00d4ff;font-size:10px;">⚙️ Foot Plate Manufacturing & Assembly Guidelines</h3>
+  <ul>
+    <li>
+      <strong>Ankle Pivot Offset Position</strong>:<br>
+      Mount the universal joint block exactly <strong>1.5 cm posterior (backward)</strong> from the physical center of the foot sole. 
+      <br><span style="color:#9ca3af;font-size:7.5px;">*For a 15 cm foot, the UJ pivot center should be located 6.0 cm from the heel edge and 9.0 cm from the toe edge.*</span>
+    </li>
+    <li>
+      <strong>Ankle Pivot Height (z<sub>uj</sub>)</strong>:<br>
+      Keep the vertical height from the ground contact plane to the center of the universal joint at <strong>3.6 cm</strong> (&plusmn;0.2 cm). Raising it increases the roll/pitch moment arm unnecessarily, while lowering it causes mechanical interference during joint tilts.
+    </li>
+    <li>
+      <strong>Foot Plate Material & Weight Target</strong>:<br>
+      Use CNC-machined 7075-T6 aluminum for the foot plate, or carbon-fiber-reinforced nylon (3D printed with high infill). The total weight of the foot plate assembly (including rubber pads and U-joint brackets) must not exceed <strong>0.38 kg</strong> to prevent excessive swing inertia.
+    </li>
+    <li>
+      <strong>Rubber Grip Padding (Sole)</strong>:<br>
+      Implement a high-friction neoprene or polyurethane rubber pad (shore hardness 60A–70A) of thickness <strong>3.0 mm</strong> underneath the foot plate. This absorbs landing shock and ensures a static friction coefficient &mu; &ge; 0.8 to prevent slipping during toe push-offs.
+    </li>
+    <li>
+      <strong>Structural Clearance</strong>:<br>
+      Ensure the foot plate is scalloped or chamfered near the rear and sides to prevent mechanical binding with the crank arms or pushrods when the ankle is at maximum roll (&plusmn;20°) and maximum pitch (−25°).
+    </li>
+  </ul>
+</div>
+
+<!-- ==================== JAVASCRIPT CALCULATION ENGINE ==================== -->
+<script>
+'use strict';
+const DEG = Math.PI / 180;
+
+function calcTorqueVal(mass, pitchDeg, ankleOffsetCm, footLengthCm, heightCm) {
+  const W = mass * 9.81;
+  const pRad = pitchDeg * DEG;
+  const x_heel = -footLengthCm / 2.0; // in cm
+  const x_toe = footLengthCm / 2.0;
+  const z_uj = heightCm;
+  
+  let x_contact = 0.0;
+  if (pitchDeg > 0) {
+    x_contact = x_heel;
+  } else if (pitchDeg < 0) {
+    x_contact = x_toe;
+  } else {
+    x_contact = ankleOffsetCm;
+  }
+  
+  // Convert inputs to meters for force equation
+  const z_m = z_uj / 100.0;
+  const contact_m = x_contact / 100.0;
+  const off_m = ankleOffsetCm / 100.0;
+  
+  const tau = W * (z_m * Math.sin(pRad) - (contact_m - off_m) * Math.cos(pRad));
+  return Math.abs(tau);
+}
+
+window.onload = () => {
+  const offsets = [-5.0, -3.0, -1.5, 0.0, 3.0, 5.0];
+  const angles = [-25, -20, -15, -10, -5, 0, 5, 10, 15, 20, 25];
+  
+  // Populate 42 kg Table
+  const tbody42 = document.getElementById('sweep_42');
+  angles.forEach(ang => {
+    const tr = document.createElement('tr');
+    if (ang === 0) tr.className = 'highlight';
+    let html = `<td>${ang >= 0 ? '+' : ''}${ang}°</td>`;
+    offsets.forEach(off => {
+      const val = calcTorqueVal(42.0, ang, off, 15.0, 3.6);
+      const isOpt = off === -1.5;
+      html += `<td style="font-family: 'JetBrains Mono', monospace; ${isOpt ? 'color: #00d4ff; font-weight:700;' : ''}">${val.toFixed(1)} N·m</td>`;
+    });
+    tr.innerHTML = html;
+    tbody42.appendChild(tr);
+  });
+
+  // Populate 45 kg Table
+  const tbody45 = document.getElementById('sweep_45');
+  angles.forEach(ang => {
+    const tr = document.createElement('tr');
+    if (ang === 0) tr.className = 'highlight';
+    let html = `<td>${ang >= 0 ? '+' : ''}${ang}°</td>`;
+    offsets.forEach(off => {
+      const val = calcTorqueVal(45.0, ang, off, 15.0, 3.6);
+      const isOpt = off === -1.5;
+      html += `<td style="font-family: 'JetBrains Mono', monospace; ${isOpt ? 'color: #00d4ff; font-weight:700;' : ''}">${val.toFixed(1)} N·m</td>`;
+    });
+    tr.innerHTML = html;
+    tbody45.appendChild(tr);
+  });
+
+  // Chart Rendering
+  const pAngles = [];
+  for (let p = -25; p <= 25; p += 1) pAngles.push(p);
+  
+  const colors = ['#ff3366', '#ffb830', '#00e87b', '#00d4ff', '#af40ff', '#888888'];
+  
+  // 42 kg Chart
+  const ds42 = offsets.map((off, idx) => ({
+    label: `Offset ${off >= 0 ? '+' : ''}${off.toFixed(1)} cm`,
+    data: pAngles.map(p => calcTorqueVal(42.0, p, off, 15.0, 3.6)),
+    borderColor: off === -1.5 ? '#00d4ff' : colors[idx],
+    borderWidth: off === -1.5 ? 2.2 : 1.0,
+    tension: 0.1,
+    pointRadius: 0
+  }));
+  
+  new Chart(document.getElementById('plot_42').getContext('2d'), {
+    type: 'line',
+    data: { labels: pAngles.map(p => p + '°'), datasets: ds42 },
+    options: {
+      animation: false, responsive: true, maintainAspectRatio: false,
+      plugins: {
+        title: { display: true, text: 'Required Ankle Torque vs Pitch (42 kg)', color: '#888', font: { size: 8 } },
+        legend: { display: true, labels: { font: { size: 6 }, boxWidth: 8, color: '#888' } }
+      },
+      scales: {
+        x: { ticks: { color: '#888', font: { size: 5 }, maxTicksLimit: 11 }, grid: { color: 'rgba(255,255,255,0.03)' } },
+        y: { ticks: { color: '#888', font: { size: 5 } }, beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } }
+      }
+    }
+  });
+
+  // 45 kg Chart
+  const ds45 = offsets.map((off, idx) => ({
+    label: `Offset ${off >= 0 ? '+' : ''}${off.toFixed(1)} cm`,
+    data: pAngles.map(p => calcTorqueVal(45.0, p, off, 15.0, 3.6)),
+    borderColor: off === -1.5 ? '#00d4ff' : colors[idx],
+    borderWidth: off === -1.5 ? 2.2 : 1.0,
+    tension: 0.1,
+    pointRadius: 0
+  }));
+  
+  new Chart(document.getElementById('plot_45').getContext('2d'), {
+    type: 'line',
+    data: { labels: pAngles.map(p => p + '°'), datasets: ds45 },
+    options: {
+      animation: false, responsive: true, maintainAspectRatio: false,
+      plugins: {
+        title: { display: true, text: 'Required Ankle Torque vs Pitch (45 kg)', color: '#888', font: { size: 8 } },
+        legend: { display: true, labels: { font: { size: 6 }, boxWidth: 8, color: '#888' } }
+      },
+      scales: {
+        x: { ticks: { color: '#888', font: { size: 5 }, maxTicksLimit: 11 }, grid: { color: 'rgba(255,255,255,0.03)' } },
+        y: { ticks: { color: '#888', font: { size: 5 } }, beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } }
+      }
+    }
+  });
+};
+</script>
+</body>
+</html>

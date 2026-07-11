@@ -101,21 +101,30 @@ xdg-open http://localhost:8000/load_analysis.html
 
 ---
 
-### 2. 📄 Comprehensive Sizing Report PDF
-A pre-generated print-ready report is located at:
+### 2. 📄 Pre-generated PDF Reports
+
+#### A. Comprehensive Motor Sizing Report
+An analytical actuator evaluation report comparing mechanism geometries:
 👉 **[ankle_motor_evaluation_report_comprehensive.pdf](ankle_motor_evaluation_report_comprehensive.pdf)**
 
-To regenerate this PDF from a fresh terminal:
+#### B. Foot Plate Sizing & Ankle Pivot Position Report
+An optimization study on ankle pivot placement (offsets) and foot sole sizing:
+👉 **[ankle_pivot_foot_design_report.pdf](ankle_pivot_foot_design_report.pdf)**
+
+To regenerate these PDFs from a fresh terminal:
 ```bash
 # 1. Start the HTTP server in the background
 python3 -m http.server 8000 &
 SERVER_PID=$!
-
-# 2. Wait 2 seconds for server to start, then print to PDF using headless Chrome
 sleep 2
+
+# 2. Print motor sizing report
 google-chrome --headless --disable-gpu --no-sandbox --print-to-pdf=ankle_motor_evaluation_report_comprehensive.pdf http://localhost:8000/comprehensive_report_print.html
 
-# 3. Kill the background server
+# 3. Print foot plate & pivot position report
+google-chrome --headless --disable-gpu --no-sandbox --print-to-pdf=ankle_pivot_foot_design_report.pdf http://localhost:8000/foot_design_report_print.html
+
+# 4. Kill the background server
 kill $SERVER_PID
 ```
 

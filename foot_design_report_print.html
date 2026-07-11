@@ -136,7 +136,7 @@
     <div class="toc-item"><span>5. Mathematical Model & Moment Arms</span><span>Page 5</span></div>
     <div class="toc-item"><span>6. Torque Sweep Results (42 kg & 45 kg Loads)</span><span>Page 5</span></div>
     <div class="toc-item"><span>7. Actuator Torque Translation & Linkage Sharing</span><span>Page 6</span></div>
-    <div class="toc-item"><span>8. MuJoCo Humanoid Integration & Dynamic Stability</span><span>Page 7</span></div>
+    <div class="toc-item"><span>8. Humanoid Dynamic Simulation & Gait Stability</span><span>Page 7</span></div>
     <div class="toc-item"><span>9. Engineering Design Checklist & Hardware Guidelines</span><span>Page 7</span></div>
   </div>
 
@@ -492,14 +492,14 @@
 </div>
 
 <!-- ==================== PAGE 6: MUJOCO INTEGRATION & CHECKLIST ==================== -->
-<h2>8. MuJoCo Humanoid Integration & Dynamic Stability</h2>
+<h2>8. Humanoid Dynamic Simulation & Gait Stability</h2>
 <p>
-  To verify these calculations in a dynamic walking environment, we analyzed the mass properties and walk telemetry of the humanoid robot using the files in the MuJoCo workspace:
+  To verify these calculations in a dynamic walking environment, we analyzed the mass properties and walking gait telemetry of the humanoid robot using multi-body dynamics simulation:
 </p>
 
 <h3>8.1 Stance Phase Center of Mass (CoM) Trajectory</h3>
 <p>
-  Extracting the walk telemetry from <strong>perfect_walk_telemetry.npz</strong> reveals that during the stance phase, the projection of the robot's CoM along the foot length (world Y-direction) travels from <strong>−8.66 cm</strong> to <strong>+6.22 cm</strong> relative to the foot center.
+  Extracting the walk telemetry from the gait simulation reveals that during the stance phase, the projection of the robot's CoM along the foot length (world Y-direction) travels from <strong>−8.66 cm</strong> to <strong>+6.22 cm</strong> relative to the foot center.
 </p>
 <p>
   This trajectory is naturally offset backward due to the leg kinematics and torso posture during forward walk. The centroid of this dynamic envelope is:

@@ -15,7 +15,6 @@
     h1, h2, h3, h4 { color: #111 !important; }
     p, li, td, th, .note, .callout { color: #333 !important; }
     .formula-box { background: #f5f7fa; border-color: #ccc; color: #004466; }
-    .image-card { border-color: #ddd; background: #fff; }
     th { background: #f0f2f5 !important; color: #111 !important; }
     th, td { border-color: #ddd !important; }
     tr.highlight td { color: #005577 !important; font-weight: 700; }
@@ -23,8 +22,6 @@
     .callout strong { color: #005577 !important; }
     .section-head { border-color: #005577 !important; }
     .chart-box { border-color: #ddd; background: #fff; }
-    .config-header { background: #f0f2f5 !important; border-color: #ccc !important; }
-    .config-header h2 { color: #111 !important; }
     .geom-box { background: #f9fafb; border-color: #ddd; }
     
     .cover {
@@ -39,6 +36,16 @@
       left: 0;
       right: 0;
     }
+    svg {
+      border: 1px solid #ccc !important;
+      background: #fcfcfc !important;
+    }
+    text {
+      fill: #222 !important;
+    }
+    .toc, .toc-item, .toc-item span, .cover-metadata, .cover-metadata strong {
+      color: #111 !important;
+    }
   }
   @media screen {
     body { background: #0b0f19; color: #d1d5db; padding: 30px; }
@@ -48,8 +55,6 @@
     .callout strong { color: #ffb830; }
     .section-head { border-color: #00d4ff; }
     .chart-box { border-color: rgba(255,255,255,0.05); background: rgba(255,255,255,0.01); }
-    .config-header { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.05); }
-    .config-header h2 { color: #eef2fa; }
     .geom-box { background: rgba(255,255,255,0.01); border-color: rgba(255,255,255,0.05); }
     .cover {
       border: 1px solid rgba(255,255,255,0.08);
@@ -61,13 +66,20 @@
     .cover-bottom {
       margin-top: 60px;
     }
+    svg {
+      border: 1px solid rgba(255,255,255,0.08) !important;
+      background: rgba(255,255,255,0.01) !important;
+    }
+    text {
+      fill: #eef2fa !important;
+    }
   }
 
   /* General styles */
   body { font-family: 'Inter', sans-serif; font-size: 9.0px; line-height: 1.40; max-width: 900px; margin: 0 auto; }
   h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; font-weight: 700; color: #eef2fa; margin-top: 10px; margin-bottom: 4px; }
   h1 { font-size: 19px; text-align: center; line-height: 1.25; margin-top: 0; }
-  h2 { font-size: 12.0px; padding-bottom: 4px; border-bottom: 2px solid; margin-top: 16px; }
+  h2 { font-size: 11.5px; padding-bottom: 4px; border-bottom: 2px solid; margin-top: 14px; }
   h3 { font-size: 9.5px; margin-top: 8px; }
   p { margin-bottom: 5px; text-align: justify; }
   ul { margin-left: 12px; margin-bottom: 5px; }
@@ -80,7 +92,7 @@
   .note { font-style: italic; color: #9ca3af; font-size: 7.2px; margin-top: 1px; }
 
   /* Tables */
-  table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 8.0px; }
+  table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 7.8px; }
   th, td { border: 1px solid rgba(255,255,255,0.08); padding: 3px 4px; text-align: center; }
   th { background: rgba(255,255,255,0.03); font-weight: 600; color: #eef2fa; }
   tr.highlight td { background: rgba(0,212,255,0.04); font-weight: 600; }
@@ -100,9 +112,7 @@
   .cover-metadata { font-size: 8.5px; line-height: 1.5; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; max-width: 420px; margin: 0 auto; color: #9ca3af; text-align: left; }
 
   /* Diagram styles */
-  .img-row { display: flex; justify-content: space-around; align-items: center; margin: 8px 0; gap: 8px; }
-  .img-container { text-align: center; font-size: 7.2px; color: #9ca3af; }
-  .img-container img { height: 95px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); background: #fff; }
+  .diagram-container { display: flex; justify-content: center; margin: 8px 0; }
 </style>
 </head>
 <body>
@@ -179,9 +189,37 @@
 <p>
   When the robot walks, it tilts the foot plate. During a heel-strike (&theta; > 0) or toe push-off (&theta; < 0), the foot sole is no longer flat. The sole makes contact with the ground only at a single line (the heel edge or the toe edge). 
 </p>
-<p>
-  In this regime, the support point is locked at the edge (x<sub>contact</sub> = ±L<sub>foot</sub>/2). To support the robot's vertical mass without the foot collapsing or the leg tipping, the ankle joint must actively output a torque that balances the gravity moment arm created between the ankle joint and the contact edge. This represents the worst-case joint load.
-</p>
+<div class="diagram-container">
+  <svg width="450" height="90" viewBox="0 0 450 90">
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 2 L 6 5 L 0 8 z" fill="#00e87b"/>
+      </marker>
+    </defs>
+    <!-- Flat Sole -->
+    <g transform="translate(10, 5)">
+      <line x1="10" y1="65" x2="190" y2="65" stroke="#475569" stroke-width="1.5"/>
+      <rect x="40" y="55" width="120" height="10" rx="1.5" fill="#00e87b" fill-opacity="0.15" stroke="#00e87b" stroke-width="1.2"/>
+      <circle cx="100" cy="30" r="3.5" fill="#00d4ff"/>
+      <line x1="100" y1="30" x2="100" y2="55" stroke="#00d4ff" stroke-width="1" stroke-dasharray="2,2"/>
+      <!-- Distributed ground force -->
+      <path d="M 50,65 L 50,75 M 75,65 L 75,75 M 100,65 L 100,75 M 125,65 L 125,75 M 150,65 L 150,75" stroke="#00e87b" stroke-width="1" marker-end="url(#arrow)"/>
+      <text x="100" y="16" font-size="7.5" text-anchor="middle" font-family="sans-serif">Flat Sole Contact (Regime A)</text>
+    </g>
+    <!-- Edge Contact -->
+    <g transform="translate(230, 5)">
+      <line x1="10" y1="65" x2="190" y2="65" stroke="#475569" stroke-width="1.5"/>
+      <!-- Tilted foot -->
+      <g transform="rotate(-12, 40, 65)">
+        <rect x="40" y="55" width="120" height="10" rx="1.5" fill="#ff3366" fill-opacity="0.15" stroke="#ff3366" stroke-width="1.2"/>
+        <circle cx="100" cy="30" r="3.5" fill="#00d4ff"/>
+      </g>
+      <!-- Point force at heel -->
+      <path d="M 40,65 L 40,80" stroke="#ff3366" stroke-width="1.5"/>
+      <text x="100" y="16" font-size="7.5" text-anchor="middle" font-family="sans-serif">Heel Edge Contact (Regime B)</text>
+    </g>
+  </svg>
+</div>
 
 <!-- ==================== PAGE 3: FOOT SIZING & SIZING MATRIX ==================== -->
 <div class="page-break"></div>
@@ -256,9 +294,24 @@
   </tbody>
 </table>
 
-<div class="callout">
-  <strong>Foot Sizing Verdict:</strong>
-  The current <strong>15 cm × 8 cm foot plate</strong> is the optimal size. Shrinking it to 13 cm restricts the stance balance window too much, while enlarging it to 18 cm increases the required knee/hip swing torques by over 40% and raises the required ankle peak pitch torque to 41.2 N·m, which reduces the actuator's safety margin.
+<div class="diagram-container">
+  <svg width="450" height="90" viewBox="0 0 450 90">
+    <!-- Compact foot support area -->
+    <g transform="translate(15, 5)">
+      <rect x="10" y="20" width="110" height="50" rx="3" fill="#ff3366" fill-opacity="0.08" stroke="#ff3366" stroke-width="1.2" stroke-dasharray="2,2"/>
+      <text x="65" y="48" font-size="7.5" text-anchor="middle" font-family="sans-serif">Compact (13 × 7 cm)</text>
+    </g>
+    <!-- Default foot support area -->
+    <g transform="translate(150, 5)">
+      <rect x="10" y="15" width="130" height="60" rx="3" fill="#00e87b" fill-opacity="0.10" stroke="#00e87b" stroke-width="1.5"/>
+      <text x="75" y="48" font-size="7.5" text-anchor="middle" font-family="sans-serif" font-weight="bold">Default (15 × 8 cm)</text>
+    </g>
+    <!-- Large foot support area -->
+    <g transform="translate(305, 5)">
+      <rect x="5" y="10" width="130" height="70" rx="3" fill="#af40ff" fill-opacity="0.05" stroke="#af40ff" stroke-width="1.0" stroke-dasharray="2,2"/>
+      <text x="70" y="48" font-size="7.5" text-anchor="middle" font-family="sans-serif">Large (18 × 9 cm)</text>
+    </g>
+  </svg>
 </div>
 
 <!-- ==================== PAGE 4: MATHEMATICAL MODEL & TORQUE SWEEP ==================== -->
@@ -333,12 +386,36 @@
   <br>&tau;<sub>motor1</sub> &approx; &tau;<sub>motor2</sub> &approx; &tau;<sub>ankle, pitch</sub> / (2 · &eta;)
   <br>Where &eta; is the transmission ratio (mechanical leverage) of the linkage. For our orthogonal layout, &eta; &approx; 1.5 near neutral.
 </p>
-<div class="img-row">
-  <div class="img-container">
-    <img src="report_images/schematic.png" alt="Ankle Mechanism Kinematic Schematic">
-    <div>Figure 1: Orthogonal Linkage Geometry & Pushrod Vector Diagram</div>
-  </div>
+
+<div class="diagram-container">
+  <svg width="450" height="90" viewBox="0 0 450 90">
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 2 L 6 5 L 0 8 z" fill="#00e87b"/>
+      </marker>
+    </defs>
+    <g transform="translate(10, 5)">
+      <!-- Left Motor -->
+      <circle cx="80" cy="45" r="14" fill="#1e293b" stroke="#00d4ff" stroke-width="1.5"/>
+      <text x="80" y="48" font-size="7.5" text-anchor="middle" font-family="sans-serif" fill="#00d4ff">M1</text>
+      <!-- Right Motor -->
+      <circle cx="370" cy="45" r="14" fill="#1e293b" stroke="#00d4ff" stroke-width="1.5"/>
+      <text x="370" y="48" font-size="7.5" text-anchor="middle" font-family="sans-serif" fill="#00d4ff">M2</text>
+      <!-- Ankle Joint Pivot -->
+      <circle cx="225" cy="55" r="10" fill="#ffb830" fill-opacity="0.2" stroke="#ffb830" stroke-width="1.5"/>
+      <circle cx="225" cy="55" r="3" fill="#ffb830"/>
+      <text x="225" y="40" font-size="8" text-anchor="middle" font-family="sans-serif" fill="#ffb830">Universal Joint</text>
+      <!-- Pushrods -->
+      <line x1="80" y1="45" x2="215" y2="55" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="2,2"/>
+      <line x1="370" y1="45" x2="235" y2="55" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="2,2"/>
+      <!-- Arrows showing torque sharing -->
+      <path d="M 120,40 L 160,40" stroke="#00e87b" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <path d="M 330,40 L 290,40" stroke="#00e87b" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <text x="225" y="75" font-size="7.5" text-anchor="middle" font-family="sans-serif">Pitch Torque Shared Between Motors (leverage ratio: 1.5×)</text>
+    </g>
+  </svg>
 </div>
+
 <div class="callout">
   <strong>Example Calculation (RS03 Safety Margin):</strong>
   For a 42 kg robot with the optimal <strong>−1.5 cm ankle offset</strong>, the worst-case pitch torque occurs at <strong>−25° pitch (toe push)</strong>:
@@ -365,15 +442,30 @@
   <br>By mounting the ankle joint with a posterior (backward) offset of <strong>−1.5 cm</strong>, we align the joint with the middle of the dynamic sweep. This keeps the CoM trajectory perfectly centered in the foot's support polygon, maximizing both forward and backward safety margins.
 </p>
 
-<div class="img-row">
-  <div class="img-container">
-    <img src="report_images/conf1_side.png" alt="V-shape Mechanism">
-    <div>Figure 2: Config 1 (V-shape, E=2.3cm)</div>
-  </div>
-  <div class="img-container">
-    <img src="report_images/conf2_side.png" alt="Parallel Mechanism">
-    <div>Figure 3: Config 2 (Parallel, E=5.0cm)</div>
-  </div>
+<div class="diagram-container">
+  <svg width="450" height="110" viewBox="0 0 450 110">
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 2 L 6 5 L 0 8 z" fill="#00e87b"/>
+      </marker>
+    </defs>
+    <!-- Foot boundaries -->
+    <rect x="75" y="25" width="300" height="60" rx="3" fill="none" stroke="#475569" stroke-width="1.5"/>
+    <line x1="225" y1="12" x2="225" y2="92" stroke="#475569" stroke-width="1" stroke-dasharray="2,2"/>
+    <text x="225" y="10" font-size="7.5" text-anchor="middle" font-family="sans-serif">Foot Center (0.0 cm)</text>
+    
+    <!-- Dynamic sweep path (height 16) -->
+    <rect x="138" y="32" width="149" height="16" rx="2" fill="#00d4ff" fill-opacity="0.15" stroke="#00d4ff" stroke-width="1.0"/>
+    <text x="212" y="42" font-size="7.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" fill="#00d4ff">Dynamic CoM Walk Sweep: -8.66 to +6.22 cm</text>
+    
+    <!-- Ankle location centered -->
+    <circle cx="225" cy="70" r="4.5" fill="#ff3366"/>
+    
+    <!-- Optimal ankle shift -->
+    <circle cx="195" cy="70" r="5" fill="#00e87b"/>
+    <path d="M 220,70 L 202,70" stroke="#00e87b" stroke-width="1.2" marker-end="url(#arrow)"/>
+    <text x="195" y="100" font-size="7.5" text-anchor="middle" font-family="sans-serif" fill="#00e87b">Optimal Ankle Shift (-1.5 cm posterior)</text>
+  </svg>
 </div>
 
 <h2>9. Engineering Design Checklist & Hardware Guidelines</h2>

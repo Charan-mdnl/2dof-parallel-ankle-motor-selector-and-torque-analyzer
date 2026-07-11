@@ -6,7 +6,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-  @page { size: A4; margin: 1.0cm 1.2cm; }
+  @page { size: A4; margin: 1.2cm 1.4cm; }
   @media print {
     body { background: #fff; color: #222; padding: 0; margin: 0; }
     .page-break { page-break-before: always; }
@@ -25,7 +25,7 @@
     .geom-box { background: #f9fafb; border-color: #ddd; }
     
     .cover {
-      height: 235mm;
+      height: 245mm;
       position: relative;
       page-break-after: always;
       box-sizing: border-box;
@@ -48,8 +48,8 @@
     }
   }
   @media screen {
-    body { background: #0b0f19; color: #d1d5db; padding: 30px; }
-    .page-break { margin-top: 40px; padding-top: 20px; border-top: 2px dashed rgba(255,255,255,0.08); }
+    body { background: #0b0f19; color: #d1d5db; padding: 40px; }
+    .page-break { margin-top: 50px; padding-top: 25px; border-top: 2px dashed rgba(255,255,255,0.08); }
     .formula-box { background: rgba(0,212,255,0.03); border-color: rgba(0,212,255,0.2); color: #00d4ff; }
     .callout { background: rgba(255,184,48,0.04); border-color: rgba(255,184,48,0.15); }
     .callout strong { color: #ffb830; }
@@ -58,13 +58,13 @@
     .geom-box { background: rgba(255,255,255,0.01); border-color: rgba(255,255,255,0.05); }
     .cover {
       border: 1px solid rgba(255,255,255,0.08);
-      padding: 40px;
+      padding: 50px;
       border-radius: 12px;
       background: rgba(255,255,255,0.01);
-      margin-bottom: 40px;
+      margin-bottom: 50px;
     }
     .cover-bottom {
-      margin-top: 60px;
+      margin-top: 80px;
     }
     svg {
       border: 1px solid rgba(255,255,255,0.08) !important;
@@ -76,43 +76,44 @@
   }
 
   /* General styles */
-  body { font-family: 'Inter', sans-serif; font-size: 9.0px; line-height: 1.40; max-width: 900px; margin: 0 auto; }
-  h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; font-weight: 700; color: #eef2fa; margin-top: 10px; margin-bottom: 4px; }
-  h1 { font-size: 19px; text-align: center; line-height: 1.25; margin-top: 0; }
-  h2 { font-size: 11.5px; padding-bottom: 4px; border-bottom: 2px solid; margin-top: 14px; }
-  h3 { font-size: 9.5px; margin-top: 8px; }
-  p { margin-bottom: 5px; text-align: justify; }
-  ul { margin-left: 12px; margin-bottom: 5px; }
-  li { margin-bottom: 2.5px; }
+  body { font-family: 'Inter', sans-serif; font-size: 11.5px; line-height: 1.50; max-width: 900px; margin: 0 auto; }
+  h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; font-weight: 700; color: #eef2fa; margin-top: 15px; margin-bottom: 6px; }
+  h1 { font-size: 26px; text-align: center; line-height: 1.25; margin-top: 0; }
+  h2 { font-size: 15px; padding-bottom: 5px; border-bottom: 2px solid; margin-top: 24px; page-break-after: avoid; break-after: avoid; }
+  h3 { font-size: 12.5px; margin-top: 14px; page-break-after: avoid; break-after: avoid; }
+  p { margin-bottom: 8px; text-align: justify; }
+  ul { margin-left: 18px; margin-bottom: 8px; }
+  li { margin-bottom: 4px; }
 
   /* Layout elements */
-  .flex-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 6px 0; }
-  .callout { border-left: 3.5px solid; padding: 6px 8px; border-radius: 4px; margin: 6px 0; font-size: 8.5px; line-height: 1.35; }
-  .formula-box { font-family: 'JetBrains Mono', monospace; font-size: 8.5px; padding: 6px 8px; border: 1px solid; border-radius: 6px; margin: 6px 0; line-height: 1.35; text-align: center; }
-  .note { font-style: italic; color: #9ca3af; font-size: 7.2px; margin-top: 1px; }
+  .flex-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 10px 0; }
+  .callout { border-left: 4px solid; padding: 10px 14px; border-radius: 6px; margin: 12px 0; font-size: 11px; line-height: 1.45; page-break-inside: avoid; break-inside: avoid; }
+  .formula-box { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 10px 14px; border: 1px solid; border-radius: 8px; margin: 12px 0; line-height: 1.45; text-align: center; page-break-inside: avoid; break-inside: avoid; }
+  .note { font-style: italic; color: #9ca3af; font-size: 9px; margin-top: 2px; }
 
   /* Tables */
-  table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 7.8px; }
-  th, td { border: 1px solid rgba(255,255,255,0.08); padding: 3px 4px; text-align: center; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 10px; page-break-inside: avoid; break-inside: avoid; }
+  th, td { border: 1px solid rgba(255,255,255,0.08); padding: 5px 6px; text-align: center; }
   th { background: rgba(255,255,255,0.03); font-weight: 600; color: #eef2fa; }
   tr.highlight td { background: rgba(0,212,255,0.04); font-weight: 600; }
   tr:hover td { background: rgba(255,255,255,0.01); }
 
   /* Charts */
-  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 6px 0; }
-  .chart-box { border: 1px solid; border-radius: 8px; padding: 4px; height: 120px; position: relative; }
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 12px 0; page-break-inside: avoid; break-inside: avoid; }
+  .chart-box { border: 1px solid; border-radius: 8px; padding: 6px; height: 160px; position: relative; }
 
   /* Cover Page */
   .cover { text-align: center; }
-  .cover-title { font-size: 22px; margin-top: 30px; color: #eef2fa; font-weight: 700; line-height: 1.25; }
-  .cover-subtitle { font-size: 10.0px; max-width: 550px; margin: 10px auto 0; color: #9ca3af; line-height: 1.45; text-align: center; }
-  .toc { max-width: 420px; margin: 30px auto; text-align: left; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; }
-  .toc-item { display: flex; justify-content: space-between; font-size: 8.5px; margin-bottom: 4px; border-bottom: 1px dotted rgba(255,255,255,0.1); padding-bottom: 2px; }
+  .cover-title { font-size: 28px; margin-top: 40px; color: #eef2fa; font-weight: 700; line-height: 1.25; }
+  .cover-subtitle { font-size: 13.0px; max-width: 620px; margin: 14px auto 0; color: #9ca3af; line-height: 1.45; text-align: center; }
+  .toc { max-width: 480px; margin: 40px auto; text-align: left; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.05); padding: 18px; border-radius: 8px; }
+  .toc-item { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 6px; border-bottom: 1px dotted rgba(255,255,255,0.1); padding-bottom: 3px; }
   .toc-item span:first-child { color: #eef2fa; }
-  .cover-metadata { font-size: 8.5px; line-height: 1.5; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; max-width: 420px; margin: 0 auto; color: #9ca3af; text-align: left; }
+  .cover-metadata { font-size: 11px; line-height: 1.5; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; max-width: 480px; margin: 0 auto; color: #9ca3af; text-align: left; }
 
   /* Diagram styles */
-  .diagram-container { display: flex; justify-content: center; margin: 8px 0; }
+  .diagram-container { display: flex; justify-content: center; margin: 12px 0; page-break-inside: avoid; break-inside: avoid; }
+  .geom-box { page-break-inside: avoid; break-inside: avoid; }
 </style>
 </head>
 <body>
@@ -127,7 +128,7 @@
   </div>
 
   <div class="toc">
-    <h3 style="margin-top:0;margin-bottom:6px;font-size:9.0px;text-transform:uppercase;letter-spacing:0.5px;color:#00d4ff;">Table of Contents</h3>
+    <h3 style="margin-top:0;margin-bottom:8px;font-size:12.0px;text-transform:uppercase;letter-spacing:0.5px;color:#00d4ff;">Table of Contents</h3>
     <div class="toc-item"><span>1. Introduction & Executive Summary</span><span>Page 2</span></div>
     <div class="toc-item"><span>2. Physics of Humanoid Balance (First Principles)</span><span>Page 2</span></div>
     <div class="toc-item"><span>3. Foot Plate Sizing Parameters & Criteria</span><span>Page 3</span></div>
@@ -204,7 +205,7 @@
       <line x1="100" y1="30" x2="100" y2="55" stroke="#00d4ff" stroke-width="1" stroke-dasharray="2,2"/>
       <!-- Distributed ground force -->
       <path d="M 50,65 L 50,75 M 75,65 L 75,75 M 100,65 L 100,75 M 125,65 L 125,75 M 150,65 L 150,75" stroke="#00e87b" stroke-width="1" marker-end="url(#arrow)"/>
-      <text x="100" y="16" font-size="7.5" text-anchor="middle" font-family="sans-serif">Flat Sole Contact (Regime A)</text>
+      <text x="100" y="16" font-size="10.0" text-anchor="middle" font-family="sans-serif">Flat Sole Contact (Regime A)</text>
     </g>
     <!-- Edge Contact -->
     <g transform="translate(230, 5)">
@@ -216,13 +217,12 @@
       </g>
       <!-- Point force at heel -->
       <path d="M 40,65 L 40,80" stroke="#ff3366" stroke-width="1.5"/>
-      <text x="100" y="16" font-size="7.5" text-anchor="middle" font-family="sans-serif">Heel Edge Contact (Regime B)</text>
+      <text x="100" y="16" font-size="10.0" text-anchor="middle" font-family="sans-serif">Heel Edge Contact (Regime B)</text>
     </g>
   </svg>
 </div>
 
 <!-- ==================== PAGE 3: FOOT SIZING & SIZING MATRIX ==================== -->
-<div class="page-break"></div>
 <h2>3. Foot Plate Sizing Parameters & Criteria</h2>
 <p>
   Determining the optimal width and length of the foot plate is a trade-off. We must balance five competing engineering parameters:
@@ -299,23 +299,22 @@
     <!-- Compact foot support area -->
     <g transform="translate(15, 5)">
       <rect x="10" y="20" width="110" height="50" rx="3" fill="#ff3366" fill-opacity="0.08" stroke="#ff3366" stroke-width="1.2" stroke-dasharray="2,2"/>
-      <text x="65" y="48" font-size="7.5" text-anchor="middle" font-family="sans-serif">Compact (13 × 7 cm)</text>
+      <text x="65" y="48" font-size="10.0" text-anchor="middle" font-family="sans-serif">Compact (13 × 7 cm)</text>
     </g>
     <!-- Default foot support area -->
     <g transform="translate(150, 5)">
       <rect x="10" y="15" width="130" height="60" rx="3" fill="#00e87b" fill-opacity="0.10" stroke="#00e87b" stroke-width="1.5"/>
-      <text x="75" y="48" font-size="7.5" text-anchor="middle" font-family="sans-serif" font-weight="bold">Default (15 × 8 cm)</text>
+      <text x="75" y="48" font-size="10.0" text-anchor="middle" font-family="sans-serif" font-weight="bold">Default (15 × 8 cm)</text>
     </g>
     <!-- Large foot support area -->
     <g transform="translate(305, 5)">
       <rect x="5" y="10" width="130" height="70" rx="3" fill="#af40ff" fill-opacity="0.05" stroke="#af40ff" stroke-width="1.0" stroke-dasharray="2,2"/>
-      <text x="70" y="48" font-size="7.5" text-anchor="middle" font-family="sans-serif">Large (18 × 9 cm)</text>
+      <text x="70" y="48" font-size="10.0" text-anchor="middle" font-family="sans-serif">Large (18 × 9 cm)</text>
     </g>
   </svg>
 </div>
 
 <!-- ==================== PAGE 4: MATHEMATICAL MODEL & TORQUE SWEEP ==================== -->
-<div class="page-break"></div>
 <h2>5. Mathematical Model & Moment Arms</h2>
 <p>
   When the foot is tilted by pitch angle &theta; and is in single-point contact with the ground at x<sub>c</sub> (where x<sub>c</sub> = −L<sub>foot</sub>/2 for heel contact and x<sub>c</sub> = +L<sub>foot</sub>/2 for toe contact), we calculate the required universal joint torque to support the vertical weight.
@@ -369,7 +368,6 @@
 </table>
 
 <!-- ==================== PAGE 5: CHARTS & ACTUATOR TRANSLATION ==================== -->
-<div class="page-break"></div>
 <h2>6.3 Torque Sweep Visualization Curves</h2>
 <div class="charts-row">
   <div class="chart-box"><canvas id="plot_42"></canvas></div>
@@ -397,21 +395,21 @@
     <g transform="translate(10, 5)">
       <!-- Left Motor -->
       <circle cx="80" cy="45" r="14" fill="#1e293b" stroke="#00d4ff" stroke-width="1.5"/>
-      <text x="80" y="48" font-size="7.5" text-anchor="middle" font-family="sans-serif" fill="#00d4ff">M1</text>
+      <text x="80" y="48" font-size="10.0" text-anchor="middle" font-family="sans-serif" fill="#00d4ff">M1</text>
       <!-- Right Motor -->
       <circle cx="370" cy="45" r="14" fill="#1e293b" stroke="#00d4ff" stroke-width="1.5"/>
-      <text x="370" y="48" font-size="7.5" text-anchor="middle" font-family="sans-serif" fill="#00d4ff">M2</text>
+      <text x="370" y="48" font-size="10.0" text-anchor="middle" font-family="sans-serif" fill="#00d4ff">M2</text>
       <!-- Ankle Joint Pivot -->
       <circle cx="225" cy="55" r="10" fill="#ffb830" fill-opacity="0.2" stroke="#ffb830" stroke-width="1.5"/>
       <circle cx="225" cy="55" r="3" fill="#ffb830"/>
-      <text x="225" y="40" font-size="8" text-anchor="middle" font-family="sans-serif" fill="#ffb830">Universal Joint</text>
+      <text x="225" y="40" font-size="10.5" text-anchor="middle" font-family="sans-serif" fill="#ffb830">Universal Joint</text>
       <!-- Pushrods -->
       <line x1="80" y1="45" x2="215" y2="55" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="2,2"/>
       <line x1="370" y1="45" x2="235" y2="55" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="2,2"/>
       <!-- Arrows showing torque sharing -->
       <path d="M 120,40 L 160,40" stroke="#00e87b" stroke-width="1.5" marker-end="url(#arrow)"/>
       <path d="M 330,40 L 290,40" stroke="#00e87b" stroke-width="1.5" marker-end="url(#arrow)"/>
-      <text x="225" y="75" font-size="7.5" text-anchor="middle" font-family="sans-serif">Pitch Torque Shared Between Motors (leverage ratio: 1.5×)</text>
+      <text x="225" y="75" font-size="9.5" text-anchor="middle" font-family="sans-serif">Pitch Torque Shared Between Motors (leverage ratio: 1.5×</)px></text>
     </g>
   </svg>
 </div>
@@ -426,7 +424,6 @@
 </div>
 
 <!-- ==================== PAGE 6: MUJOCO INTEGRATION & CHECKLIST ==================== -->
-<div class="page-break"></div>
 <h2>8. MuJoCo Humanoid Integration & Dynamic Stability</h2>
 <p>
   To verify these calculations in a dynamic walking environment, we analyzed the mass properties and walk telemetry of the humanoid robot using the files in the MuJoCo workspace:
@@ -452,11 +449,11 @@
     <!-- Foot boundaries -->
     <rect x="75" y="25" width="300" height="60" rx="3" fill="none" stroke="#475569" stroke-width="1.5"/>
     <line x1="225" y1="12" x2="225" y2="92" stroke="#475569" stroke-width="1" stroke-dasharray="2,2"/>
-    <text x="225" y="10" font-size="7.5" text-anchor="middle" font-family="sans-serif">Foot Center (0.0 cm)</text>
+    <text x="225" y="10" font-size="10.0" text-anchor="middle" font-family="sans-serif">Foot Center (0.0 cm)</text>
     
     <!-- Dynamic sweep path (height 16) -->
-    <rect x="138" y="32" width="149" height="16" rx="2" fill="#00d4ff" fill-opacity="0.15" stroke="#00d4ff" stroke-width="1.0"/>
-    <text x="212" y="42" font-size="7.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" fill="#00d4ff">Dynamic CoM Walk Sweep: -8.66 to +6.22 cm</text>
+    <rect x="52" y="32" width="297" height="16" rx="2" fill="#00d4ff" fill-opacity="0.15" stroke="#00d4ff" stroke-width="1.0"/>
+    <text x="200" y="42" font-size="10.0" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" fill="#00d4ff">Dynamic CoM Walk Sweep: -8.66 to +6.22 cm</text>
     
     <!-- Ankle location centered -->
     <circle cx="225" cy="70" r="4.5" fill="#ff3366"/>
@@ -464,7 +461,7 @@
     <!-- Optimal ankle shift -->
     <circle cx="195" cy="70" r="5" fill="#00e87b"/>
     <path d="M 220,70 L 202,70" stroke="#00e87b" stroke-width="1.2" marker-end="url(#arrow)"/>
-    <text x="195" y="100" font-size="7.5" text-anchor="middle" font-family="sans-serif" fill="#00e87b">Optimal Ankle Shift (-1.5 cm posterior)</text>
+    <text x="195" y="100" font-size="10.0" text-anchor="middle" font-family="sans-serif" fill="#00e87b">Optimal Ankle Shift (-1.5 cm posterior)</text>
   </svg>
 </div>
 
@@ -474,12 +471,12 @@
 </p>
 
 <div class="geom-box" style="padding:10px; border:1px solid rgba(255,255,255,0.08); border-radius:8px; line-height:1.50; margin-top:4px;">
-  <h3 style="margin-top:0;color:#00d4ff;font-size:9.5px;">⚙️ Foot Plate Manufacturing & Assembly Guidelines</h3>
+  <h3 style="margin-top:0;color:#00d4ff;font-size:12.5px;">⚙️ Foot Plate Manufacturing & Assembly Guidelines</h3>
   <ul>
     <li>
       <strong>Ankle Pivot Offset Position</strong>:<br>
       Mount the universal joint block exactly <strong>1.5 cm posterior (backward)</strong> from the physical center of the foot sole. 
-      <br><span style="color:#9ca3af;font-size:7.2px;">*For a 15 cm foot, the UJ pivot center should be located 6.0 cm from the heel edge and 9.0 cm from the toe edge.*</span>
+      <br><span style="color:#9ca3af;font-size:9.0px;">*For a 15 cm foot, the UJ pivot center should be located 6.0 cm from the heel edge and 9.0 cm from the toe edge.*</span>
     </li>
     <li>
       <strong>Ankle Pivot Height (z<sub>uj</sub>)</strong>:<br>
@@ -575,7 +572,7 @@ window.onload = () => {
     label: `Offset ${off >= 0 ? '+' : ''}${off.toFixed(1)} cm`,
     data: pAngles.map(p => calcTorqueVal(42.0, p, off, 15.0, 3.6)),
     borderColor: off === -1.5 ? '#00d4ff' : colors[idx],
-    borderWidth: off === -1.5 ? 2.2 : 1.0,
+    borderWidth: off === -1.5 ? 2.5 : 1.2,
     tension: 0.1,
     pointRadius: 0
   }));
@@ -586,12 +583,12 @@ window.onload = () => {
     options: {
       animation: false, responsive: true, maintainAspectRatio: false,
       plugins: {
-        title: { display: true, text: 'Required Ankle Torque vs Pitch (42 kg)', color: '#888', font: { size: 8 } },
-        legend: { display: true, labels: { font: { size: 6 }, boxWidth: 8, color: '#888' } }
+        title: { display: true, text: 'Required Ankle Torque vs Pitch (42 kg)', color: '#666', font: { size: 11, weight: 'bold' } },
+        legend: { display: true, labels: { font: { size: 9 }, boxWidth: 10, color: '#666' } }
       },
       scales: {
-        x: { ticks: { color: '#888', font: { size: 5 }, maxTicksLimit: 11 }, grid: { color: 'rgba(255,255,255,0.03)' } },
-        y: { ticks: { color: '#888', font: { size: 5 } }, beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } }
+        x: { ticks: { color: '#666', font: { size: 8 }, maxTicksLimit: 11 }, grid: { color: 'rgba(255,255,255,0.03)' } },
+        y: { ticks: { color: '#666', font: { size: 8 } }, beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } }
       }
     }
   });
@@ -601,7 +598,7 @@ window.onload = () => {
     label: `Offset ${off >= 0 ? '+' : ''}${off.toFixed(1)} cm`,
     data: pAngles.map(p => calcTorqueVal(45.0, p, off, 15.0, 3.6)),
     borderColor: off === -1.5 ? '#00d4ff' : colors[idx],
-    borderWidth: off === -1.5 ? 2.2 : 1.0,
+    borderWidth: off === -1.5 ? 2.5 : 1.2,
     tension: 0.1,
     pointRadius: 0
   }));
@@ -612,12 +609,12 @@ window.onload = () => {
     options: {
       animation: false, responsive: true, maintainAspectRatio: false,
       plugins: {
-        title: { display: true, text: 'Required Ankle Torque vs Pitch (45 kg)', color: '#888', font: { size: 8 } },
-        legend: { display: true, labels: { font: { size: 6 }, boxWidth: 8, color: '#888' } }
+        title: { display: true, text: 'Required Ankle Torque vs Pitch (45 kg)', color: '#666', font: { size: 11, weight: 'bold' } },
+        legend: { display: true, labels: { font: { size: 9 }, boxWidth: 10, color: '#666' } }
       },
       scales: {
-        x: { ticks: { color: '#888', font: { size: 5 }, maxTicksLimit: 11 }, grid: { color: 'rgba(255,255,255,0.03)' } },
-        y: { ticks: { color: '#888', font: { size: 5 } }, beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } }
+        x: { ticks: { color: '#666', font: { size: 8 }, maxTicksLimit: 11 }, grid: { color: 'rgba(255,255,255,0.03)' } },
+        y: { ticks: { color: '#666', font: { size: 8 } }, beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' } }
       }
     }
   });

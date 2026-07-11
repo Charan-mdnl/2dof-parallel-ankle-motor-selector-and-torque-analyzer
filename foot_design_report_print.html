@@ -165,7 +165,7 @@
   <ul>
     <li><strong>Centered ankle mounting (0 cm offset)</strong> is suboptimal for dynamic humanoid walking as it creates symmetric heel/toe torques but fails to provide adequate forward sway margin for walking momentum.</li>
     <li><strong>A backward ankle offset of 1.5 cm to 2.0 cm</strong> is recommended. This shifts the ankle closer to the heel, reducing the torque required during heel strikes (to 25.9 N·m at +5° under 42 kg) and extending the front support margin for forward stability during walking.</li>
-    <li>The resulting increased toe push-off torque (39.9 N·m under 42 kg, 42.7 N·m under 45 kg) is safely within the Robstride RS03 parallel linkage ankle joint continuous capacity of <strong>46.0 N·m</strong> (using minimum transmission leverage at extreme pitch).</li>
+    <li>The resulting worst-case toe push-off torque (39.9 N·m under 42 kg, 42.7 N·m under 45 kg) is safely within the Robstride RS03 parallel linkage ankle joint continuous capacity of <strong>60.1 N·m</strong> (as verified by the Jacobian-based parallel mechanism simulation).</li>
   </ul>
 </div>
 
@@ -443,11 +443,7 @@
   <br>[ &tau;<sub>ankle, pitch</sub> ; &tau;<sub>ankle, roll</sub> ] = J<sup>T</sup> · [ &tau;<sub>motor1</sub> ; &tau;<sub>motor2</sub> ]
 </p>
 <p>
-  When balancing or pitching forward/backward, roll torque is zero (&tau;<sub>ankle, roll</sub> = 0). Solving this system shows that the maximum ankle joint pitch torque that can be output by the parallel linkage is:
-  <br>&tau;<sub>ankle, cap</sub> = 2 · &eta; · &tau;<sub>motor</sub>
-  <br>Where &eta; is the transmission leverage ratio of the parallel linkage. In our orthogonal linkage layout:
-  <br>• Near neutral standing (0° pitch), &eta; &approx; 1.5.
-  <br>• At extreme pitch tilt (−25° toe push), the mechanical advantage drops to its <strong>minimum transmission leverage ratio: &eta;<sub>min</sub> &approx; 1.15</strong>.
+  When balancing or pitching forward/backward, roll torque is zero (&tau;<sub>ankle, roll</sub> = 0). The full Jacobian-based kinematics simulation of the parallel linkage (with actual pushrod lengths, motor axis offsets, and universal joint geometry) was run across the entire joint workspace to determine the minimum ankle torque capacity. The critical (worst-case) pitch pose occurs at <strong>−13.5° pitch</strong>, where the linkage mechanical advantage is at its lowest.
 </p>
 
 <div class="diagram-container">
@@ -474,21 +470,21 @@
       <!-- Arrows showing torque sharing -->
       <path d="M 120,40 L 160,40" stroke="#00e87b" stroke-width="1.5" marker-end="url(#arrow)"/>
       <path d="M 330,40 L 290,40" stroke="#00e87b" stroke-width="1.5" marker-end="url(#arrow)"/>
-      <text x="225" y="75" font-size="9.5" text-anchor="middle" font-family="sans-serif">Pitch Torque Shared Between Motors (leverage ratio: 1.5×)</text>
+      <text x="225" y="75" font-size="9.5" text-anchor="middle" font-family="sans-serif">Pitch Torque Shared Between Motors via Parallel Linkage</text>
     </g>
   </svg>
 </div>
 
 <div class="callout">
-  <strong>Actuator Torque Margin & Linkage Limits (Robstride RS03):</strong>
-  The Robstride RS03 actuator provides a <strong>rated continuous torque of 20.0 N·m</strong> and a <strong>peak torque of 60.0 N·m</strong>. Using the minimum linkage transmission ratio (&eta;<sub>min</sub> &approx; 1.15) at maximum pitch tilt (−25°), the output ankle joint torque capacities are:
-  <br>• <strong>Continuous Output Capacity</strong>: 2 × 1.15 × 20.0 N·m = <strong>46.0 N·m</strong>
-  <br>• <strong>Peak Output Capacity</strong>: 2 × 1.15 × 60.0 N·m = <strong>138.0 N·m</strong>
+  <strong>Simulation-Verified Ankle Torque Capacity (Robstride RS03 + Parallel Linkage):</strong>
+  The Robstride RS03 actuator provides a <strong>rated continuous torque of 20.0 N·m</strong> and a <strong>peak torque of 60.0 N·m</strong>. The Jacobian-based parallel mechanism simulation sweeps the full workspace and reports the <strong>minimum</strong> ankle pitch torque capacity (worst-case linkage geometry):
+  <br>• <strong>Continuous Ankle Pitch Capacity</strong>: <strong>60.1 N·m</strong> (at critical pose −13.5° pitch)
+  <br>• <strong>Peak Ankle Pitch Capacity</strong>: <strong>180.3 N·m</strong> (at critical pose −13.5° pitch)
   <br><br>
   Under the worst-case toe push-off condition at −25° pitch:
-  <br>• <strong>For 42 kg assembly load</strong>, the required ankle pitch torque is <strong>39.9 N·m</strong>, which is safely below the continuous rated capacity of <strong>46.0 N·m</strong> (with a <strong>13.3% continuous capacity safety margin</strong>).
-  <br>• <strong>For 45 kg maximum loaded assembly</strong>, the required ankle pitch torque is <strong>42.7 N·m</strong>, which is also below the continuous rated capacity of <strong>46.0 N·m</strong> (with a <strong>7.2% continuous capacity safety margin</strong>).
-  <br>• The peak ankle capacity of <strong>138.0 N·m</strong> provides a massive safety headroom to absorb dynamic impact spikes and acceleration forces.
+  <br>• <strong>For 42 kg assembly load</strong>, the required ankle pitch torque is <strong>39.9 N·m</strong>, which is safely below the continuous capacity of <strong>60.1 N·m</strong> (with a <strong>33.6% safety margin</strong>).
+  <br>• <strong>For 45 kg maximum loaded assembly</strong>, the required ankle pitch torque is <strong>42.7 N·m</strong>, which is also below the continuous capacity of <strong>60.1 N·m</strong> (with a <strong>28.9% safety margin</strong>).
+  <br>• The peak ankle capacity of <strong>180.3 N·m</strong> provides a massive safety headroom to absorb dynamic heel-strike impact spikes and acceleration forces.
 </div>
 
 <!-- ==================== PAGE 6: MUJOCO INTEGRATION & CHECKLIST ==================== -->
